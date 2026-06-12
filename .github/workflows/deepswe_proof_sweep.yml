@@ -270,7 +270,9 @@ jobs:
           done
           [ -n "$CARGO_SRC" ] || echo "no Cargo home copied from task image"
           ACTIVE_RUST_TOOLCHAIN="$(docker exec gtsrc sh -lc 'rustup show active-toolchain 2>/dev/null | awk "{print \$1}" | tr -d "\r"' || true)"
+          RUST_SYSROOT="$(docker exec gtsrc sh -lc 'rustc --print sysroot 2>/dev/null' | tr -d '\r')"
           RUSTUP_SRC=""
+          RUST_SRC_SRC=""
           for CAND in \
             "$(docker exec gtsrc sh -lc 'echo ${RUSTUP_HOME:-$HOME/.rustup}' | tr -d '\r')" \
             "/root/.rustup" "/home/user/.rustup"; do
@@ -280,12 +282,24 @@ jobs:
             fi
           done
           [ -n "$RUSTUP_SRC" ] || echo "no rustup copied from task image"
+          if [ -n "$ACTIVE_RUST_TOOLCHAIN" ] && [ -n "$RUST_SYSROOT" ] \
+             && [ ! -d "/tmp/gt/deps/rustup/toolchains/$ACTIVE_RUST_TOOLCHAIN/lib/rustlib/src/rust/library" ]; then
+            TASK_RUST_SRC="${RUST_SYSROOT%/}/lib/rustlib/src/rust/library"
+            if docker exec gtsrc test -d "$TASK_RUST_SRC" 2>/dev/null; then
+              mkdir -p "/tmp/gt/deps/rustup/toolchains/$ACTIVE_RUST_TOOLCHAIN/lib/rustlib/src/rust/library"
+              if docker cp "gtsrc:${TASK_RUST_SRC}/." "/tmp/gt/deps/rustup/toolchains/$ACTIVE_RUST_TOOLCHAIN/lib/rustlib/src/rust/library" 2>/dev/null; then
+                RUST_SRC_SRC="$TASK_RUST_SRC"
+                echo "backfilled rust-src from sysroot: $TASK_RUST_SRC"
+              fi
+            fi
+          fi
           python3 scripts/swebench/dep_store_manifest.py \
             --out /tmp/gt/out/dep_store_manifest.json \
             --language "$TASK_LANG" \
             --gomodcache-host /tmp/gt/deps/gomodcache --gomodcache-source "$GOMOD_SRC" --gomodcache-declared-source "$GOMOD_DECLARED" \
             --cargo-host /tmp/gt/deps/cargo --cargo-source "$CARGO_SRC" \
             --rustup-host /tmp/gt/deps/rustup --rustup-source "$RUSTUP_SRC" \
+            --rust-src-host "/tmp/gt/deps/rustup/toolchains/${ACTIVE_RUST_TOOLCHAIN}/lib/rustlib/src/rust/library" --rust-src-source "$RUST_SRC_SRC" \
             --rust-toolchain "$ACTIVE_RUST_TOOLCHAIN" \
             || { echo "DEP_STORE_MANIFEST_FAIL: required dep store missing for $TASK_LANG"; echo "FAIL_CLASS=DEP_STORE_MANIFEST_FAIL" >> "$GITHUB_ENV"; docker rm -f gtsrc 2>/dev/null || true; exit 0; }
           echo "ACTIVE_RUST_TOOLCHAIN=$ACTIVE_RUST_TOOLCHAIN" >> "$GITHUB_ENV"
@@ -351,7 +365,10 @@ jobs:
             -e GT_REQUIRE_FULL_STACK=1 \
             -e GT_GIT_COMMIT="${{ github.sha }}" \
             -e GT_SUBSTRATE_DIGEST="$GT_SUBSTRATE_DIGEST" \
+            -e CARGO_HOME=/root/.cargo \
+            -e RUSTUP_HOME=/root/.rustup \
             -e RUSTUP_TOOLCHAIN="${ACTIVE_RUST_TOOLCHAIN:-}" \
+            -e PATH="/root/.cargo/bin:/opt/gt/bin:/opt/gt/node/bin:/opt/gt/python/bin:/opt/gt/jre/bin:/opt/gt/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             "$GT_SUBSTRATE_DIGEST" gt-run-proof --source-root /work --out /gt_artifacts --lang "$TASK_LANG" \
             > /tmp/gt/out/proof_run.log 2>&1
           RC=$?
