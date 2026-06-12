@@ -209,6 +209,17 @@ def test_proof_sweep_workflow_does_not_reencode_per_language_lsp_budget_policy()
     assert "LSP readiness budget owner: gt-run-proof" in t
 
 
+def test_proof_sweep_workflow_mounts_dep_stores_and_passes_language():
+    """Proof sweep must hand the same Go/Rust dep context and language identity into
+    gt-run-proof that deepswe_full does, or substrate readiness truth is skipped."""
+    t = _read(_PROOF_SWEEP_WF)
+    assert "dep_store_manifest.py" in t
+    assert '/tmp/gt/deps/gomodcache:/tmp/gomodcache:ro' in t
+    assert '/tmp/gt/deps/cargo:/root/.cargo:ro' in t
+    assert '/tmp/gt/deps/rustup:/root/.rustup:ro' in t
+    assert 'gt-run-proof --source-root /work --out /gt_artifacts --lang "$TASK_LANG"' in t
+
+
 # ── OH wrapper consumes the artifacts (does not rebuild a divergent graph) ────
 
 def test_wrapper_consumes_artifact_dir():
