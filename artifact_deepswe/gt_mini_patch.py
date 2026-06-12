@@ -36,10 +36,25 @@ through it.
 from __future__ import annotations
 
 import enum
+import hashlib
+import json
 import os
+import sys as _sys
 import re
 import subprocess
 import sys
+
+from groundtruth.runtime.action_translation import translate_to_action as _product_translate_to_action
+from groundtruth.runtime.context_budget import ContextBudgeter as _ProductContextBudgeter
+from groundtruth.runtime.ledger import Ledger as _ProductLedger
+from groundtruth.runtime.ledger import LedgerEntry as _ProductLedgerEntry
+from groundtruth.runtime.ledger import SignalOutcome as _ProductSignalOutcome
+from groundtruth.runtime.trajectory_state import TrajectoryState as _ProductTrajectoryState
+from groundtruth.runtime.trajectory_state import derive_phase as _product_derive_phase
+from groundtruth.runtime.verification_horizon import HorizonThresholds as _ProductHorizonThresholds
+from groundtruth.runtime.verification_horizon import composite_severity as _product_composite_severity
+from groundtruth.runtime.verification_horizon import render_verify_emission as _product_render_verify_emission
+from groundtruth.runtime.verification_horizon import verify_horizon_band as _product_verify_horizon_band
 
 # Strict flag parse (bug #6 parity with gt_agent / every other GT flag):
 # bool(env) made GT_BASELINE=0 enable the baseline arm.
@@ -491,7 +506,7 @@ def composite_severity(base, budget_fraction, unmet_ratio) -> float:
     2511.17006): budget position multiplies URGENCY, it never triggers on
     its own.  THE one severity formula — gt_oracle binds this (one product,
     one formula)."""
-    return float(base) + 2.0 * float(budget_fraction) + 1.0 * float(unmet_ratio)
+    return _product_composite_severity(base, budget_fraction, unmet_ratio)
 
 
 def edit_coverage_ratio(obligation_syms, edited_tokens):
@@ -2228,6 +2243,10 @@ def _l5_failure_nudge(cmd: str, out_text: str) -> str:
 # (default /tmp/gt_oracle_events.jsonl) — never agent-visible.
 # ---------------------------------------------------------------------------
 _ORACLE_ROUTE = os.environ.get("GT_ORACLE_ROUTE", "1") != "0"
+if os.environ.get("GT_PROOF_MODE") == "1" and os.environ.get("GT_ORACLE_ROUTE") == "0":
+    raise RuntimeError(
+        "GT_ORACLE_ROUTE=0 forbidden in GT_PROOF_MODE=1 (legacy unconditional appends)"
+    )
 _oracle_focus_cache: set[str] | None = None
 _oracle_delivered_hashes: set[str] = set()
 _oracle_edited_rels: set[str] = set()
@@ -2337,6 +2356,7 @@ def _obligation_nudge_block() -> tuple[float, str] | None:
         tracker = _get_obligation_tracker(om)
         tracker.update(
             _oracle_edited_tokens, _oracle_tested_tokens, _action_count)
+        _persist_obligation_status(tracker)
         statuses = tracker.statuses_tuple(
             _oracle_edited_tokens, _oracle_tested_tokens)
         unmet = om.order_unmet(statuses)
@@ -2416,55 +2436,43 @@ _SEV_CODEMAP = 1
 # ---------------------------------------------------------------------------
 # CP013 — phase detection + policy filter (P5 symbol narrowing).
 # ---------------------------------------------------------------------------
-class Phase(enum.Enum):
-    ORIENT = "orient"
-    SEARCH = "search"
-    EDIT = "edit"
-    VERIFY = "verify"
-    SUBMIT = "submit"
-
-
-_PHASE_POLICY: dict[Phase, frozenset[str]] = {
-    Phase.ORIENT: frozenset({"consensus.scope"}),
-    Phase.SEARCH: frozenset({"l3b.evidence"}),
-    Phase.EDIT: frozenset({
-        "l3b.evidence", "spec.obligation", "l3.contract", "l3.cochange",
-        "detect.coherence",
-    }),
-    Phase.VERIFY: frozenset({
-        "spec.obligation", "l5.stuck", "l5.failure", "l5.no_test",
-        "detect.loop", "verify.horizon.advisory", "verify.horizon.urgent",
-        "verify.horizon.pivot",
-    }),
-    Phase.SUBMIT: frozenset({
-        "spec.obligation", "verify.horizon.gate",
-    }),
-}
+_pp_dir = os.path.dirname(os.path.abspath(__file__))
+if _pp_dir not in _sys.path:
+    _sys.path.insert(0, _pp_dir)
+from phase_policy import (
+    PHASE_POLICY as _PHASE_POLICY,
+    Event,
+    Phase,
+    phase_allows as _phase_allows_policy,
+    should_emit as _phase_should_emit,
+)
 
 
 def _detect_phase() -> Phase:
-    if _action_count <= 5 and not _oracle_edited_rels:
-        return Phase.ORIENT
-    if not _oracle_edited_rels:
-        return Phase.SEARCH
-    budget = (_action_count / _GT_STEP_LIMIT) if _GT_STEP_LIMIT else 0.0
-    if budget > 0.90:
-        return Phase.SUBMIT
-    if _oracle_nonedit_streak >= 3 and _oracle_edited_rels:
-        return Phase.VERIFY
-    return Phase.EDIT
+    state = _ProductTrajectoryState(
+        action_count=_action_count,
+        step_limit=_GT_STEP_LIMIT,
+        edited_files=set(_oracle_edited_rels),
+        source_edit_count=_source_edit_count,
+        nonedit_streak=_oracle_nonedit_streak,
+    )
+    return _product_derive_phase(state)
 
 
 def _phase_allows(kind: str, phase: Phase) -> bool:
-    allowed = _PHASE_POLICY.get(phase, frozenset())
-    if kind in allowed:
-        return True
-    if kind.startswith("verify.horizon."):
-        return any(
-            k.startswith("verify.horizon.") or k == "horizon.gate"
-            for k in allowed
-        )
-    return False
+    return _phase_allows_policy(kind, phase, _PHASE_POLICY)
+
+
+def _current_event(kind: str) -> Event | None:
+    if kind == "post_view":
+        return Event.POST_VIEW
+    if kind == "post_edit":
+        return Event.POST_EDIT
+    if _oracle_nonedit_streak >= 3 and _oracle_edited_rels:
+        return Event.REVIEW_TRANSITION
+    if _detect_phase() == Phase.SUBMIT:
+        return Event.PRE_SUBMIT
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -2482,6 +2490,46 @@ def _get_obligation_tracker(om):
         _obligation_tracker = om.ObligationTracker(obls)
         _obligation_tracker_anchors = path
     return _obligation_tracker
+
+
+def _persist_obligation_status(tracker, *, turn: int | None = None) -> None:
+    """Write obligation vector to disk + oracle jsonl (P1-18/19)."""
+    try:
+        import json as _j
+
+        snap = {
+            "event": "obligation_status",
+            "turn": turn if turn is not None else _action_count,
+            "coverage_ratio": float(f"{tracker.coverage_ratio():.8f}"),
+            "obligations": tracker.snapshot(),
+        }
+        path = os.environ.get("GT_OBLIGATION_STATUS", "/tmp/gt/obligation_status.json")
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            _j.dump(snap, fh, indent=2)
+            fh.write("\n")
+        ev = os.environ.get("GT_ORACLE_EVENTS", "/tmp/gt_oracle_events.jsonl")
+        with open(ev, "a", encoding="utf-8") as fh:
+            fh.write(_j.dumps(snap) + "\n")
+    except Exception:  # noqa: BLE001 -- telemetry must never break the loop
+        pass
+
+
+def _maybe_persist_obligation_status() -> None:
+    om = _load_gt_oracle()
+    if om is None:
+        return
+    try:
+        obls = om.load_obligations(_anchors_path())
+        if not obls:
+            return
+        tracker = _get_obligation_tracker(om)
+        tracker.update(_oracle_edited_tokens, _oracle_tested_tokens, _action_count)
+        _persist_obligation_status(tracker)
+    except Exception:  # noqa: BLE001
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -2503,73 +2551,114 @@ _ACTION_TEMPLATES = {
 
 
 def _translate_to_action(evidence_block: str, phase: Phase) -> str:
-    if phase in (Phase.ORIENT, Phase.SEARCH):
-        return evidence_block
-    lines: list[str] = []
-    for line in evidence_block.splitlines():
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if "[WITNESS]" in stripped and "->" in stripped:
-            m = re.search(
-                r"\[WITNESS\]\s+(\S+)\s+\w+\s+by\s+->\s+([^`]+)",
-                stripped,
-            )
-            if m:
-                lines.append(_ACTION_TEMPLATES["witness_call"].format(
-                    sym=m.group(1), loc=m.group(2).strip()))
-                continue
-        if "[CALLERS]" in stripped:
-            lines.append(
-                "Check all callers listed above before changing this interface."
-            )
-            continue
-        if "[SIBLINGS]" in stripped:
-            lines.append(_ACTION_TEMPLATES["sibling_match"].format(line=stripped))
-            continue
-        lines.append(stripped)
-    return "\n".join(lines)
+    return _product_translate_to_action(evidence_block, phase)
 
 
 # ---------------------------------------------------------------------------
 # CP015 — context budget trim + cross-turn dedup.
 # ---------------------------------------------------------------------------
 _DELIVERED_FACTS: set[str] = set()
+_DELIVERED_FACT_IDS: set[str] = set()
+_PRODUCT_BUDGETER = _ProductContextBudgeter(_DELIVERED_FACTS, _DELIVERED_FACT_IDS)
+_FACT_TAG_RE = re.compile(r"\[([A-Z][A-Z0-9_]*)\]")
 _IMPERATIVE_PREFIXES = (
     "Changing", "Must", "Check", "Run", "You edited", "Inspect",
     "GT:", "Before",
 )
 
 
-def _budget_trim(payload: str, max_tokens: int = 500) -> str:
-    if not payload:
+def _stable_fact_id(line: str) -> str:
+    """Semantic dedupe key (P1-15) — tag + primary symbol, else content hash."""
+    stripped = line.strip()
+    if not stripped:
         return ""
-    lines = payload.splitlines()
-    fresh = [ln for ln in lines if ln.strip() and ln.strip() not in _DELIVERED_FACTS]
-    imperative = [
-        ln for ln in fresh
-        if any(ln.strip().startswith(w) for w in _IMPERATIVE_PREFIXES)
-    ]
-    facts = [
-        ln for ln in fresh
-        if ln not in imperative and ("[" in ln or "→" in ln or "->" in ln)
-    ]
-    other = [ln for ln in fresh if ln not in imperative and ln not in facts]
-    ranked = imperative + facts + other
-    result: list[str] = []
-    chars = 0
-    limit = max_tokens * 4
-    for line in ranked:
-        if chars + len(line) > limit:
-            break
-        result.append(line)
-        chars += len(line) + 1
-        _DELIVERED_FACTS.add(line.strip())
-    return "\n".join(result)
+    m = _FACT_TAG_RE.search(stripped)
+    if m:
+        tag = m.group(1)
+        rest = stripped[m.end() :].strip()
+        sym = re.split(r"\s|→|->|,|\(", rest, maxsplit=1)[0].strip()
+        if sym:
+            return f"{tag}:{sym.lower()}"
+    return hashlib.sha256(stripped.encode("utf-8")).hexdigest()[:16]
+
+
+def _budget_trim(payload: str, max_tokens: int = 500) -> str:
+    global _last_budget_meta
+    _budget_result = _PRODUCT_BUDGETER.trim(payload, max_tokens=max_tokens)
+    _last_budget_meta = _budget_result.meta
+    return _budget_result.text
+
+
+_last_budget_meta: dict = {}
+_RUNTIME_LEDGER = _ProductLedger()
+
+
+def _runtime_ledger_path() -> str:
+    return os.environ.get("GT_RUNTIME_LEDGER", "/tmp/gt_runtime_ledger.jsonl")
+
+
+def _runtime_ledger_flush() -> None:
+    try:
+        path = _runtime_ledger_path()
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            payload = _RUNTIME_LEDGER.to_jsonl()
+            if payload:
+                fh.write(payload)
+                fh.write("\n")
+    except Exception:
+        pass
+
+
+def _runtime_ledger_record(
+    *,
+    kind: str,
+    outcome,
+    reason: str = "",
+    chars: int = 0,
+    file_path: str = "",
+    event=None,
+) -> None:
+    ev = event.value if event is not None else ""
+    _RUNTIME_LEDGER.record(
+        _ProductLedgerEntry(
+            layer=kind,
+            event_type=ev,
+            file_path=file_path,
+            outcome=outcome,
+            reason=reason,
+            chars_delivered=chars,
+            iteration=_action_count,
+        )
+    )
+    _runtime_ledger_flush()
+
+
+def _filter_candidates_by_phase(cands, phase: Phase, event, *, file_path: str = ""):
+    kept = []
+    for sev, kind, text, event_bound in cands:
+        if not text:
+            continue
+        decision = _phase_should_emit(
+            kind, phase, event=event, event_bound=bool(event_bound)
+        )
+        if decision.allowed:
+            kept.append((sev, kind, text, event_bound))
+            continue
+        _runtime_ledger_record(
+            kind=kind,
+            outcome=_ProductSignalOutcome.SUPPRESSED_WRONG_PHASE,
+            reason=decision.reason,
+            file_path=file_path,
+            event=event,
+        )
+    return kept
 
 
 # ---------------------------------------------------------------------------
-# Piece 3 — consumption-ledger-driven suppression + consumed boost.
+# Piece 3 — runtime_suppression_heuristic (ledger-driven ignore/boost; NOT consumption proof).
 # ---------------------------------------------------------------------------
 _ledger_consumed_kinds: set[str] = set()
 _ledger_ignore_counts: dict[str, int] = {}
@@ -2589,7 +2678,8 @@ def _ledger_cmd_acted(cmd: str) -> bool:
     return bool(re.search(r">>?\s*[^\s/]", c))
 
 
-def _ledger_note_delivery(kind: str, cmd: str) -> None:
+def _ledger_note_suppression_heuristic(kind: str, cmd: str) -> None:
+    """P0-12: heuristic ignore/boost only — not authoritative consumption proof."""
     global _last_delivered_kind
     _last_delivered_kind = kind
     if not kind:
@@ -2600,6 +2690,10 @@ def _ledger_note_delivery(kind: str, cmd: str) -> None:
         _ledger_ignore_counts.pop(kind, None)
     elif not acted:
         _ledger_ignore_counts[kind] = _ledger_ignore_counts.get(kind, 0) + 1
+
+
+def _ledger_note_delivery(kind: str, cmd: str) -> None:
+    _ledger_note_suppression_heuristic(kind, cmd)
 
 
 def _ledger_boost_severity(kind: str, sev: float) -> float:
@@ -2645,6 +2739,26 @@ def _henv(name: str, dflt: float) -> float:
         return dflt
 
 
+def _load_horizon_calibration_defaults() -> dict[str, float]:
+    """P0-13: load shipped corpus thresholds; env still wins via _henv."""
+    path = os.environ.get(
+        "GT_HORIZON_CALIBRATION",
+        os.path.join(
+            os.path.dirname(__file__), "..", ".claude", "calibration", "horizon_v1.json"
+        ),
+    )
+    try:
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        th = data.get("thresholds") or {}
+        return {str(k): float(v) for k, v in th.items()}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+_HORIZON_DEFAULTS = _load_horizon_calibration_defaults()
+
+
 # H3-CALIBRATION CHANNEL (delivery-engine Stage 4, 2026-06-11 — replaces the
 # static B>=0.5/0.8 + 1.5xV bands).  The band edges are functions of the
 # BEHAVIORAL signals (test/edit coverage from Stage 1) with the budget as the
@@ -2675,12 +2789,18 @@ def _henv(name: str, dflt: float) -> float:
 #                        arm before the typical submission point (at the old
 #                        2.0 the band was unreachable: 8/9 trajectories ended
 #                        before R ever dropped to 2V)
-_ESC_ADV_TCOV = _henv("GT_ESC_ADV_TCOV", 0.125)        # advisory: test_coverage below
-_ESC_ADV_B = _henv("GT_ESC_ADV_B", 0.11166666)         # advisory: budget_fraction above
-_ESC_URG_TCOV = _henv("GT_ESC_URG_TCOV", 0.125)        # urgent: test_coverage below
-_ESC_URG_B = _henv("GT_ESC_URG_B", 0.35333333)         # urgent: budget_fraction above
-_ESC_GATE_TCOV = _henv("GT_ESC_GATE_TCOV", 1.0)        # gate: test_coverage below
-_ESC_GATE_KV = _henv("GT_ESC_GATE_KV", 7.48)           # gate: R < KV * V (V observed)
+_ESC_ADV_TCOV = _henv(
+    "GT_ESC_ADV_TCOV", _HORIZON_DEFAULTS.get("GT_ESC_ADV_TCOV", 0.125)
+)
+_ESC_ADV_B = _henv("GT_ESC_ADV_B", _HORIZON_DEFAULTS.get("GT_ESC_ADV_B", 0.11166666))
+_ESC_URG_TCOV = _henv(
+    "GT_ESC_URG_TCOV", _HORIZON_DEFAULTS.get("GT_ESC_URG_TCOV", 0.125)
+)
+_ESC_URG_B = _henv("GT_ESC_URG_B", _HORIZON_DEFAULTS.get("GT_ESC_URG_B", 0.35333333))
+_ESC_GATE_TCOV = _henv(
+    "GT_ESC_GATE_TCOV", _HORIZON_DEFAULTS.get("GT_ESC_GATE_TCOV", 1.0)
+)
+_ESC_GATE_KV = _henv("GT_ESC_GATE_KV", _HORIZON_DEFAULTS.get("GT_ESC_GATE_KV", 7.48))
 
 try:
     _raw_step_limit = os.environ.get("GT_STEP_LIMIT", "").strip()
@@ -2760,51 +2880,43 @@ def verify_horizon_band(action_count: int, step_limit: int | None,
                         v: int, edit_coverage: float | None,
                         test_coverage: float | None, has_edits: bool,
                         last_test_failed: bool = False) -> str | None:
-    """The band decision function — delivery-engine STAGE 4 (2026-06-11):
+    """The band decision function - delivery-engine STAGE 4 (2026-06-11):
     band edges are functions of the BEHAVIORAL signals, not budget constants.
 
     Inputs (all Stage-1 sensed, stateless per turn):
-      edit_coverage  — obligation symbols edited / total (None = no
+      edit_coverage  - obligation symbols edited / total (None = no
                        obligations -> the clause degrades to edit-presence;
                        the obligation-status class owns the obligation story)
-      test_coverage  — edited files with test evidence / edited files
+      test_coverage  - edited files with test evidence / edited files
                        (None = nothing edited)
-      has_edits      — >=1 source edit observed
-      last_test_failed — the MOST RECENT observed outcome was a failure
+      has_edits      - >=1 source edit observed
+      last_test_failed - the MOST RECENT observed outcome was a failure
 
-    Bands (each predicate composites >=3 signals — hybrid pillar; thresholds
-    are the env-overridable GT_ESC_* calibration channel — dynamic pillar):
-      pivot    : last_test_failed ∧ critical zone (B >= urg_B or R < KV*V)
-      gate     : R < KV*V ∧ test_coverage < gate_tcov ∧ has_edits
-      urgent   : B > urg_B ∧ test_coverage < urg_tcov ∧ has_edits
-      advisory : B > adv_B ∧ test_coverage < adv_tcov ∧ edit_coverage > 0
+    Bands (each predicate composites >=3 signals - hybrid pillar; thresholds
+    are the env-overridable GT_ESC_* calibration channel - dynamic pillar):
+      pivot    : last_test_failed + critical zone (B >= urg_B or R < KV*V)
+      gate     : R < KV*V + test_coverage < gate_tcov + has_edits
+      urgent   : B > urg_B + test_coverage < urg_tcov + has_edits
+      advisory : B > adv_B + test_coverage < adv_tcov + edit_coverage > 0
     Returns: "gate" | "urgent" | "advisory" | "pivot" | None (dormant).
-    Pure function — no side effects."""
-    if step_limit is None or step_limit <= 0:
-        return None  # GT_STEP_LIMIT absent -> escalation disabled
-    if not has_edits:
-        return None  # no edits -> no verification debt (correct-or-quiet)
-    a = action_count
-    S = step_limit
-    R = S - a
-    B = a / S
-    tc = 0.0 if test_coverage is None else float(test_coverage)
-    # No obligations -> edit-presence stands in for edit_coverage>0 (the
-    # boa-class advisory must survive obligation-less tasks).
-    ec_pos = True if edit_coverage is None else (float(edit_coverage) > 0.0)
-
-    # Pivot first: the agent HAS evidence and it is failing — "run the test
-    # NOW" would be wrong advice; sizing the remaining-budget response is right.
-    if last_test_failed and (B >= _ESC_URG_B or R <= _ESC_GATE_KV * v):
-        return "pivot"
-    if R <= _ESC_GATE_KV * v and tc < _ESC_GATE_TCOV:
-        return "gate"        # feasibility horizon — keyed to OBSERVED pace V
-    if B >= _ESC_URG_B and tc < _ESC_URG_TCOV:
-        return "urgent"
-    if B >= _ESC_ADV_B and tc < _ESC_ADV_TCOV and ec_pos:
-        return "advisory"
-    return None              # DORMANT: the event-driven family covers the rest
-
+    Pure function - no side effects."""
+    return _product_verify_horizon_band(
+        action_count,
+        step_limit,
+        v,
+        edit_coverage,
+        test_coverage,
+        has_edits,
+        last_test_failed=last_test_failed,
+        thresholds=_ProductHorizonThresholds(
+            advisory_test_coverage=_ESC_ADV_TCOV,
+            advisory_budget=_ESC_ADV_B,
+            urgent_test_coverage=_ESC_URG_TCOV,
+            urgent_budget=_ESC_URG_B,
+            gate_test_coverage=_ESC_GATE_TCOV,
+            gate_cycles=_ESC_GATE_KV,
+        ),
+    )
 
 def _render_verify_emission(band: str, action_count: int, step_limit: int,
                             edited_rels: set, covering_tests: list) -> str:
@@ -2814,53 +2926,8 @@ def _render_verify_emission(band: str, action_count: int, step_limit: int,
     not rendered. The graph query may prove that a covering test exists, but
     benchmark-valid guidance must stay at the targeted-verification level.
     """
-    S = step_limit
-    R = S - action_count
-    edited_summary = ", ".join(
-        os.path.basename(r) for r in sorted(edited_rels)[:3])
-    if len(edited_rels) > 3:
-        edited_summary += f" (+{len(edited_rels)-3} more)"
-
-    has_covering = bool(covering_tests)
-    test_info = "a graph-linked covering test" if has_covering else "the relevant tests"
-    test_action = (
-        "the narrowest relevant repo test target" if has_covering
-        else "the relevant test suite or narrowest related target"
-    )
-
-    if band == "advisory":
-        body = (
-            f"GT: you have edited {edited_summary} but no test output observed "
-            f"so far references these changes. {test_info} covers them - "
-            f"consider running {test_action}."
-        )
-    elif band == "urgent":
-        body = (
-            f"GT: ~{R} of {S} steps remain. Your edits to {edited_summary} "
-            "are still unverified - nothing you have run exercises them. "
-            f"Run {test_action} now. A failing result with "
-            f"~{R} steps left is still fixable; an unverified submission is not."
-        )
-    elif band == "gate":
-        body = (
-            f"GT: {R} steps left - at your observed pace this is your LAST "
-            f"window to verify. You edited {edited_summary}; no test has "
-            f"exercised them. Run {test_action} NOW. If it passes, finish. "
-            "If it fails, make the single smallest fix and re-run. "
-            "Do not submit unverified work."
-        )
-    elif band == "pivot":
-        body = (
-            f"GT: the targeted verification has failed and ~{R} steps remain. "
-            "Re-read the failing assertion once; if the fix is not one edit "
-            "away, revert to your last passing state and submit the minimal "
-            "correct change."
-        )
-    else:
-        return ""
-
-    return f'\n<gt-verify level="{band}">\n{body}\n</gt-verify>'
-
+    return _product_render_verify_emission(
+        band, action_count, step_limit, edited_rels, covering_tests)
 
 # Obligation SYMBOLS only (the edit_coverage_ratio numerator domain) — from
 # the per-task anchors artifact's obligations[], never the anchor superset
@@ -3020,14 +3087,37 @@ def _oracle_telemetry_write(suppressed, winner) -> None:
     """8-dp suppression telemetry (plan §1.4) — file/stderr side, NEVER the
     agent channel."""
     try:
+        import hashlib as _hl
         import json as _j
         if not suppressed and winner is None:
             return
+        emitted = None
+        if winner is not None:
+            _text = str(winner[4] or "")
+            _next_action = bool(
+                re.search(
+                    r"\b(run|open|inspect|check|confirm|verify|test|edit)\b",
+                    _text,
+                    re.I,
+                )
+            )
+            emitted = {
+                "kind": winner[3],
+                "confidence": float(f"{float(winner[1]):.8f}"),
+                "payload_hash": _hl.sha256(
+                    _text.encode("utf-8", errors="replace")
+                ).hexdigest()[:16],
+                "payload_chars": len(_text),
+                "actionable": _next_action,
+                "surface": "agent_observation",
+            }
         rec = {
+            "schema": "gt.oracle_event.v2",
             "emitted": None if winner is None else {
                 "kind": winner[3],
                 "confidence": float(f"{float(winner[1]):.8f}"),
             },
+            "emission": emitted,
             "suppressed": [
                 {"kind": k, "reason": r, "confidence": float(f"{float(c):.8f}")}
                 for k, r, c in suppressed
@@ -3316,6 +3406,7 @@ def _augment_output(action, out) -> None:
             # FIX 1 (2026-06-11): scaffold_arm=False — scaffold_trap RETIRED on
             # the oracle route (early-patch-intensity rho=-0.78: never penalize
             # exploration volume; 7/9 fires, 0 consumed, 1 wrong steer).
+            _maybe_persist_obligation_status()
             cands.append((_SEV_STUCK, "l5.stuck",
                           _l5_nudge(cmd, _orig_out, loop_arm=False,
                                     scaffold_arm=False), True))
@@ -3340,10 +3431,10 @@ def _augment_output(action, out) -> None:
             # Event-bound candidates bypass phase filter — the trigger IS the
             # event (post_view / post_edit / review transition); phase policy
             # only narrows ambient producers (P5 symbol narrowing).
-            cands = [
-                c for c in cands
-                if c[2] and (c[3] or _phase_allows(c[1], _phase))
-            ]
+            _event = _current_event(_kkind)
+            cands = _filter_candidates_by_phase(
+                cands, _phase, _event, file_path=_krel or _kf or ""
+            )
             _win = _oracle_gate_blocks(cands)
             # Latch re-arm (LIPI 2026-06-10): a produced-but-not-emitted
             # candidate is DEFERRED, not destroyed — gate losers release the
@@ -3395,6 +3486,13 @@ def _augment_output(action, out) -> None:
             if _win:
                 out["output"] = (out.get("output") or "") + _win
                 _ledger_note_delivery(_last_gate_winner_kind, cmd)
+                _runtime_ledger_record(
+                    kind=_last_gate_winner_kind,
+                    outcome=_ProductSignalOutcome.DELIVERED,
+                    chars=len(_win),
+                    file_path=_krel or _kf or "",
+                    event=_event,
+                )
             return
 
         # ---- LEGACY PATH (GT_ORACLE_ROUTE=0): unconditional appends ----

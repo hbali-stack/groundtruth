@@ -41,6 +41,81 @@ REQUIRED_ARTIFACTS = [
     "brief.txt",
 ]
 
+PROOF_STAGES = (
+    "env_validation",
+    "dep_store",
+    "source_copy",
+    "workspace_metadata",
+    "index",
+    "lsp_pass",
+    "graph_cert",
+    "gates",
+    "brief_emit",
+    "artifact_contract",
+)
+
+
+class _ProofTracker:
+    """Persist proof_progress.json + proof_failure.json (P0-02, P1-04/05)."""
+
+    def __init__(self, out_dir: str) -> None:
+        self.out_dir = out_dir
+        self.stages: list[dict] = []
+        self._flush()
+
+    @staticmethod
+    def _memory_heartbeat() -> dict:
+        """Best-effort RSS snapshot for OOM triage (P1-04)."""
+        rss_kb: int | None = None
+        try:
+            import resource
+
+            raw = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+            # Linux reports KiB; macOS reports bytes.
+            rss_kb = raw if raw < 10_000_000 else raw // 1024
+        except Exception:
+            try:
+                import psutil
+
+                rss_kb = int(psutil.Process().memory_info().rss // 1024)
+            except Exception:
+                pass
+        return {"rss_kb": rss_kb}
+
+    def _flush(self) -> None:
+        path = os.path.join(self.out_dir, "proof_progress.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump({"schema": "gt.proof_progress.v1", "stages": self.stages}, fh, indent=2)
+            fh.write("\n")
+
+    def complete(self, stage: str, **extra) -> None:
+        row = {"stage": stage, "status": "ok"}
+        row.update(self._memory_heartbeat())
+        row.update(extra)
+        self.stages.append(row)
+        self._flush()
+
+    def fail(self, stage: str, code: str, message: str, **extra) -> int:
+        row = {"stage": stage, "status": "fail", "code": code, "message": message}
+        row.update(self._memory_heartbeat())
+        row.update(extra)
+        self.stages.append(row)
+        self._flush()
+        failure = {
+            "schema": "gt.proof_failure.v1",
+            "stage": stage,
+            "code": code,
+            "message": message,
+            "stages": self.stages,
+        }
+        failure.update(extra)
+        fpath = os.path.join(self.out_dir, "proof_failure.json")
+        with open(fpath, "w", encoding="utf-8") as fh:
+            json.dump(failure, fh, indent=2)
+            fh.write("\n")
+        print(f"{code}: {message}", file=sys.stderr)
+        return 2
+
 # Where GT is baked in the substrate image (NOT a checkout, NOT host paths).
 GT_HOME = os.environ.get("GT_HOME", "/opt/gt")
 
@@ -183,7 +258,7 @@ def _cert_versions(out_dir: str) -> dict:
 
 
 def build_run_manifest(*, graph_db: str, out_dir: str, languages: list, lsp_scope_files: int,
-                       lsp_max_edges: str, gate_rc: int, artifacts_present: dict,
+                       lsp_max_edges: str, lsp_ready_budgets: dict, gate_rc: int, artifacts_present: dict,
                        source_root: str) -> dict:
     """run_manifest.json — v2 = the v1 run-shape + RUN PROVENANCE (Stage-5 audit gap:
     a DeepSWE run could not prove which code produced it). Additive only: no task IDs,
@@ -195,6 +270,7 @@ def build_run_manifest(*, graph_db: str, out_dir: str, languages: list, lsp_scop
         "languages": languages,
         "lsp_scope_files": lsp_scope_files,
         "lsp_max_edges": lsp_max_edges,
+        "lsp_ready_budgets": lsp_ready_budgets,
         "gate_rc": gate_rc,
         "artifacts_present": artifacts_present,
         "source_root": source_root,
@@ -207,6 +283,8 @@ def build_run_manifest(*, graph_db: str, out_dir: str, languages: list, lsp_scop
         "language_distribution": _language_distribution(graph_db),
         "graph_db_sha256": _sha256_file(graph_db),
         "cert_versions": _cert_versions(out_dir),
+        "brief_sha256": _sha256_file(os.path.join(out_dir, "brief.txt")),
+        "issue_sha256": _sha256_file(os.path.join(out_dir, "issue.txt")),
     }
 
 
@@ -492,6 +570,31 @@ def compute_lsp_max_edges(graph_db: str, *, scoped: bool, env=None) -> int:
     return min(LSP_MAX_EDGES_CEILING, max(floor, dynamic))
 
 
+def lsp_ready_budget_seconds(language: str, env=None) -> int:
+    """Default per-language LSP readiness budget owned by the proof runtime.
+
+    This is substrate policy, not workflow policy. The workflow may pass only an
+    optional global override via ``GT_LSP_READY_BUDGET_S_OVERRIDE``. The per-run
+    env ``GT_LSP_READY_BUDGET_S`` remains the concrete value consumed by
+    ``groundtruth.resolve``.
+    """
+    env = os.environ if env is None else env
+    override = str(env.get("GT_LSP_READY_BUDGET_S_OVERRIDE", "") or "").strip()
+    if override:
+        try:
+            v = int(float(override))
+            if v > 0:
+                return v
+        except ValueError:
+            pass
+    lang = (language or "").strip().lower()
+    if lang == "go":
+        return 30
+    if lang == "rust":
+        return 45
+    return 20
+
+
 def aggregate_lsp_verdicts(lang_verdicts: dict, *, require_lsp: bool, any_success: bool):
     """P1-e polyglot aggregation rule over per-language LSP verdicts -> (ok, failures).
 
@@ -553,6 +656,83 @@ def emit_brief(out_dir: str, issue_text: str, work: str, graph: str, *, generato
     return True, f"{len(bt)} chars"
 
 
+def probe_workspace_metadata(language: str, source_root: str, env: dict[str, str]) -> dict[str, object]:
+    """Probe offline workspace/package metadata for languages whose LSPs depend on it.
+
+    This is product truth for Go/Rust readiness: dep-store presence is only evidence.
+    The actual question is whether the substrate can load workspace metadata offline.
+    """
+    lang = (language or "").strip().lower()
+    if lang not in {"go", "rust"}:
+        return {
+            "applicable": False,
+            "language": lang,
+            "status": "skip",
+            "reason": "language_not_metadata_bound",
+        }
+
+    if lang == "go":
+        cmd = ["go", "list", "./..."]
+        code = "GO_WORKSPACE_METADATA_FAIL"
+    else:
+        cmd = ["cargo", "metadata", "--format-version=1", "--no-deps"]
+        code = "RUST_WORKSPACE_METADATA_FAIL"
+
+    try:
+        cp = subprocess.run(
+            cmd,
+            cwd=source_root,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=90,
+        )
+    except Exception as e:
+        return {
+            "applicable": True,
+            "language": lang,
+            "status": "fail",
+            "code": code,
+            "message": f"{lang} workspace metadata probe raised: {type(e).__name__}: {e}",
+            "command": cmd,
+        }
+
+    stdout = (cp.stdout or "").strip()
+    stderr = (cp.stderr or "").strip()
+    if cp.returncode != 0:
+        msg_bits = [f"{lang} workspace metadata probe failed (rc={cp.returncode})"]
+        if stderr:
+            msg_bits.append(f"stderr={stderr[:300]}")
+        elif stdout:
+            msg_bits.append(f"stdout={stdout[:300]}")
+        return {
+            "applicable": True,
+            "language": lang,
+            "status": "fail",
+            "code": code,
+            "message": "; ".join(msg_bits),
+            "command": cmd,
+            "returncode": cp.returncode,
+            "stdout_excerpt": stdout[:300],
+            "stderr_excerpt": stderr[:300],
+        }
+
+    package_count = 0
+    if lang == "go":
+        package_count = len([ln for ln in stdout.splitlines() if ln.strip()])
+
+    return {
+        "applicable": True,
+        "language": lang,
+        "status": "ok",
+        "command": cmd,
+        "returncode": cp.returncode,
+        "package_count": package_count,
+        "stdout_excerpt": stdout[:300],
+        "stderr_excerpt": stderr[:300],
+    }
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gt-run-proof")
     ap.add_argument("--source-root", required=False, default="/work")
@@ -579,35 +759,72 @@ def main(argv=None) -> int:
         return 0
 
     os.makedirs(a.out, exist_ok=True)
+    tracker = _ProofTracker(a.out)
 
     # Boundary + baked-deps + flags. A host run / missing baked dep fails-closed here.
     violations = validate_proof_env()
     if violations:
-        print("FINAL_PIPELINE_HOST_SPLIT_FAIL / SUBSTRATE_NOT_PORTABLE: " + "; ".join(violations),
-              file=sys.stderr)
-        return 2
+        return tracker.fail(
+            "env_validation",
+            "SUBSTRATE_NOT_PORTABLE",
+            "FINAL_PIPELINE_HOST_SPLIT_FAIL / SUBSTRATE_NOT_PORTABLE: " + "; ".join(violations),
+        )
     try:
         sys.path.insert(0, os.path.join(GT_HOME, "src"))  # package lives at $GT_HOME/src
         sys.path.insert(0, GT_HOME)
         from groundtruth.runtime.context import assert_container_boundary
         assert_container_boundary("gt-run-proof")
     except Exception as e:
-        print(f"FINAL_PIPELINE_HOST_SPLIT_FAIL: {e}", file=sys.stderr)
-        return 2
+        return tracker.fail("env_validation", "FINAL_PIPELINE_HOST_SPLIT_FAIL", str(e))
+    tracker.complete("env_validation")
+
+    dep_manifest = os.path.join(a.out, "dep_store_manifest.json")
+    proof_language = (a.lang or "").strip().lower()
+    if os.path.exists(dep_manifest):
+        try:
+            with open(dep_manifest, encoding="utf-8") as fh:
+                dm = json.load(fh)
+            proof_language = ((dm.get("language") or proof_language or "")).strip().lower()
+            try:
+                import dep_store_manifest as _dsm
+            except ImportError:
+                sys.path.insert(0, os.path.join(GT_HOME, "scripts", "swebench"))
+                import dep_store_manifest as _dsm
+            dep_problems = _dsm.validate_manifest(dm)
+            if dep_problems:
+                return tracker.fail(
+                    "dep_store",
+                    "DEP_STORE_EMPTY",
+                    dep_problems[0],
+                    language=dm.get("language"),
+                    manifest=dep_manifest,
+                )
+            tracker.complete("dep_store", manifest=dep_manifest)
+        except Exception as e:
+            return tracker.fail("dep_store", "DEP_STORE_MANIFEST_READ_FAIL", str(e))
+    else:
+        tracker.complete("dep_store", manifest="absent")
 
     # Separation of concerns (anti-cheat): GT is the HELPER, never the evaluator. It must never see
     # the evaluator's hidden tests or gold. Fail-closed if any eval artifact leaked in via env/file.
     leaks = eval_leakage(a.source_root)
     if leaks:
-        print("EVAL_LEAKAGE_FORBIDDEN: GT (substrate) must never receive the evaluator's hidden "
-              "tests/gold/FAIL_TO_PASS; separation breached by: " + ", ".join(leaks), file=sys.stderr)
-        return 2
+        return tracker.fail(
+            "env_validation",
+            "EVAL_LEAKAGE_FORBIDDEN",
+            "GT (substrate) must never receive the evaluator's hidden tests/gold/FAIL_TO_PASS; "
+            "separation breached by: " + ", ".join(leaks),
+        )
 
     # The task repo is mounted READ-ONLY at --source-root; copy to a writable workdir so gt-index
     # never mutates the official task image's source.
     work = "/tmp/gt_work_src"
     shutil.rmtree(work, ignore_errors=True)
-    shutil.copytree(a.source_root, work, symlinks=True, ignore_dangling_symlinks=True)
+    try:
+        shutil.copytree(a.source_root, work, symlinks=True, ignore_dangling_symlinks=True)
+    except Exception as e:
+        return tracker.fail("source_copy", "SOURCE_COPY_FAIL", str(e))
+    tracker.complete("source_copy", workdir=work)
 
     graph = os.path.join(a.out, "graph.db")
     cert_lsp = os.path.join(a.out, "lsp_certificate.json")
@@ -639,10 +856,36 @@ def main(argv=None) -> int:
                      "GT_SOURCE_ROOT": work, "GT_GRAPH_DB": graph,
                      "GT_LSP_CERT": cert_lsp, "GT_GRAPH_CERT": cert_graph, "GT_EMBEDDER_CERT": cert_emb})
 
+    metadata_probe = probe_workspace_metadata(proof_language, work, base_env)
+    if metadata_probe.get("applicable"):
+        if metadata_probe.get("status") != "ok":
+            return tracker.fail(
+                "workspace_metadata",
+                str(metadata_probe.get("code") or "WORKSPACE_METADATA_FAIL"),
+                str(metadata_probe.get("message") or "workspace metadata probe failed"),
+                language=proof_language,
+                command=metadata_probe.get("command"),
+                returncode=metadata_probe.get("returncode"),
+                stdout_excerpt=metadata_probe.get("stdout_excerpt"),
+                stderr_excerpt=metadata_probe.get("stderr_excerpt"),
+            )
+        tracker.complete(
+            "workspace_metadata",
+            language=proof_language,
+            command=metadata_probe.get("command"),
+            package_count=metadata_probe.get("package_count"),
+        )
+    else:
+        tracker.complete(
+            "workspace_metadata",
+            language=proof_language or None,
+            skipped_reason=metadata_probe.get("reason"),
+        )
+
     # 1. graph build (FTS5 enforced at index time under GT_REQUIRE_FTS5)
     if _run([_gt_index_bin(), "-root", work, "-output", graph], base_env) != 0:
-        print("FATAL: gt-index failed", file=sys.stderr)
-        return 2
+        return tracker.fail("index", "GT_INDEX_FAIL", "gt-index failed")
+    tracker.complete("index", graph_db=graph)
     # 2. LSP enrichment — demand-driven + polyglot + un-throttled within the issue scope.
     # gt_gt §3/§7 + CLAUDE.md "demand-driven, not exhaustive": resolve the issue-relevant subgraph
     # for EVERY language present (not just the dominant one), un-capped within that bounded scope —
@@ -684,15 +927,27 @@ def main(argv=None) -> int:
     open(lsp_metrics_file, "w").close()
     import re as _re
     lsp_ok = False
+    lsp_ready_budgets: dict[str, int] = {}
     lang_verdicts: dict = {}  # per-language verdict (aggregated, none overwritten)
     for lg in reversed(langs):  # least-common first, dominant last
         # Per-language certificate path: NO overwrite — every language's cert persists.
         cert_lsp_lang = os.path.join(a.out, f"lsp_certificate_{lg}.json")
-        lang_env = dict(base_env, GT_LSP_CERT=cert_lsp_lang)
+        budget_s = lsp_ready_budget_seconds(lg, base_env)
+        lsp_ready_budgets[lg] = budget_s
+        lang_env = dict(
+            base_env,
+            GT_LSP_CERT=cert_lsp_lang,
+            GT_LSP_READY_BUDGET_S=str(budget_s),
+        )
         cmd = [sys.executable, "-m", "groundtruth.resolve", "--db", graph, "--root", work,
                "--resolve", "--lang", lg, "--max-edges", max_edges]
         if scope_path:
             cmd += ["--source-files", scope_path]
+        print(
+            f"[gt-run-proof] LSP ready budget for {lg}: {budget_s}s "
+            "(owned by gt-run-proof; override via GT_LSP_READY_BUDGET_S_OVERRIDE)",
+            flush=True,
+        )
         print(f"[gt-run-proof] $ {' '.join(cmd)}", flush=True)
         rr = subprocess.run(cmd, env=lang_env, capture_output=True, text=True)
         sys.stdout.write(rr.stdout or ""); sys.stderr.write(rr.stderr or "")
@@ -726,15 +981,20 @@ def main(argv=None) -> int:
         any_success=lsp_ok,
     )
     if not _agg_ok:
-        print("LSP_LIVENESS_FAIL: GT_REQUIRE_LSP=1 but known language(s) failed the LSP pass: "
-              f"{', '.join(_agg_failures)} — a baked-server language that cannot launch/warm "
-              "fails closed (no silent pass, no sibling-language masking)", file=sys.stderr)
-        return 2
+        return tracker.fail(
+            "lsp_pass",
+            "LSP_LIVENESS_FAIL",
+            "GT_REQUIRE_LSP=1 but known language(s) failed the LSP pass: "
+            f"{', '.join(_agg_failures)}",
+            lang_verdicts=lang_verdicts,
+        )
+    tracker.complete("lsp_pass", lang_verdicts=lang_verdicts)
 
     # 3. graph certificate
     _run([sys.executable, os.path.join(GT_HOME, "scripts/metrics/graph_certificate.py"), graph,
           "--source-root", work, "--lsp-cert", cert_lsp, "--out", cert_graph,
           "--built-inside-container", "1"], base_env)
+    tracker.complete("graph_cert", path=cert_graph)
 
     # 4. foundational gates (emits foundational_gate_report.json + embedder_certificate.json via run_v74)
     gate_env = dict(base_env, GT_GATES_DEEP_JSON=gate_report)
@@ -767,8 +1027,7 @@ def main(argv=None) -> int:
             _proof.write_embedder_certificate(cert)
             print(f"[gt-run-proof] embedder cert emitted via direct probe (disc={disc})", flush=True)
         except Exception as e:
-            print(f"EMBEDDER_USAGE_FAIL: embedder probe failed (no swallow in proof): {e}", file=sys.stderr)
-            return 2
+            return tracker.fail("gates", "EMBEDDER_USAGE_FAIL", str(e))
 
     # 4c. CLASSIFY the embedder certificate (probe OR gate-written) and FAIL-CLOSED on a bad verdict
     # — degenerate/no-discrimination, zero model, ST-under-forced-ONNX, model-root divergence,
@@ -783,10 +1042,10 @@ def main(argv=None) -> int:
                                               proof_mode=True, require_embedder=True)
         print(f"[gt-run-proof] embedder verdict: {_verdict}", flush=True)
         if not _ok:
-            print(f"EMBEDDER_USAGE_FAIL: {_verdict}", file=sys.stderr)
-            return 2
+            return tracker.fail("gates", "EMBEDDER_USAGE_FAIL", str(_verdict))
     except Exception as e:
         print(f"WARN: embedder cert classification skipped: {e}", file=sys.stderr)
+    tracker.complete("gates", gate_rc=rc)
 
     # 4d. Emit the curated brief IN-CONTAINER (run_v74 is legal here — containerized + proof) so the
     # agent CONSUMES it from /gt_artifacts/brief.txt instead of regenerating on the host (where
@@ -798,8 +1057,8 @@ def main(argv=None) -> int:
     # means the agent runs with NO brief at all (the green-zero-run chain).
     _brief_ok, _brief_detail = emit_brief(a.out, _read_issue(issue_file), work, graph)
     if not _brief_ok:
-        print(f"GT_ARTIFACT_MISSING: brief.txt — {_brief_detail}", file=sys.stderr)
-        return 2
+        return tracker.fail("brief_emit", "GT_ARTIFACT_MISSING", f"brief.txt — {_brief_detail}")
+    tracker.complete("brief_emit", detail=_brief_detail)
     print(f"[gt-run-proof] brief emitted -> /gt_artifacts/brief.txt ({_brief_detail})", flush=True)
 
     # 5. runtime_context.json
@@ -820,12 +1079,19 @@ def main(argv=None) -> int:
                if a_ != "run_manifest.json"}
     manifest = build_run_manifest(graph_db=graph, out_dir=a.out, languages=langs,
                                   lsp_scope_files=len(scope_files), lsp_max_edges=max_edges,
-                                  gate_rc=rc, artifacts_present=present, source_root=work)
+                                  lsp_ready_budgets=lsp_ready_budgets, gate_rc=rc,
+                                  artifacts_present=present, source_root=work)
     with open(os.path.join(a.out, "run_manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
     missing = [k for k, v in present.items() if not v]
     if missing:
-        print(f"SUBSTRATE_MISSING_CERTS: {missing}", file=sys.stderr)
+        return tracker.fail(
+            "artifact_contract",
+            "SUBSTRATE_MISSING_CERTS",
+            f"missing artifacts: {missing}",
+            artifacts_present=present,
+        )
+    tracker.complete("artifact_contract", artifacts_present=present, gate_rc=rc)
     print(f"[gt-run-proof] done: gate_rc={rc} artifacts_present={present}", flush=True)
     return rc
 

@@ -124,6 +124,8 @@ _GT_HOOK_CANDIDATES = [
     _THIS_DIR / "gt_hook.py",
 ]
 _PATCH_PATH = _THIS_DIR / "gt_mini_patch.py"
+_PHASE_POLICY_PATH = _THIS_DIR / "phase_policy.py"
+_PRODUCT_RUNTIME_DIR = _THIS_DIR.parent / "src" / "groundtruth" / "runtime"
 # Oracle siblings (LIPI 2026-06-10): gt_mini_patch._load_gt_oracle() loads
 # gt_oracle.py (which requires gt_oracle_sense.py) from ITS OWN directory to
 # produce the live SPEC/obligation candidates. Without shipping both siblings
@@ -145,8 +147,20 @@ def _load(path_candidates: list[Path]) -> str | None:
 
 _GT_HOOK_CONTENT = _load(_GT_HOOK_CANDIDATES)
 _PATCH_CONTENT = _load([_PATCH_PATH])
+_PHASE_POLICY_CONTENT = _load([_PHASE_POLICY_PATH])
 _ORACLE_CONTENT = _load([_ORACLE_PATH])
 _SENSE_CONTENT = _load([_SENSE_PATH])
+_PRODUCT_RUNTIME_FILES = {
+    name: _load([_PRODUCT_RUNTIME_DIR / name])
+    for name in (
+        "context_policy.py",
+        "trajectory_state.py",
+        "context_budget.py",
+        "action_translation.py",
+        "verification_horizon.py",
+        "obligations.py",
+    )
+}
 
 # ---------------------------------------------------------------------------
 # Base64 encoding for heredoc injection (gt_hook.py is ~115KB+)
@@ -407,7 +421,8 @@ def _inject_steps() -> list[InstallStep]:
     # gt_mini_patch._load_gt_oracle() resolves these as same-directory siblings
     # at the review transition; both must land in /opt/gt for the live
     # obligation fire (load_obligations) to exist in-container.
-    for fname, content in (("gt_oracle.py", _ORACLE_CONTENT),
+    for fname, content in (("phase_policy.py", _PHASE_POLICY_CONTENT),
+                           ("gt_oracle.py", _ORACLE_CONTENT),
                            ("gt_oracle_sense.py", _SENSE_CONTENT)):
         chunks = _b64_chunks(content)
         if not chunks:
@@ -424,6 +439,40 @@ def _inject_steps() -> list[InstallStep]:
                 run=(
                     f"base64 -d {_GT_DIR}/{b64name} > {_GT_DIR}/{fname} "
                     f"&& chmod 644 {_GT_DIR}/{fname} "
+                    f"&& rm -f {_GT_DIR}/{b64name}"
+                ),
+            )
+        )
+
+    # --- product runtime modules: GT identity lives under groundtruth.runtime ---
+    # The task container receives only the files injected by this adapter. Ship
+    # the product-owned runtime control plane so mini-swe code delegates to GT
+    # product behavior instead of reimplementing policy/state/lifecycle locally.
+    steps.append(InstallStep(
+        user="root",
+        run=(
+            f"mkdir -p {_GT_DIR}/groundtruth/runtime "
+            f"&& touch {_GT_DIR}/groundtruth/__init__.py "
+            f"&& touch {_GT_DIR}/groundtruth/runtime/__init__.py"
+        ),
+    ))
+    for fname, content in _PRODUCT_RUNTIME_FILES.items():
+        chunks = _b64_chunks(content)
+        if not chunks:
+            continue
+        b64name = fname.replace(".py", ".b64")
+        for i, chunk in enumerate(chunks):
+            op = ">" if i == 0 else ">>"
+            steps.append(
+                InstallStep(user="root", run=f'echo "{chunk}" {op} {_GT_DIR}/{b64name}')
+            )
+        steps.append(
+            InstallStep(
+                user="root",
+                run=(
+                    f"base64 -d {_GT_DIR}/{b64name} > "
+                    f"{_GT_DIR}/groundtruth/runtime/{fname} "
+                    f"&& chmod 644 {_GT_DIR}/groundtruth/runtime/{fname} "
                     f"&& rm -f {_GT_DIR}/{b64name}"
                 ),
             )
@@ -1078,10 +1127,10 @@ class GTMiniSweAgent(MiniSweAgent):
                 # CP012 option 2: patch-intercept path — retry loop blocks
                 # another submit until tests pass; remind about unverified reqs.
                 gate_note = (
-                    "GT pre-submit gate: your patch is still in the repo. "
-                    "Run targeted tests for every edited requirement before "
-                    "you finish — unverified obligations are the top hidden "
-                    "verifier failure mode.\n\n"
+                    "GT pre_submit_intervention (not a hard block): your patch "
+                    "is still in the repo. Run targeted tests for every edited "
+                    "requirement before you finish — unverified obligations are "
+                    "the top hidden verifier failure mode.\n\n"
                 )
             attempt_instruction = (
                 gate_note
@@ -1129,10 +1178,33 @@ class GTMiniSweAgent(MiniSweAgent):
         # brief-reached-agent is provable from the real agent input (deterministic,
         # not telemetry and not a fragile filename match against the repo).
         try:
+            import hashlib
+            import json as _json
             import os as _os
+
             _os.makedirs("/tmp/gt", exist_ok=True)
             with open("/tmp/gt/delivered_instruction.txt", "w", encoding="utf-8") as _vf:
                 _vf.write(augmented)
+            _brief_hash = hashlib.sha256((brief or "").encode("utf-8")).hexdigest()
+            witness = {
+                "schema": "gt.adapter_witness.v1",
+                "gt_prebuilt_active": _os.environ.get("GT_GRAPH_DB") is not None,
+                "proof_mode": _proof_mode(),
+                "baseline_arm": _GT_BASELINE,
+                "self_verifier_retry": _retry_count() > 0,
+                "official_verifier_repair": False,
+                "delivered_instruction_sha256": hashlib.sha256(
+                    augmented.encode("utf-8")
+                ).hexdigest(),
+                "substrate_brief_sha256": _brief_hash,
+                "delivered_brief_block_sha256": _brief_hash,
+                "delivered_contains_substrate_brief": bool(brief and brief in augmented),
+                "brief_match": bool(brief and brief in augmented),
+                "brief_match_semantics": "delivered_brief_block_or_containment",
+                "brief_chars": len(brief or ""),
+            }
+            with open("/tmp/gt/adapter_witness.json", "w", encoding="utf-8") as _wf:
+                _json.dump(witness, _wf, indent=2)
         except Exception:
             pass
 
