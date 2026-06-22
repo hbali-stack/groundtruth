@@ -1,0 +1,23 @@
+=== LIVE SNAPSHOT #1 | 2026-06-22T04:56:58Z | task=drizzle-orm-window-function-builders ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 04:54:27] used=1953MB total=15989MB swap_used=0MB
+[MEMLOG 04:54:37] used=1955MB total=15989MB swap_used=0MB
+[MEMLOG 04:54:47] used=1957MB total=15989MB swap_used=0MB
+[MEMLOG 04:54:57] used=1959MB total=15989MB swap_used=0MB
+[MEMLOG 04:55:07] used=1960MB total=15989MB swap_used=0MB
+[MEMLOG 04:55:17] used=1963MB total=15989MB swap_used=0MB
+[MEMLOG 04:55:27] used=1955MB total=15989MB swap_used=0MB
+[MEMLOG 04:55:37] used=1217MB total=15989MB swap_used=0MB
+[MEMLOG 04:55:47] used=1583MB total=15989MB swap_used=0MB
+[MEMLOG 04:55:57] used=1888MB total=15989MB swap_used=0MB
+[MEMLOG 04:56:08] used=1891MB total=15989MB swap_used=0MB
+[MEMLOG 04:56:18] used=1895MB total=15989MB swap_used=0MB
+[MEMLOG 04:56:28] used=1896MB total=15989MB swap_used=0MB
+[MEMLOG 04:56:38] used=1900MB total=15989MB swap_used=0MB
+[MEMLOG 04:56:48] used=1933MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
+=== DeepSWE GT Trial: drizzle-orm-window-function-builders (model openai/MiniMax-M3) ===
+HOST  GT_CERT_DIR=/tmp/gt  GT_HOST_GRAPH_DB=/tmp/gt/graph.db
+GT_PROOF_MODE=1  GT_CONTAINERIZED=1  GT_SUBSTRATE_DIGEST=ghcr.io/hbali-stack/gt-substrate@sha256:7ada105e856fcd3cec507119db67ed6a584d6504b9446be350da9e1c171a366d
