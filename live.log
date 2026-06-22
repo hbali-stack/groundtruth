@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #154 | 2026-06-22T05:50:40Z | task=drizzle-orm-window-function-builders ===
+=== LIVE SNAPSHOT #155 | 2026-06-22T05:51:01Z | task=drizzle-orm-window-function-builders ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_drizzle-orm-window-function-builders.log:[DOCKERFILE SLIM] deepswe-bench/tasks/drizzle-orm-window-function-builders/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70cshdjenz3z5gq2wrqzhjmn82xbb0-v1.1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_drizzle-orm-window-function-builders.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -26,22 +26,22 @@
 /tmp/gha_step_drizzle-orm-window-function-builders.log:[ENV-START] attempt 3/3 — pier (bg) + container watcher (window=900s)
 /tmp/gha_step_drizzle-orm-window-function-builders.log:[ENV-START] eval container UP on attempt 3 (~880s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 05:50:16 mem=2548/15989MB disk_used=92927/147719MB free=54776MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10537MB MemAvailable:=13436MB Cached:=1482MB AnonPages:=1410MB Mapped:=413MB Slab:=1171MB 
-[RESMON] 05:50:24 mem=2555/15989MB disk_used=92927/147719MB free=54776MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10539MB MemAvailable:=13439MB Cached:=1482MB AnonPages:=1416MB Mapped:=413MB Slab:=1171MB 
-[RESMON] 05:50:32 mem=2558/15989MB disk_used=92927/147719MB free=54776MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10541MB MemAvailable:=13441MB Cached:=1482MB AnonPages:=1418MB Mapped:=413MB Slab:=1171MB 
+[RESMON] 05:50:41 mem=2562/15989MB disk_used=92927/147719MB free=54776MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10533MB MemAvailable:=13433MB Cached:=1482MB AnonPages:=1425MB Mapped:=421MB Slab:=1171MB 
+[RESMON] 05:50:49 mem=2552/15989MB disk_used=92927/147719MB free=54776MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10537MB MemAvailable:=13436MB Cached:=1482MB AnonPages:=1420MB Mapped:=413MB Slab:=1171MB 
+[RESMON] 05:50:57 mem=2566/15989MB disk_used=92927/147719MB free=54776MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10533MB MemAvailable:=13432MB Cached:=1482MB AnonPages:=1423MB Mapped:=413MB Slab:=1171MB 
 --- pier tail (last 15, non-RESMON) ---
 Overriding CPU count to 2 alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 Overriding memory to 9000 MB alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=7e7603fe28045bbd2ef6839195622b803aeb74cc7f3c5f1be73e5bb2cb254e52 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=7e7603fe28045bbd2ef6839195622b803aeb74cc7f3c5f1be73e5bb2cb254e52; graph_hash_after_lsp=7e7603fe28045bbd2ef6839195622b803aeb74cc7f3c5f1be73e5bb2cb254e52; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:7ada105e856fcd3cec507119db67ed6a584d6504b9446be350da9e1c171a366d
 --- step tail (last 8) ---
-[RESMON] 05:50:24 mem=2555/15989MB disk_used=92927/147719MB free=54776MB containers=2
-[RESTOP] 769MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 202MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 197MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 132MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2779): VmRSS:=787548kB RssAnon:=728260kB RssFile:=59288kB RssShmem:=0kB VmSwap:=38416kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10539MB MemAvailable:=13439MB Cached:=1482MB AnonPages:=1416MB Mapped:=413MB Slab:=1171MB 
-[RESMON] 05:50:32 mem=2558/15989MB disk_used=92927/147719MB free=54776MB containers=2
-[RESTOP] 771MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 202MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 197MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 132MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2779): VmRSS:=789588kB RssAnon:=730300kB RssFile:=59288kB RssShmem:=0kB VmSwap:=38416kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10541MB MemAvailable:=13441MB Cached:=1482MB AnonPages:=1418MB Mapped:=413MB Slab:=1171MB 
+[RESMON] 05:50:49 mem=2552/15989MB disk_used=92927/147719MB free=54776MB containers=2
+[RESTOP] 773MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 202MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 197MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 132MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2779): VmRSS:=791692kB RssAnon:=732404kB RssFile:=59288kB RssShmem:=0kB VmSwap:=38408kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10537MB MemAvailable:=13436MB Cached:=1482MB AnonPages:=1420MB Mapped:=413MB Slab:=1171MB 
+[RESMON] 05:50:57 mem=2566/15989MB disk_used=92927/147719MB free=54776MB containers=2
+[RESTOP] 774MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 202MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 198MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 132MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2779): VmRSS:=793476kB RssAnon:=734188kB RssFile:=59288kB RssShmem:=0kB VmSwap:=38408kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=10533MB MemAvailable:=13432MB Cached:=1482MB AnonPages:=1423MB Mapped:=413MB Slab:=1171MB 
