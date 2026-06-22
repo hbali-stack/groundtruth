@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #1 | 2026-06-22T04:56:58Z | task=drizzle-orm-window-function-builders ===
+=== LIVE SNAPSHOT #2 | 2026-06-22T04:57:19Z | task=drizzle-orm-window-function-builders ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
@@ -18,6 +18,11 @@
 [MEMLOG 04:56:38] used=1900MB total=15989MB swap_used=0MB
 [MEMLOG 04:56:48] used=1933MB total=15989MB swap_used=0MB
 --- step tail (last 8) ---
-=== DeepSWE GT Trial: drizzle-orm-window-function-builders (model openai/MiniMax-M3) ===
 HOST  GT_CERT_DIR=/tmp/gt  GT_HOST_GRAPH_DB=/tmp/gt/graph.db
 GT_PROOF_MODE=1  GT_CONTAINERIZED=1  GT_SUBSTRATE_DIGEST=ghcr.io/hbali-stack/gt-substrate@sha256:7ada105e856fcd3cec507119db67ed6a584d6504b9446be350da9e1c171a366d
+GT inject staged: 69 Python files
+CONTAINER mount: /tmp/gt -> /gt_artifacts (ro); /tmp/gt_out -> /gt_out (rw); /tmp/gt_inject/opt/gt -> /opt/gt (ro)
+mounts-json: [{"type":"bind","source":"/tmp/gt","target":"/gt_artifacts","read_only":true},{"type":"bind","source":"/tmp/gt_out","target":"/gt_out","read_only":false},{"type":"bind","source":"/tmp/gt_inject/opt/gt","target":"/opt/gt","read_only":true}]
+GT_AE_ARGS (block): --ae GT_VERIFY_STRUCTURAL_RISK=1 --ae GT_VERIFY_RISK_TRIGGER=0.5 --ae GT_ORACLE_ROUTE=1 --ae GT_ORACLE_EVENTS=/gt_out/gt_oracle_events.jsonl --ae GT_RUNTIME_LEDGER=/gt_out/gt_runtime_ledger.jsonl --ae GT_HOOK_FIRE_COUNTS=/gt_out/gt_hook_fire_counts.json
+=== Model routed via TokenRouter: openai/MiniMax-M3 ===
+[OOMFIX] 24G swap enabled; Swap:          27647           0       27647
