@@ -1,28 +1,28 @@
-=== LIVE SNAPSHOT #6 | 2026-06-22T04:58:43Z | task=drizzle-orm-window-function-builders ===
+=== LIVE SNAPSHOT #7 | 2026-06-22T04:59:04Z | task=drizzle-orm-window-function-builders ===
 --- KEY EVENTS (full logs, non-RESMON) ---
+/tmp/gha_step_drizzle-orm-window-function-builders.log:[DOCKERFILE SLIM] deepswe-bench/tasks/drizzle-orm-window-function-builders/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70cshdjenz3z5gq2wrqzhjmn82xbb0-v1.1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
+/tmp/gha_step_drizzle-orm-window-function-builders.log:[SLIM-VERIFY] rewritten Dockerfile is now:
+/tmp/gha_step_drizzle-orm-window-function-builders.log:[SLIM-VERIFY]   FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70cshdjenz3z5gq2wrqzhjmn82xbb0-v1.1
+/tmp/gha_step_drizzle-orm-window-function-builders.log:[SLIM-VERIFY]   CMD ["/bin/bash"]
+/tmp/gha_step_drizzle-orm-window-function-builders.log:[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
+/tmp/gha_step_drizzle-orm-window-function-builders.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
+/tmp/gha_step_drizzle-orm-window-function-builders.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=900s)
 --- mem trend (last 6) ---
+[RESMON] 04:58:46 mem=1178/15989MB disk_used=92169/147719MB free=55534MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=3677MB MemAvailable:=14802MB Cached:=9183MB AnonPages:=362MB Mapped:=293MB Slab:=1349MB 
+[RESMON] 04:58:54 mem=1664/15989MB disk_used=92271/147719MB free=55432MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2940MB MemAvailable:=14326MB Cached:=9436MB AnonPages:=698MB Mapped:=437MB Slab:=1355MB 
+[RESMON] 04:59:03 mem=1948/15989MB disk_used=92950/147719MB free=54753MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1853MB MemAvailable:=14036MB Cached:=10130MB AnonPages:=880MB Mapped:=451MB Slab:=1437MB 
 --- pier tail (last 15, non-RESMON) ---
-[MEMLOG 04:54:27] used=1953MB total=15989MB swap_used=0MB
-[MEMLOG 04:54:37] used=1955MB total=15989MB swap_used=0MB
-[MEMLOG 04:54:47] used=1957MB total=15989MB swap_used=0MB
-[MEMLOG 04:54:57] used=1959MB total=15989MB swap_used=0MB
-[MEMLOG 04:55:07] used=1960MB total=15989MB swap_used=0MB
-[MEMLOG 04:55:17] used=1963MB total=15989MB swap_used=0MB
-[MEMLOG 04:55:27] used=1955MB total=15989MB swap_used=0MB
-[MEMLOG 04:55:37] used=1217MB total=15989MB swap_used=0MB
-[MEMLOG 04:55:47] used=1583MB total=15989MB swap_used=0MB
-[MEMLOG 04:55:57] used=1888MB total=15989MB swap_used=0MB
-[MEMLOG 04:56:08] used=1891MB total=15989MB swap_used=0MB
-[MEMLOG 04:56:18] used=1895MB total=15989MB swap_used=0MB
-[MEMLOG 04:56:28] used=1896MB total=15989MB swap_used=0MB
-[MEMLOG 04:56:38] used=1900MB total=15989MB swap_used=0MB
-[MEMLOG 04:56:48] used=1933MB total=15989MB swap_used=0MB
+Overriding CPU count to 2 alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
+Overriding memory to 9000 MB alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 --- step tail (last 8) ---
-HOST  GT_CERT_DIR=/tmp/gt  GT_HOST_GRAPH_DB=/tmp/gt/graph.db
-GT_PROOF_MODE=1  GT_CONTAINERIZED=1  GT_SUBSTRATE_DIGEST=ghcr.io/hbali-stack/gt-substrate@sha256:7ada105e856fcd3cec507119db67ed6a584d6504b9446be350da9e1c171a366d
-GT inject staged: 69 Python files
-CONTAINER mount: /tmp/gt -> /gt_artifacts (ro); /tmp/gt_out -> /gt_out (rw); /tmp/gt_inject/opt/gt -> /opt/gt (ro)
-mounts-json: [{"type":"bind","source":"/tmp/gt","target":"/gt_artifacts","read_only":true},{"type":"bind","source":"/tmp/gt_out","target":"/gt_out","read_only":false},{"type":"bind","source":"/tmp/gt_inject/opt/gt","target":"/opt/gt","read_only":true}]
-GT_AE_ARGS (block): --ae GT_VERIFY_STRUCTURAL_RISK=1 --ae GT_VERIFY_RISK_TRIGGER=0.5 --ae GT_ORACLE_ROUTE=1 --ae GT_ORACLE_EVENTS=/gt_out/gt_oracle_events.jsonl --ae GT_RUNTIME_LEDGER=/gt_out/gt_runtime_ledger.jsonl --ae GT_HOOK_FIRE_COUNTS=/gt_out/gt_hook_fire_counts.json
-=== Model routed via TokenRouter: openai/MiniMax-M3 ===
-[OOMFIX] 24G swap enabled; Swap:          27647           0       27647
+[RESMON] 04:58:54 mem=1664/15989MB disk_used=92271/147719MB free=55432MB containers=0
+[RESTOP] 201MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 146MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 124MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 96MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 
+[MEMDIAG] dockerd(2779): VmRSS:=150300kB RssAnon:=93600kB RssFile:=56700kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2940MB MemAvailable:=14326MB Cached:=9436MB AnonPages:=698MB Mapped:=437MB Slab:=1355MB 
+[RESMON] 04:59:03 mem=1948/15989MB disk_used=92950/147719MB free=54753MB containers=0
+[RESTOP] 201MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 188MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 146MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 124MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2779): VmRSS:=150320kB RssAnon:=93616kB RssFile:=56704kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1853MB MemAvailable:=14036MB Cached:=10130MB AnonPages:=880MB Mapped:=451MB Slab:=1437MB 
