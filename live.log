@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-06-26T05:18:02Z | task=effect-sse-httpapi-streaming ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 05:15:32] used=1965MB total=15989MB swap_used=0MB
+[MEMLOG 05:15:42] used=1968MB total=15989MB swap_used=0MB
+[MEMLOG 05:15:52] used=1644MB total=15989MB swap_used=0MB
+[MEMLOG 05:16:02] used=1938MB total=15989MB swap_used=0MB
+[MEMLOG 05:16:12] used=1941MB total=15989MB swap_used=0MB
+[MEMLOG 05:16:22] used=1942MB total=15989MB swap_used=0MB
+[MEMLOG 05:16:32] used=1944MB total=15989MB swap_used=0MB
+[MEMLOG 05:16:42] used=1946MB total=15989MB swap_used=0MB
+[MEMLOG 05:16:52] used=1949MB total=15989MB swap_used=0MB
+[MEMLOG 05:17:02] used=1951MB total=15989MB swap_used=0MB
+[MEMLOG 05:17:12] used=1954MB total=15989MB swap_used=0MB
+[MEMLOG 05:17:22] used=1957MB total=15989MB swap_used=0MB
+[MEMLOG 05:17:32] used=1959MB total=15989MB swap_used=0MB
+[MEMLOG 05:17:42] used=1967MB total=15989MB swap_used=0MB
+[MEMLOG 05:17:52] used=1984MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
