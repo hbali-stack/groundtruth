@@ -1,5 +1,27 @@
-=== LIVE SNAPSHOT #1 | 2026-06-29T03:47:17Z | task=instance_tutao__tutanota-befce4b146002b9abc86aa95f4d57581771815ce-vee878bb72091875e912c52fc32bc60ec3760227b ===
+=== LIVE SNAPSHOT #2 | 2026-06-29T03:47:38Z | task=instance_tutao__tutanota-befce4b146002b9abc86aa95f4d57581771815ce-vee878bb72091875e912c52fc32bc60ec3760227b ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (688 chars)
+[gt-verified] instance=instance_tutao__tutanota-befce4b146002b9abc86aa95f4d57581771815ce-vee878bb72091875e912c52fc32bc60ec3760227b image=ghcr.io/hbali-stack/sweap-images:tutao.tutanota-tutao__tutanota-befce4b146002b9abc86aa95f4d57581771815ce-vee878bb72091875e912c52fc32bc60ec3760227b
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=541b246e8c53374358c3c5462c450e3ccd5e17a9f88cda730d5f3ba2c61af98b _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=541b246e8c53374358c3c5462c450e3ccd5e17a9f88cda730d5f3ba2c61af98b; graph_hash_after_lsp=541b246e8c53374358c3c5462c450e3ccd5e17a9f88cda730d5f3ba2c61af98b; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:bc253e32873b1478c019bfa727d6b33f47c44cef85a86b5fcf64a9fa82700383
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-f02c24be -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:tutao.tutanota-tutao__tutanota-befce4b146002b9a
+bc86aa95f4d57581771815ce-vee878bb72091875e912c52fc32bc60ec3760227b sleep 2h     
+minisweagent.environment: INFO: Started container minisweagent-f02c24be with ID 
+028c0ef877ce7bd7b908042b8481d6bf1a84fe42a1b5f6112cc44d3315e750bd                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-f02c24be -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:tutao.tutanota-tutao__tutanota-befce4b146002b9a
+bc86aa95f4d57581771815ce-vee878bb72091875e912c52fc32bc60ec3760227b sleep 2h     
+minisweagent.environment: INFO: Started container minisweagent-f02c24be with ID 
+028c0ef877ce7bd7b908042b8481d6bf1a84fe42a1b5f6112cc44d3315e750bd                
+[gt-patch:loaded]
