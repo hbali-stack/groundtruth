@@ -1,5 +1,28 @@
-=== LIVE SNAPSHOT #1 | 2026-06-29T03:54:52Z | task=instance_gravitational__teleport-73cc189b0e9636d418c4470ecce0d9af5dae2f02-vee9b09fb20c43af7e520f57e9239bbcf46b7113d ===
+=== LIVE SNAPSHOT #2 | 2026-06-29T03:55:13Z | task=instance_gravitational__teleport-73cc189b0e9636d418c4470ecce0d9af5dae2f02-vee9b09fb20c43af7e520f57e9239bbcf46b7113d ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (782 chars)
+[gt-verified] instance=instance_gravitational__teleport-73cc189b0e9636d418c4470ecce0d9af5dae2f02-vee9b09fb20c43af7e520f57e9239bbcf46b7113d image=ghcr.io/hbali-stack/sweap-images:gravitational.teleport-gravitational__teleport-73cc189b0e9636d418c4470ecce0d9af5dae2f02-vee9b09fb20c43af7e520f57e9239bbcf46b7113
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=eb1377ac6c3e3ad49509f65a753f2de0c9c013a7c3adc36e2d207710ca30355c _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=eb1377ac6c3e3ad49509f65a753f2de0c9c013a7c3adc36e2d207710ca30355c; graph_hash_after_lsp=eb1377ac6c3e3ad49509f65a753f2de0c9c013a7c3adc36e2d207710ca30355c; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:bc253e32873b1478c019bfa727d6b33f47c44cef85a86b5fcf64a9fa82700383
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-0c4267e7 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:gravitational.teleport-gravitational__teleport-
+73cc189b0e9636d418c4470ecce0d9af5dae2f02-vee9b09fb20c43af7e520f57e9239bbcf46b711
+3 sleep 2h                                                                      
+minisweagent.environment: INFO: Started container minisweagent-0c4267e7 with ID 
+38b7f2dde9d8df024599ea31dc9ea92fed7c8ff87a200736c0b1636d3777a954                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-0c4267e7 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:gravitational.teleport-gravitational__teleport-
+73cc189b0e9636d418c4470ecce0d9af5dae2f02-vee9b09fb20c43af7e520f57e9239bbcf46b711
+3 sleep 2h                                                                      
+minisweagent.environment: INFO: Started container minisweagent-0c4267e7 with ID 
+38b7f2dde9d8df024599ea31dc9ea92fed7c8ff87a200736c0b1636d3777a954                
+[gt-patch:loaded]
