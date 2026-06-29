@@ -1,5 +1,27 @@
-=== LIVE SNAPSHOT #1 | 2026-06-29T23:55:31Z | task=instance_element-hq__element-web-1077729a19c0ce902e713cf6fab42c91fb7907f1-vnan ===
+=== LIVE SNAPSHOT #2 | 2026-06-29T23:55:52Z | task=instance_element-hq__element-web-1077729a19c0ce902e713cf6fab42c91fb7907f1-vnan ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (1398 chars)
+[gt-verified] instance=instance_element-hq__element-web-1077729a19c0ce902e713cf6fab42c91fb7907f1-vnan image=ghcr.io/hbali-stack/sweap-images:element-hq.element-element-hq__element-web-1077729a19c0ce902e713cf6fab42c91fb7907f1
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=6bbf52e7c9411a8a967c0b69808eef4c84fbd1dd05228022a5e9f2e492899a2d _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=6bbf52e7c9411a8a967c0b69808eef4c84fbd1dd05228022a5e9f2e492899a2d; graph_hash_after_lsp=6bbf52e7c9411a8a967c0b69808eef4c84fbd1dd05228022a5e9f2e492899a2d; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:a4d8e6843595e3204f800415f69e082f451533e6dfb4854cdfeb897810246fe4
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-c7402546 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:element-hq.element-element-hq__element-web-1077
+729a19c0ce902e713cf6fab42c91fb7907f1 sleep 2h                                   
+minisweagent.environment: INFO: Started container minisweagent-c7402546 with ID 
+77221649ae526151f2a38b2d1bcad574d7e3808f46e2438cec15bb400c16c518                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-c7402546 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:element-hq.element-element-hq__element-web-1077
+729a19c0ce902e713cf6fab42c91fb7907f1 sleep 2h                                   
+minisweagent.environment: INFO: Started container minisweagent-c7402546 with ID 
+77221649ae526151f2a38b2d1bcad574d7e3808f46e2438cec15bb400c16c518                
+[gt-patch:loaded]
