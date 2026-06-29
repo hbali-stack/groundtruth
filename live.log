@@ -1,5 +1,27 @@
-=== LIVE SNAPSHOT #1 | 2026-06-29T20:08:38Z | task=instance_flipt-io__flipt-1dceb5edf3fa8f39495b939ef9cc0c3dd38fa17d ===
+=== LIVE SNAPSHOT #2 | 2026-06-29T20:09:00Z | task=instance_flipt-io__flipt-1dceb5edf3fa8f39495b939ef9cc0c3dd38fa17d ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (732 chars)
+[gt-verified] instance=instance_flipt-io__flipt-1dceb5edf3fa8f39495b939ef9cc0c3dd38fa17d image=ghcr.io/hbali-stack/sweap-images:flipt-io.flipt-flipt-io__flipt-1dceb5edf3fa8f39495b939ef9cc0c3dd38fa17d
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=7a2baeb0c5fb38f3c5557f708984af7c3236685ce8121e1c8040f750d1794e98 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=7a2baeb0c5fb38f3c5557f708984af7c3236685ce8121e1c8040f750d1794e98; graph_hash_after_lsp=7a2baeb0c5fb38f3c5557f708984af7c3236685ce8121e1c8040f750d1794e98; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:9d3d2f5a19729f0a7946df5e0b52bdac6e454951c09e353d65537b2b7e04a82b
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-6b40edec -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:flipt-io.flipt-flipt-io__flipt-1dceb5edf3fa8f39
+495b939ef9cc0c3dd38fa17d sleep 2h                                               
+minisweagent.environment: INFO: Started container minisweagent-6b40edec with ID 
+690f30977ef627b6ee32aa210afbcd4468b2c3e5b89060bdc99fb8c138a05824                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-6b40edec -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:flipt-io.flipt-flipt-io__flipt-1dceb5edf3fa8f39
+495b939ef9cc0c3dd38fa17d sleep 2h                                               
+minisweagent.environment: INFO: Started container minisweagent-6b40edec with ID 
+690f30977ef627b6ee32aa210afbcd4468b2c3e5b89060bdc99fb8c138a05824                
+[gt-patch:loaded]
