@@ -1,5 +1,28 @@
-=== LIVE SNAPSHOT #1 | 2026-06-29T03:46:28Z | task=instance_internetarchive__openlibrary-de6ae10512f1b5ef585c8341b451bc49c9fd4996-vfa6ff903cb27f336e17654595dd900fa943dcd91 ===
+=== LIVE SNAPSHOT #2 | 2026-06-29T03:46:49Z | task=instance_internetarchive__openlibrary-de6ae10512f1b5ef585c8341b451bc49c9fd4996-vfa6ff903cb27f336e17654595dd900fa943dcd91 ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (1590 chars)
+[gt-verified] instance=instance_internetarchive__openlibrary-de6ae10512f1b5ef585c8341b451bc49c9fd4996-vfa6ff903cb27f336e17654595dd900fa943dcd91 image=ghcr.io/hbali-stack/sweap-images:internetarchive.openlibrary-internetarchive__openlibrary-de6ae10512f1b5ef585c8341b451bc49c9fd4996-vfa6ff903cb27f336e17654595dd90
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=a71e0d91c995f0fbbc49beabfa1623a3b4aaf276521078766c6833d50d6eb154 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=a71e0d91c995f0fbbc49beabfa1623a3b4aaf276521078766c6833d50d6eb154; graph_hash_after_lsp=a71e0d91c995f0fbbc49beabfa1623a3b4aaf276521078766c6833d50d6eb154; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:bc253e32873b1478c019bfa727d6b33f47c44cef85a86b5fcf64a9fa82700383
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-1c0ab805 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:internetarchive.openlibrary-internetarchive__op
+enlibrary-de6ae10512f1b5ef585c8341b451bc49c9fd4996-vfa6ff903cb27f336e17654595dd9
+0 sleep 2h                                                                      
+minisweagent.environment: INFO: Started container minisweagent-1c0ab805 with ID 
+1c93f3686f06cfb8feac82f3c3b668a14d302200e2b02f06e8caa8fee6647a06                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-1c0ab805 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:internetarchive.openlibrary-internetarchive__op
+enlibrary-de6ae10512f1b5ef585c8341b451bc49c9fd4996-vfa6ff903cb27f336e17654595dd9
+0 sleep 2h                                                                      
+minisweagent.environment: INFO: Started container minisweagent-1c0ab805 with ID 
+1c93f3686f06cfb8feac82f3c3b668a14d302200e2b02f06e8caa8fee6647a06                
+[gt-patch:loaded]
