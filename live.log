@@ -1,5 +1,27 @@
-=== LIVE SNAPSHOT #1 | 2026-06-30T00:05:46Z | task=instance_ansible__ansible-0ea40e09d1b35bcb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2 ===
+=== LIVE SNAPSHOT #2 | 2026-06-30T00:06:07Z | task=instance_ansible__ansible-0ea40e09d1b35bcb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2 ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (1288 chars)
+[gt-verified] instance=instance_ansible__ansible-0ea40e09d1b35bcb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2 image=ghcr.io/hbali-stack/sweap-images:ansible.ansible-ansible__ansible-0ea40e09d1b35bcb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=37989b283f88d56754ae558468ab93957b731be6adeba564b2d3d482544944cb _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=37989b283f88d56754ae558468ab93957b731be6adeba564b2d3d482544944cb; graph_hash_after_lsp=37989b283f88d56754ae558468ab93957b731be6adeba564b2d3d482544944cb; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:a4d8e6843595e3204f800415f69e082f451533e6dfb4854cdfeb897810246fe4
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-0291ce22 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:ansible.ansible-ansible__ansible-0ea40e09d1b35b
+cb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2 sleep 2h   
+minisweagent.environment: INFO: Started container minisweagent-0291ce22 with ID 
+389e0190208ddbe7843704cfe80aece30232d6fdbc862331d9a43abf1c3b8fc5                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-0291ce22 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:ansible.ansible-ansible__ansible-0ea40e09d1b35b
+cb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2 sleep 2h   
+minisweagent.environment: INFO: Started container minisweagent-0291ce22 with ID 
+389e0190208ddbe7843704cfe80aece30232d6fdbc862331d9a43abf1c3b8fc5                
+[gt-patch:loaded]
