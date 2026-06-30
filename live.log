@@ -1,5 +1,28 @@
-=== LIVE SNAPSHOT #1 | 2026-06-30T00:04:07Z | task=instance_qutebrowser__qutebrowser-01d1d1494411380d97cac14614a829d3a69cecaf-v2ef375ac784985212b1805e1d0431dc8f1b3c171 ===
+=== LIVE SNAPSHOT #2 | 2026-06-30T00:04:28Z | task=instance_qutebrowser__qutebrowser-01d1d1494411380d97cac14614a829d3a69cecaf-v2ef375ac784985212b1805e1d0431dc8f1b3c171 ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (1169 chars)
+[gt-verified] instance=instance_qutebrowser__qutebrowser-01d1d1494411380d97cac14614a829d3a69cecaf-v2ef375ac784985212b1805e1d0431dc8f1b3c171 image=ghcr.io/hbali-stack/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-01d1d1494411380d97cac14614a829d3a69cecaf-v2ef375ac784985212b1805e1d0431dc8f1b3c
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=e4598b684a8f50b30492d76b5d905bec5c67d4cd4f053ed2faf66eb3e565a0a8 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=e4598b684a8f50b30492d76b5d905bec5c67d4cd4f053ed2faf66eb3e565a0a8; graph_hash_after_lsp=e4598b684a8f50b30492d76b5d905bec5c67d4cd4f053ed2faf66eb3e565a0a8; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:a4d8e6843595e3204f800415f69e082f451533e6dfb4854cdfeb897810246fe4
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-1c4a1044 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowse
+r-01d1d1494411380d97cac14614a829d3a69cecaf-v2ef375ac784985212b1805e1d0431dc8f1b3
+c sleep 2h                                                                      
+minisweagent.environment: INFO: Started container minisweagent-1c4a1044 with ID 
+32879889a373ee95bb728bd1102a58569164e322041ae545cac5172350929a7e                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-1c4a1044 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowse
+r-01d1d1494411380d97cac14614a829d3a69cecaf-v2ef375ac784985212b1805e1d0431dc8f1b3
+c sleep 2h                                                                      
+minisweagent.environment: INFO: Started container minisweagent-1c4a1044 with ID 
+32879889a373ee95bb728bd1102a58569164e322041ae545cac5172350929a7e                
+[gt-patch:loaded]
