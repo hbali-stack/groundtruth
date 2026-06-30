@@ -1,5 +1,27 @@
-=== LIVE SNAPSHOT #1 | 2026-06-30T00:12:04Z | task=instance_protonmail__webclients-01b519cd49e6a24d9a05d2eb97f54e420740072e ===
+=== LIVE SNAPSHOT #2 | 2026-06-30T00:12:25Z | task=instance_protonmail__webclients-01b519cd49e6a24d9a05d2eb97f54e420740072e ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
+👋 This is mini-swe-agent version 2.2.8.
+Check the v2 migration guide at https://klieret.short.gy/mini-v2-migration
+Loading global config from '/home/runner/.config/mini-swe-agent/.env'
+[gt-verified] issue from file: /tmp/issue.txt (1034 chars)
+[gt-verified] instance=instance_protonmail__webclients-01b519cd49e6a24d9a05d2eb97f54e420740072e image=ghcr.io/hbali-stack/sweap-images:protonmail.webclients-protonmail__webclients-01b519cd49e6a24d9a05d2eb97f54e420740072e
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=92c549d8e77ae1b623d104bbc251559e6f30a91e26b319d81e4d5200c8018aeb _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=92c549d8e77ae1b623d104bbc251559e6f30a91e26b319d81e4d5200c8018aeb; graph_hash_after_lsp=92c549d8e77ae1b623d104bbc251559e6f30a91e26b319d81e4d5200c8018aeb; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:a4d8e6843595e3204f800415f69e082f451533e6dfb4854cdfeb897810246fe4
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-a3364667 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:protonmail.webclients-protonmail__webclients-01
+b519cd49e6a24d9a05d2eb97f54e420740072e sleep 2h                                 
+minisweagent.environment: INFO: Started container minisweagent-a3364667 with ID 
+4402fea7cd6db8622864c9120010e681c0d64f2a575d00f1cfa79588f8c38a5c                
+[gt-patch:loaded]
 --- step tail (last 8) ---
+[gt-verified] observation patch attached=True (DockerEnvironment.execute wrapped host-side)
+minisweagent.environment: DEBUG: Starting container with command: docker run -d 
+--name minisweagent-a3364667 -w /testbed --rm --entrypoint ''                   
+ghcr.io/hbali-stack/sweap-images:protonmail.webclients-protonmail__webclients-01
+b519cd49e6a24d9a05d2eb97f54e420740072e sleep 2h                                 
+minisweagent.environment: INFO: Started container minisweagent-a3364667 with ID 
+4402fea7cd6db8622864c9120010e681c0d64f2a575d00f1cfa79588f8c38a5c                
+[gt-patch:loaded]
