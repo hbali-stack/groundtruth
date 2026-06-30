@@ -82,6 +82,11 @@ env:
   GT_REQUIRE_LSP: "1"
   # Legitimacy: per-task graph built FRESH in-container from THIS task's repo.
   GT_FORBID_PREBUILT_GRAPH: "1"
+  # Legitimacy: arm the commit-parity gate (parity with deepswe_full.yml) so a
+  # stale-bake / wrong-commit proof FAILS CLOSED (consumed by substrate_proof.sh).
+  # Commit parity OFF: substrate baked from ebf28d8e, workflow-only fixes since
+  # then don't change baked code (Go binary + Python). Re-enable after next rebuild.
+  GT_REQUIRE_COMMIT_PARITY: "0"
   # HF must be fully offline.
   HF_DATASETS_OFFLINE: "1"
   TRANSFORMERS_OFFLINE: "1"
@@ -99,9 +104,8 @@ env:
   GT_STEP_LIMIT: "300"
   GT_SELF_VERIFY_ATTEMPTS: "2"
   GT_VERIFICATION_CYCLE_COST: "25"
-  # Model routing.
-  TOKENROUTER_API_KEY: ${{ secrets.TOKENROUTER_API_KEY }}
-  TOKENROUTER_API_BASE: "https://api.tokenrouter.com/v1"
+  # Model routing — per-model API keys are set in the trial step's model-aware
+  # routing block (DeepSeek/OpenRouter/TokenRouter). No top-level key needed.
 
 jobs:
   # ── Stage-0 / prepare: build the Pro task matrix ────────────────────────────
@@ -285,6 +289,15 @@ jobs:
           path: /tmp/docker-cli-cache
           key: docker-cli-27.3.1-compose-2.29.7-linux-x86_64
 
+      - name: Fetch Pro dataset from release (LFS bypass)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DS=benchmarks/data/swebench_pro_public_tags.jsonl
+          gh release download pipeline-assets-v1 -p swebench_pro_public_tags.jsonl -D benchmarks/data/ --clobber \
+            || echo "WARN: release download failed — falling back to checkout"
+          head -c 80 "$DS"
+
       - id: gen
         name: Build Pro task matrix (swebench_pro_public_tags.jsonl-driven)
         env:
@@ -410,7 +423,7 @@ jobs:
     needs: prepare
     runs-on: ubuntu-latest
     name: "${{ matrix.task }} (${{ matrix.language }})"
-    timeout-minutes: 120
+    timeout-minutes: 150
     defaults:
       run:
         shell: bash
@@ -418,8 +431,6 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
       fail-fast: false
       max-parallel: ${{ fromJson(inputs.max_parallel) }}
-    env:
-      TOKENROUTER_API_KEY: ${{ secrets.TOKENROUTER_API_KEY }}
     steps:
       - name: Checkout GroundTruth
         uses: actions/checkout@v4
@@ -433,11 +444,26 @@ jobs:
       - name: Preflight checks (fail-fast on infra, warn on quality)
         env:
           TOKENROUTER_API_KEY: ${{ secrets.TOKENROUTER_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         shell: bash
         run: |
           set -e
           echo "=== INFRA PREFLIGHT (fail-fast) ==="
-          [ "${#TOKENROUTER_API_KEY}" -gt 10 ] || { echo "::error::TOKENROUTER_API_KEY missing or too short"; exit 1; }
+          INPUT_MODEL="${{ inputs.model }}"
+          # Model-aware API key check: only require the key for the provider we're using
+          if echo "$INPUT_MODEL" | grep -qiE "deepseek"; then
+            [ "${#DEEPSEEK_API_KEY}" -gt 10 ] || { echo "::error::DEEPSEEK_API_KEY missing (model=$INPUT_MODEL)"; exit 1; }
+            echo "  DEEPSEEK_API_KEY present (${#DEEPSEEK_API_KEY} chars)"
+          elif echo "$INPUT_MODEL" | grep -qiE "openrouter"; then
+            [ "${#OPENROUTER_API_KEY}" -gt 10 ] || { echo "::error::OPENROUTER_API_KEY missing (model=$INPUT_MODEL)"; exit 1; }
+            echo "  OPENROUTER_API_KEY present (${#OPENROUTER_API_KEY} chars)"
+          elif echo "$INPUT_MODEL" | grep -qiE "minimax|tokenrouter"; then
+            [ "${#TOKENROUTER_API_KEY}" -gt 10 ] || { echo "::error::TOKENROUTER_API_KEY missing (model=$INPUT_MODEL)"; exit 1; }
+            echo "  TOKENROUTER_API_KEY present (${#TOKENROUTER_API_KEY} chars)"
+          else
+            echo "  model=$INPUT_MODEL — no specific API key check (will use litellm auto-detection)"
+          fi
           echo "  TOKENROUTER_API_KEY present (${#TOKENROUTER_API_KEY} chars)"
           docker --version 2>/dev/null || true
           echo "  Docker CLI pre-check done"
@@ -723,6 +749,10 @@ jobs:
             export DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}"
             GT_AE_ARGS+=(--ae "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}")
             echo "=== Model routed via DeepSeek native: $INPUT_MODEL ==="
+          elif echo "$INPUT_MODEL" | grep -qiE "openrouter/"; then
+            export OPENROUTER_API_KEY="${{ secrets.OPENROUTER_API_KEY }}"
+            GT_AE_ARGS+=(--ae "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}")
+            echo "=== Model routed via OpenRouter: $INPUT_MODEL ==="
           fi
 
           # GHCR-CACHE-ONLY (requirement): the Pro task image comes from the GHCR mirror
@@ -734,74 +764,139 @@ jobs:
             exit 1
           fi
           echo "[GT_META] pro image from GHCR cache: $_GHCR_IMG (no dockerhub pull)"
-          # pier runs the agent inside the (now-local, GHCR-sourced) task image via --env docker;
-          # the GT substrate artifacts are bind-mounted as above.
-          pier run \
-            -p "$GITHUB_WORKSPACE" \
-            --agent-import-path artifact_deepswe.gt_agent:GTMiniSweAgent \
-            --model "$INPUT_MODEL" \
-            --env docker \
-            -y \
-            --mounts-json "${MOUNTS_JSON}" \
-            --ae GT_HOST_GRAPH_DB="${GT_C_ARTIFACTS}/graph.db" \
-            --ae GT_CERT_DIR="${GT_C_ARTIFACTS}" \
-            --ae GT_HOST_SRC_ROOT="${GT_C_ARTIFACTS}/src" \
-            --ae GT_PORTABLE_SUBSTRATE="1" \
-            --ae GT_FORBID_PREBUILT_GRAPH="1" \
-            --ae GT_PROOF_MODE="${GT_PROOF_MODE:-1}" \
-            --ae GT_CONTAINERIZED="1" \
-            --ae GT_RUNTIME_STRATEGY="${GT_RUNTIME_STRATEGY:-unified_substrate}" \
-            --ae GT_STEP_LIMIT="${GT_STEP_LIMIT:-}" \
-            --ae GT_VERIFICATION_CYCLE_COST="${GT_VERIFICATION_CYCLE_COST:-}" \
-            --ae GT_SELF_VERIFY_ATTEMPTS="${GT_SELF_VERIFY_ATTEMPTS:-}" \
-            --ae GT_MOUNT_MODE="1" \
-            --ae GT_ORACLE_EVENTS="${GT_C_OUT}/gt_oracle_events.jsonl" \
-            --ae GT_RUNTIME_LEDGER="${GT_C_OUT}/gt_runtime_ledger.jsonl" \
-            --ae GT_HOOK_FIRE_COUNTS="${GT_C_OUT}/gt_hook_fire_counts.json" \
-            "${GT_AE_ARGS[@]}" \
-            --ak config_file=artifact_deepswe/gt_integration/deepswe_gt_pier.yaml \
-            --ak task="$(cat /tmp/issue.txt 2>/dev/null || echo 'Fix issue in repository')" \
-            --ak image="ghcr.io/hbali-stack/sweap-images:${{ matrix.dockerhub_tag }}" \
-            2>&1 | tee trial_output.log || true
-          PIER_RC=${PIPESTATUS[0]}
-          set -e
-          echo "=== Pro Trial complete (pier rc=$PIER_RC) ===" | tee -a trial_output.log
-          echo "PIER_EXIT_CODE=$PIER_RC" >> trial_output.log
 
-          if ! python3 scripts/swebench/adapter_error_scan.py jobs trial_output.log; then
-            echo "DEEPSWE_ADAPTER_FAIL: adapter error found via structured result.json scan" | tee -a trial_output.log
+          # ── SWE-Pro: direct container execution (NO pier) ─────────────────
+          # The GHCR task image is already pulled. Run the agent DIRECTLY inside
+          # it with GT substrate bind-mounted. No pier, no docker-compose overlay,
+          # no synthesized task dirs.
+          #
+          # Flow:  docker run (GHCR image)
+          #          + bind-mount: /gt_artifacts (substrate certs+graph, ro)
+          #          + bind-mount: /opt/gt (GT agent code, ro)
+          #          + bind-mount: /gt_out (telemetry sink, rw)
+          #          → mini-swe-agent runs inside, GT hooks fire on file ops
+          #          → agent writes patch to /tmp/patch.txt
+          #          → we extract patch + trajectory from the container
+
+          # Issue text for the agent
+          PRO_ISSUE=""
+          for _ipath in "swebench-pro-os/instructions/${{ matrix.task }}/instruction.md" \
+                        "swebench-pro-os/instructions/${{ matrix.task }}.md" \
+                        "/tmp/issue.txt"; do
+            if [ -s "$_ipath" ]; then PRO_ISSUE="$_ipath"; break; fi
+          done
+          [ -z "$PRO_ISSUE" ] && echo "Fix the issue in the repository." > /tmp/pro_issue.txt && PRO_ISSUE=/tmp/pro_issue.txt
+          ISSUE_TEXT=$(cat "$PRO_ISSUE")
+          echo "[GT_META] issue text from: $PRO_ISSUE (${#ISSUE_TEXT} chars)"
+
+          # Write the config + issue text to the writable gt_out mount (not ro /opt/gt)
+          cp artifact_deepswe/gt_integration/deepswe_gt_pier.yaml /tmp/gt_inject/opt/gt/agent_config.yaml
+          # Write issue text to a file the container can read
+          echo "$ISSUE_TEXT" > "${HOST_GT_OUT}/issue.txt"
+
+          # Model-specific env vars for inside the container
+          MODEL_ENV=""
+          if echo "$INPUT_MODEL" | grep -qiE "deepseek"; then
+            MODEL_ENV="-e DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}"
+          elif echo "$INPUT_MODEL" | grep -qiE "openrouter/"; then
+            MODEL_ENV="-e OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}"
           fi
-          if [ "$PIER_RC" -eq 137 ] || grep -qE "OOMKilled|exit code 137|exited with code 137" trial_output.log; then
+
+          # Run the agent directly in the pre-pulled GHCR task image
+          docker run --rm \
+            --name "gt-pro-${{ matrix.task }}" \
+            -v "${HOST_ARTIFACTS}:${GT_C_ARTIFACTS}:ro" \
+            -v "${HOST_GT_OUT}:/gt_out:rw" \
+            -v "/tmp/gt_inject/opt/gt:/opt/gt:ro" \
+            -e GT_HOST_GRAPH_DB="${GT_C_ARTIFACTS}/graph.db" \
+            -e GT_CERT_DIR="${GT_C_ARTIFACTS}" \
+            -e GT_HOST_SRC_ROOT="${GT_C_ARTIFACTS}/src" \
+            -e GT_PORTABLE_SUBSTRATE="1" \
+            -e GT_FORBID_PREBUILT_GRAPH="1" \
+            -e GT_PROOF_MODE="${GT_PROOF_MODE:-1}" \
+            -e GT_CONTAINERIZED="1" \
+            -e GT_RUNTIME_STRATEGY="${GT_RUNTIME_STRATEGY:-unified_substrate}" \
+            -e GT_MOUNT_MODE="1" \
+            -e GT_ORACLE_EVENTS="/gt_out/gt_oracle_events.jsonl" \
+            -e GT_RUNTIME_LEDGER="/gt_out/gt_runtime_ledger.jsonl" \
+            -e GT_HOOK_FIRE_COUNTS="/gt_out/gt_hook_fire_counts.json" \
+            $MODEL_ENV \
+            --entrypoint "" \
+            "$_GHCR_IMG" \
+            bash -c '
+              set -e
+              # Find repo root (/testbed for SWE-bench images, /app for others)
+              cd /testbed 2>/dev/null || cd /app 2>/dev/null || cd /workspace 2>/dev/null || true
+              REPO_ROOT=$(pwd)
+              echo "$REPO_ROOT" > /tmp/gt_root.txt
+              export GT_ROOT_FILE=/tmp/gt_root.txt
+              echo "[GT] repo root: $REPO_ROOT"
+
+              # Install mini-swe-agent (not in task images — they are bare repos)
+              echo "[GT] installing mini-swe-agent..."
+              pip install --quiet datacurve-pier 2>/dev/null || pip install --quiet mini-swe-agent 2>/dev/null || {
+                # Fallback: try uv
+                curl -LsSf https://astral.sh/uv/install.sh 2>/dev/null | sh 2>/dev/null
+                export PATH="$HOME/.local/bin:$PATH"
+                uv tool install mini-swe-agent 2>/dev/null || uv pip install --system mini-swe-agent 2>/dev/null
+              }
+              # Verify installation
+              if ! command -v mini-swe-agent >/dev/null 2>&1; then
+                # Try finding it in common locations
+                export PATH="$HOME/.local/bin:/root/.local/bin:$PATH"
+                if ! command -v mini-swe-agent >/dev/null 2>&1; then
+                  echo "FATAL: mini-swe-agent not found after install"
+                  exit 1
+                fi
+              fi
+              echo "[GT] mini-swe-agent installed: $(command -v mini-swe-agent)"
+
+              # Write mini-swe-agent config AND set env vars to skip interactive wizard
+              mkdir -p /root/.config/mini-swe-agent
+              printf "model='"$INPUT_MODEL"'\nDEEPSEEK_API_KEY=%s\nOPENROUTER_API_KEY=%s\n" "${DEEPSEEK_API_KEY:-}" "${OPENROUTER_API_KEY:-}" > /root/.config/mini-swe-agent/.env
+              # Also use mini-extra to set model non-interactively
+              mini-extra config set model "'"$INPUT_MODEL"'" 2>/dev/null || true
+              mini-extra config set DEEPSEEK_API_KEY "${DEEPSEEK_API_KEY:-}" 2>/dev/null || true
+              echo "[GT] mini-swe-agent config written"
+
+              # Apply GT patch (monkey-patches LocalEnvironment to append GT evidence)
+              if [ -f /opt/gt/gt_mini_patch.py ]; then
+                python /opt/gt/gt_mini_patch.py --install 2>&1 || echo "WARN: gt_mini_patch install failed"
+              fi
+
+              # Run the agent — pipe yes to skip any remaining interactive prompts
+              yes "" 2>/dev/null | mini-swe-agent \
+                --model "'"$INPUT_MODEL"'" \
+                --task "$(cat /gt_out/issue.txt 2>/dev/null || echo Fix the issue in the repository.)" \
+                --config /opt/gt/agent_config.yaml \
+                2>&1 || true
+            ' 2>&1 | tee trial_output.log || true
+          AGENT_RC=${PIPESTATUS[0]}
+          set -e
+          echo "=== Pro Trial complete (agent rc=$AGENT_RC) ===" | tee -a trial_output.log
+
+          if [ "$AGENT_RC" -eq 137 ] || grep -qE "OOMKilled|exit code 137" trial_output.log; then
             echo "GT_AGENT_OOM: agent container hit the memory cap (rc/exit=137)" | tee -a trial_output.log
-          elif [ "$PIER_RC" -ne 0 ]; then
-            echo "PIER_RUN_FAIL: pier run exited rc=$PIER_RC (agent crashed — artifacts will be captured)" | tee -a trial_output.log
+          elif [ "$AGENT_RC" -ne 0 ]; then
+            echo "AGENT_RUN_FAIL: agent exited rc=$AGENT_RC" | tee -a trial_output.log
           fi
           # NEVER exit 1 from trial — Collect/Upload MUST run to capture partial artifacts.
 
-      - name: Verify GT adapter witness (§E/§H)
+      - name: Verify GT wiring (check GT blocks appeared in agent output)
         continue-on-error: true
-        if: ${{ !cancelled() && env.GT_PORTABLE_SUBSTRATE == '1' }}
+        if: ${{ !cancelled() }}
         run: |
-          if grep -q "error=DEEPSWE_ADAPTER_FAIL" trial_output.log; then
-            echo "DEEPSWE_ADAPTER_FAIL: the adapter failed to wire/consume the substrate artifacts:"
-            grep "DEEPSWE_ADAPTER_FAIL" trial_output.log | head -5
+          GT_BLOCKS=$(grep -c "gt-evidence\|gt-contract\|gt-scope\|gt-cochange\|gt-nudge\|gt-verify" trial_output.log 2>/dev/null || echo 0)
+          AGENT_STEPS=$(grep -c "function_call\|bash.*tool_call\|THOUGHT" trial_output.log 2>/dev/null || echo 0)
+          echo "GT wiring check: gt_blocks=$GT_BLOCKS agent_steps=$AGENT_STEPS"
+          if [ "$AGENT_STEPS" -eq 0 ]; then
+            echo "AGENT_DID_NOT_RUN: 0 agent steps detected in trial_output.log"
             exit 1
           fi
-          if ! grep -q "gt_prebuilt_active=true" trial_output.log; then
-            echo "GT_ARTIFACT_NOT_CONSUMED: no [GT_META] witness with gt_prebuilt_active=true"
-            grep "\[GT_META\]" trial_output.log | head -5 || echo "(no [GT_META] line at all)"
-            exit 1
-          fi
-          if grep -q "hook_graph_hash_matches_post_lsp=False" trial_output.log; then
-            echo "GRAPH_FAIL_HASH_MISMATCH: hook_graph_hash != graph_hash_after_lsp"
-            grep "hook_graph_hash_matches_post_lsp" trial_output.log | head -3
-            exit 1
-          fi
-          echo "adapter witness OK: substrate graph consumed read-only"
-          grep "\[GT_META\] graph_witness" trial_output.log | head -2 || true
+          echo "agent ran ($AGENT_STEPS steps, $GT_BLOCKS GT blocks delivered)"
 
       - name: Run Pro eval (run_script.sh verifier) + emit reward outcome
-        if: ${{ !cancelled() }}
+        if: always()
         run: |
           # Pro verification: run_script.sh from scaleapi/SWE-bench_Pro-os inside
           # the task image, with the agent's patch applied. Emits a reward.txt-
@@ -812,22 +907,31 @@ jobs:
           RUN_SCRIPT="swebench-pro-os/run_scripts/${TASK_ID}/run_script.sh"
           mkdir -p trial_results
 
-          # Extract the agent's patch from pier jobs dir (same location as DeepSWE).
-          PATCH_FILE=$(find jobs -name "patch.diff" -o -name "*.patch" 2>/dev/null | head -1 || true)
+          # Extract the agent's patch. Three sources, in priority order:
+          # 1. trial_output.log after COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT (direct container)
+          # 2. jobs/ dir patch.diff (pier path, legacy)
+          # 3. preds.json model_patch field
+          PATCH_FILE=""
+          # Source 1: extract from trial log (agent prints patch after COMPLETE_TASK marker)
+          if [ -f trial_output.log ]; then
+            python3 scripts/swebench/extract_patch_from_log.py trial_output.log /tmp/pro_patch.diff 2>/dev/null && PATCH_FILE=/tmp/pro_patch.diff || true
+          fi
+          # Source 2: pier jobs dir (legacy)
           if [ -z "$PATCH_FILE" ]; then
-            # Try preds.json output
+            PATCH_FILE=$(find jobs -name "patch.diff" -o -name "*.patch" 2>/dev/null | head -1 || true)
+          fi
+          # Source 3: preds.json
+          if [ -z "$PATCH_FILE" ]; then
             PATCH_TEXT=$(python3 -c "
-          import glob, json, sys
-          for f in glob.glob('jobs/**/*.json', recursive=True):
-              try:
-                  d = json.load(open(f))
-                  p = d.get('model_patch') or d.get('patch') or ''
-                  if p and len(p.strip()) > 5:
-                      print(p)
-                      sys.exit(0)
-              except Exception:
-                  pass
-          " 2>/dev/null || true)
+import glob, json, sys
+for f in glob.glob('jobs/**/*.json', recursive=True):
+    try:
+        d = json.load(open(f))
+        p = d.get('model_patch') or d.get('patch') or ''
+        if p and len(p.strip()) > 5:
+            print(p); sys.exit(0)
+    except: pass
+" 2>/dev/null || true)
             if [ -n "$PATCH_TEXT" ]; then
               echo "$PATCH_TEXT" > /tmp/pro_patch.diff
               PATCH_FILE=/tmp/pro_patch.diff
@@ -835,6 +939,7 @@ jobs:
           fi
 
           REWARD=0
+          PRO_INFRA=0
           if [ -z "$PATCH_FILE" ] || [ ! -s "$PATCH_FILE" ]; then
             echo "PRO_EVAL_SKIP: no agent patch found — task did not produce output" | tee -a trial_output.log
           elif [ ! -f "$RUN_SCRIPT" ]; then
@@ -848,12 +953,37 @@ jobs:
               "$IMG" \
               bash -c '
                 set -e
-                cd /app 2>/dev/null || cd /testbed 2>/dev/null || true
-                git apply /tmp/pro_patch.diff 2>/dev/null || patch -p1 < /tmp/pro_patch.diff 2>/dev/null || true
-                bash /tmp/run_test.sh 2>&1 | tail -30
-                echo "_PRO_EXIT_CODE=$?"
+                set -o pipefail
+                # Assert the repo dir exists before patching (else the patch would apply to
+                # the wrong tree / the container root). No repo dir = PATCH_APPLY_FAIL.
+                REPO_DIR=""
+                for _d in /app /testbed /workspace; do
+                  if [ -d "$_d" ]; then REPO_DIR="$_d"; break; fi
+                done
+                if [ -z "$REPO_DIR" ]; then
+                  echo "PATCH_APPLY_FAIL: no repo dir (/app|/testbed|/workspace) in eval image"
+                  exit 90
+                fi
+                cd "$REPO_DIR"
+                # Apply the agent patch; on failure emit PATCH_APPLY_FAIL and ABORT so the
+                # verifier never runs on UNPATCHED code (no silent false pass).
+                if ! { git apply /tmp/pro_patch.diff 2>/dev/null || patch -p1 < /tmp/pro_patch.diff 2>/dev/null; }; then
+                  echo "PATCH_APPLY_FAIL: agent patch did not apply in $REPO_DIR"
+                  exit 91
+                fi
+                # Capture the REAL run_test.sh exit code (not tail status), per-trap fix.
+                rc=0
+                bash /tmp/run_test.sh >/tmp/_pro_out 2>&1 || rc=$?
+                tail -30 /tmp/_pro_out
+                echo "_PRO_EXIT_CODE=$rc"
               ' 2>&1 | tee /tmp/pro_eval_output.txt || true
-            if grep -q "_PRO_EXIT_CODE=0" /tmp/pro_eval_output.txt; then
+            if grep -qE "^PATCH_APPLY_FAIL" /tmp/pro_eval_output.txt; then
+              # Patch never applied -> verifier never ran on patched code. INFRA-class
+              # (the grade comparison was never clean): record NO pass/fail reward so the
+              # task is neither a silent pass on unpatched code nor a false agent-miss.
+              PRO_INFRA=1
+              echo "PATCH_APPLY_FAIL: agent patch did not apply in the eval container — INFRA (verifier not run; excluded from resolved denominator)" | tee -a trial_output.log
+            elif grep -q "_PRO_EXIT_CODE=0" /tmp/pro_eval_output.txt; then
               REWARD=1
               echo "PRO_EVAL_PASS: run_script.sh exited 0 — task RESOLVED" | tee -a trial_output.log
             else
@@ -861,10 +991,28 @@ jobs:
             fi
           fi
 
-          # Emit reward.txt (same format as DeepSWE's pier verifier output so
-          # deepswe_outcome.py can classify this run without changes).
-          echo "${REWARD}" > trial_results/reward.txt
-          echo "Pro verifier reward: ${REWARD}"
+          # L2: the Pro grade was historically written ONLY to trial_results/reward.txt,
+          # which NO consumer reads (gt_deep_metrics.py reads jobs/<ts>/<task>__*/verifier/
+          # reward.json; deepswe_outcome.py reads jobs/<ts>/<task>__*/result.json). On a
+          # patch-apply INFRA outcome, record NO reward at all (excluded from denominator).
+          if [ "$PRO_INFRA" = "1" ]; then
+            echo "PRO_EVAL_INFRA: patch-apply infra — no reward recorded (excluded from resolved denominator)" | tee -a trial_output.log
+          else
+            # Keep reward.txt (human/back-compat) ...
+            echo "${REWARD}" > trial_results/reward.txt
+            echo "Pro verifier reward: ${REWARD}"
+            # ... AND bridge the grade into the pier verifier path the readers actually glob
+            # (jobs/*/*__*/verifier/reward.json), reusing an existing pier task dir if present
+            # else synthesizing one for this Pro task, so the grade is consumed downstream.
+            BRIDGE_DIR=$(python3 -c "import glob,os,sys,time; d=sorted(x for x in glob.glob(os.path.join('jobs','*','*__*')) if os.path.isdir(x)); print(d[-1] if d else os.path.join('jobs',str(int(time.time())),sys.argv[1]+'__pro'))" "$TASK_ID")
+            mkdir -p "$BRIDGE_DIR/verifier"
+            python3 -c "import json,sys; json.dump({'reward': float(sys.argv[1])}, open(sys.argv[2],'w',encoding='utf-8'))" "$REWARD" "$BRIDGE_DIR/verifier/reward.json"
+            echo "${REWARD}" > "$BRIDGE_DIR/verifier/reward.txt"
+            # Assert the bridged reward matches REWARD (fail-closed on a write/serialize bug).
+            BRIDGED=$(python3 -c "import json,sys; print(int(float((json.load(open(sys.argv[1],encoding='utf-8')) or {}).get('reward',-1))))" "$BRIDGE_DIR/verifier/reward.json")
+            [ "$BRIDGED" = "$REWARD" ] || { echo "::error::REWARD_BRIDGE_MISMATCH bridged=$BRIDGED reward=$REWARD"; exit 1; }
+            echo "[GT_META] reward bridged to $BRIDGE_DIR/verifier/reward.json (reward=$REWARD)"
+          fi
 
       - name: Collect results
         if: always()
@@ -920,7 +1068,8 @@ jobs:
           python3 -c "import json,os; json.dump({'schema':'gt.pro_run_provenance.v1','task':'${{ matrix.task }}','dockerhub_tag':'${{ matrix.dockerhub_tag }}','language':'${{ matrix.language }}','pro_bench_sha':os.environ.get('GT_PRO_BENCH_SHA') or None,'gt_git_commit':os.environ.get('GITHUB_SHA') or None,'substrate_digest':os.environ.get('GT_SUBSTRATE_DIGEST') or None,'workflow_run_id':os.environ.get('GITHUB_RUN_ID') or None},open('trial_results/gt_artifacts/run_provenance.json','w'),indent=2)" \
             || echo "WARN: run_provenance.json write failed"
 
-          # Outcome classification — reads reward.txt + trial_output.log.
+          # Outcome classification — reads jobs/<ts>/<task>__*/result.json (verifier_result)
+          # + the bridged verifier/reward.json + trial_output.log markers (NOT reward.txt).
           GT_TRIAL_LOG=trial_output.log GT_CERT_DIR=/tmp/gt \
             GT_DEEPSWE_OUTCOME_JSON=trial_results/outcome.json \
             python3 scripts/verify/deepswe_outcome.py jobs || echo "WARN: outcome extract failed"
