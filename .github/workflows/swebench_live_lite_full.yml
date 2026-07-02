@@ -63,6 +63,11 @@ on:
         description: "Shard spec i/n for large batches (e.g. 1/4 = first quarter). Use when mode=full to stay under the 256-job GHA matrix cap. Format: 1-based index / total (e.g. 1/4, 2/4). Ignored for smoke/pilot/pilot100 modes and when instance_ids is set."
         required: false
         default: ""
+      baseline:
+        description: "Baseline/control arm — mini-swe-agent with GroundTruth FULLY OFF (no gt_mini_patch install, GT-stripped config, GT_BASELINE=1). Produces the paired GT-off control. No GT substrate required."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -73,15 +78,18 @@ env:
   PYTHONIOENCODING: "utf-8"
   LANG: "C.UTF-8"
   LC_ALL: "C.UTF-8"
-  # Full-stack enforcement — same gates as deepswe_full.yml.
-  GT_REQUIRE_FULL_STACK: "1"
-  GT_REQUIRE_FULL_POTENTIAL: "1"
-  GT_REQUIRE_FTS5: "1"
-  GT_FORCE_ONNX_EMBEDDER: "1"
-  GT_REQUIRE_EMBEDDER: "1"
-  GT_REQUIRE_LSP: "1"
+  # Full-stack enforcement — same gates as deepswe_full.yml. On the BASELINE
+  # (control) arm GroundTruth is fully off, so every GT enforcement gate is
+  # forced to '0': the baseline is pure mini-swe-agent and must never fail-closed
+  # on GT substrate / LSP / FTS5 / embedder proof it does not use.
+  GT_REQUIRE_FULL_STACK: ${{ inputs.baseline == true && '0' || '1' }}
+  GT_REQUIRE_FULL_POTENTIAL: ${{ inputs.baseline == true && '0' || '1' }}
+  GT_REQUIRE_FTS5: ${{ inputs.baseline == true && '0' || '1' }}
+  GT_FORCE_ONNX_EMBEDDER: ${{ inputs.baseline == true && '0' || '1' }}
+  GT_REQUIRE_EMBEDDER: ${{ inputs.baseline == true && '0' || '1' }}
+  GT_REQUIRE_LSP: ${{ inputs.baseline == true && '0' || '1' }}
   # Legitimacy: per-task graph built FRESH in-container from THIS task's repo.
-  GT_FORBID_PREBUILT_GRAPH: "1"
+  GT_FORBID_PREBUILT_GRAPH: ${{ inputs.baseline == true && '0' || '1' }}
   # Legitimacy: arm the commit-parity gate (parity with deepswe_full.yml) so a
   # stale-bake / wrong-commit proof FAILS CLOSED (consumed by substrate_proof.sh).
   # Commit parity OFF: substrate baked from ebf28d8e, workflow-only fixes since
@@ -92,11 +100,13 @@ env:
   TRANSFORMERS_OFFLINE: "1"
   HF_HUB_OFFLINE: "1"
   # Substrate-consume (same as deepswe_full.yml §A/§B-AFTER/§D/§G).
+  # Baseline forces pinned-substrate enforcement off (it consumes no substrate);
+  # the substrate pull/proof STEPS are additionally gated on `inputs.baseline != true`.
   GT_SUBSTRATE_DIGEST: ${{ inputs.gt_substrate_digest || vars.GT_SUBSTRATE_DIGEST }}
-  GT_REQUIRE_PINNED_SUBSTRATE: ${{ inputs.require_pinned_substrate }}
+  GT_REQUIRE_PINNED_SUBSTRATE: ${{ inputs.baseline == true && '0' || inputs.require_pinned_substrate }}
   # Gates policy: proof default strict; deliver-always is explicit opt-in.
   GT_GATES_DELIVER_ALWAYS: "0"
-  GT_PROOF_MODE: "1"
+  GT_PROOF_MODE: ${{ inputs.baseline == true && '0' || '1' }}
   GT_CONTAINERIZED: "1"
   GT_RUNTIME_STRATEGY: "unified_substrate"
   GT_LSP_READY_BUDGET_S_OVERRIDE: ${{ vars.GT_LSP_READY_BUDGET_S_OVERRIDE }}
@@ -525,6 +535,9 @@ jobs:
           echo "GT_JOB_STARTED=$(date +%s)" >> "$GITHUB_ENV"
 
       - name: Verify env armed (fail-closed — abort before any paid work)
+        # Baseline arm forces the GT enforcement gates to '0', so this GT-arming
+        # check does not apply — skip it (the baseline is pure mini-swe-agent).
+        if: ${{ inputs.baseline != true }}
         shell: bash
         run: |
           set -e
@@ -658,6 +671,8 @@ jobs:
           echo "[GT_META] Live Lite image: ${LL_TASK_IMAGE:-$DH_IMG}"
 
       - name: GT substrate proof (handoff §B-AFTER/§D/§G) — pre-agent, pinned, read-only repo
+        # Baseline arm consumes no substrate — skip the proof entirely.
+        if: ${{ inputs.baseline != true }}
         continue-on-error: true
         env:
           GT_MATRIX_TASK: ${{ matrix.task }}
@@ -690,7 +705,9 @@ jobs:
                   print("invalid")
           PY
           )
-          if [ "$PROOF_STATE" != "ok" ]; then
+          # Baseline arm has no substrate proof (skipped above) — the proof gate
+          # only applies to the GT arm. Baseline proceeds straight to the agent.
+          if [ "${{ inputs.baseline }}" != "true" ] && [ "$PROOF_STATE" != "ok" ]; then
             echo "GT_RUN_PROOF_FAIL: refusing paid agent run because substrate proof_status state=${PROOF_STATE}" | tee -a trial_output.log
             exit 1
           fi
@@ -824,8 +841,15 @@ jobs:
           ")
           echo "[GT_META] issue text from: $PRO_ISSUE (${#ISSUE_TEXT} chars)"
 
-          # Write the config + issue text to the writable gt_out mount (not ro /opt/gt)
-          cp artifact_deepswe/gt_integration/deepswe_gt_pier.yaml /tmp/gt_inject/opt/gt/agent_config.yaml
+          # Write the config + issue text to the writable gt_out mount (not ro /opt/gt).
+          # Baseline (control) arm gets the GT-stripped config (no <gt-evidence> prose);
+          # the GT arm gets the full config. The ONLY paired difference is the GT surface.
+          if [ "${{ inputs.baseline }}" = "true" ]; then
+            cp artifact_deepswe/gt_integration/deepswe_gt_pier_baseline.yaml /tmp/gt_inject/opt/gt/agent_config.yaml
+            echo "[GT] BASELINE config (GT-stripped) written"
+          else
+            cp artifact_deepswe/gt_integration/deepswe_gt_pier.yaml /tmp/gt_inject/opt/gt/agent_config.yaml
+          fi
           # Write issue text to a file the container can read
           echo "$ISSUE_TEXT" > "${HOST_GT_OUT}/issue.txt"
 
@@ -855,6 +879,7 @@ jobs:
             -e GT_ORACLE_EVENTS="/gt_out/gt_oracle_events.jsonl" \
             -e GT_RUNTIME_LEDGER="/gt_out/gt_runtime_ledger.jsonl" \
             -e GT_HOOK_FIRE_COUNTS="/gt_out/gt_hook_fire_counts.json" \
+            -e GT_BASELINE=${{ inputs.baseline == true && '1' || '0' }} \
             $MODEL_ENV \
             --entrypoint "" \
             "$_GHCR_IMG" \
@@ -900,9 +925,13 @@ jobs:
               mini-extra config set DEEPSEEK_API_KEY "${DEEPSEEK_API_KEY:-}" 2>/dev/null || true
               echo "[GT] mini-swe-agent config written"
 
-              # Apply GT patch (monkey-patches LocalEnvironment to append GT evidence)
-              if [ -f /opt/gt/gt_mini_patch.py ]; then
+              # Apply GT patch (monkey-patches LocalEnvironment to append GT evidence).
+              # BASELINE (control) arm: GT_BASELINE=1 -> skip entirely so NO <gt-evidence>
+              # is ever appended. This is the paired-control difference from the GT arm.
+              if [ "${GT_BASELINE:-0}" != "1" ] && [ -f /opt/gt/gt_mini_patch.py ]; then
                 python /opt/gt/gt_mini_patch.py --install 2>&1 || echo "WARN: gt_mini_patch install failed"
+              else
+                echo "[GT] BASELINE mode: gt_mini_patch NOT installed (pure mini-swe-agent control arm)"
               fi
 
               # Run the agent — pipe yes to skip any remaining interactive prompts
@@ -1183,7 +1212,7 @@ jobs:
           python3 scripts/swebench/build_ll_predictions.py \
             /tmp/all /tmp/predictions/predictions.jsonl \
             --expected "$DS" \
-            --model "GroundTruth + mini-swe-agent + ${{ inputs.model }}" \
+            --model "${{ inputs.baseline == true && format('mini-swe-agent + {0} (baseline)', inputs.model) || format('GroundTruth + mini-swe-agent + {0}', inputs.model) }}" \
             | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload predictions for the official evaluator
