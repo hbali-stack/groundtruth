@@ -1110,11 +1110,23 @@ jobs:
             echo "deep-telemetry: recovered ${_gt_telemetry_recovered}/3 sink(s) from /tmp/gt_out"
           fi
 
+          # The agent wrote its trajectory to the /gt_out bind-mount = host /tmp/gt_out, but the
+          # deep-metrics reader scans /tmp/gt AND task-scopes hits (rejects any path missing the
+          # task id — _find_miniswe_trajectory L483, pinned by test). So bridge it into a TASK-NAMED
+          # subdir /tmp/gt/<task>/ (path now carries the id → reader accepts) + the artifact.
+          mkdir -p "/tmp/gt/${{ matrix.task }}"
+          cp /tmp/gt_out/mini-swe-agent.trajectory.json "/tmp/gt/${{ matrix.task }}/" 2>/dev/null || true
+          cp /tmp/gt_out/mini-swe-agent.trajectory.json trial_results/ 2>/dev/null || true
+
           # Deep 8-dp metrics.
           cp /tmp/gt/gt_run_summary*.json "trial_results/" 2>/dev/null || true
           PYTHONPATH=${{ github.workspace }}/src:${{ github.workspace }}/scripts/swebench:${{ github.workspace }}/scripts/metrics python3 scripts/swebench/gt_deep_metrics.py "${{ matrix.task }}" /tmp/gt --log trial_output.log 2>&1 | tail -2 || echo DEEP_METRICS_WARN
           cp "/tmp/gt_deep_metrics_${{ matrix.task }}.json" trial_results/ 2>/dev/null || true
           cp "/tmp/gt_deep_metrics_${{ matrix.task }}.md"   trial_results/ 2>/dev/null || true
+          # Per-task metrics laid out DIRECTLY as this task finishes (visible in the log + the
+          # artifact), computed from the just-written gt_deep_metrics json: resolved, steps,
+          # first-useful-edit, tokens, cost, trajectory source. One grep-able [METRICS task] line.
+          python3 -c "import json,sys,os; t=sys.argv[1]; p='/tmp/gt_deep_metrics_'+t+'.json'; d=(json.load(open(p,encoding='utf-8')) if os.path.exists(p) else {}); e=d.get('efficiency') or {}; a=d.get('agent') or {}; r=d.get('resolved'); rs=('YES' if r is True else ('NO' if r is False else '?')); print('[METRICS %s] resolved=%s steps=%s first_edit=%s tokens_total=%s cost_usd=%s traj=%s'%(t,rs,a.get('action_count'),a.get('first_edit_action'),e.get('llm_tokens_total'),(e.get('llm_cost_usd') or e.get('recorded_cost_usd')),d.get('trajectory_source')))" "${{ matrix.task }}" 2>/dev/null | tee -a trial_output.log || echo METRICS_LINE_WARN
 
           # Run provenance.
           python3 -c "import json,os; json.dump({'schema':'gt.live_lite_run_provenance.v1','task':'${{ matrix.task }}','language':'${{ matrix.language }}','gt_git_commit':os.environ.get('GITHUB_SHA') or None,'substrate_digest':os.environ.get('GT_SUBSTRATE_DIGEST') or None,'workflow_run_id':os.environ.get('GITHUB_RUN_ID') or None},open('trial_results/gt_artifacts/run_provenance.json','w'),indent=2)" \
