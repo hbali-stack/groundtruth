@@ -943,11 +943,13 @@ jobs:
               fi
 
               # Run the agent — pipe yes to skip any remaining interactive prompts
-              # -o writes mini-swe-agent's NATIVE trajectory (info.model_stats.api_calls =
+              # -o saves the mini-swe-agent NATIVE trajectory (info.model_stats.api_calls =
               # steps, instance_cost = cost, per-msg usage = tokens) to the /gt_out bind-mount
-              # so gt_deep_metrics.py (results_dir=/tmp/gt) parses tokens/cost/steps. Without
-              # it the traj went to a throwaway ~/.config/.../last_mini_run.traj.json that was
-              # never collected → action_count/tokens/cost all read 0 (the smoke's zeros).
+              # so gt_deep_metrics.py (results_dir=/tmp/gt) parses tokens/cost/steps. Without it
+              # the traj goes to a throwaway last_mini_run.traj.json that is never collected, so
+              # action_count/tokens/cost all read 0. GUARD: this whole block is a single-quoted
+              # docker bash -c argument. NEVER put an apostrophe in any comment here: one
+              # apostrophe closes the quote and the agent silently never launches. Cost a smoke.
               yes "" 2>/dev/null | mini-swe-agent \
                 --model "'"$INPUT_MODEL"'" \
                 --task "$(cat /gt_out/issue.txt 2>/dev/null || echo Fix the issue in the repository.)" \
