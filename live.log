@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-05T21:02:43Z | task=arktype-json-schema-refs-dependencies ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 21:00:13] used=1971MB total=15989MB swap_used=0MB
+[MEMLOG 21:00:23] used=1986MB total=15989MB swap_used=0MB
+[MEMLOG 21:00:33] used=1988MB total=15989MB swap_used=0MB
+[MEMLOG 21:00:43] used=1989MB total=15989MB swap_used=0MB
+[MEMLOG 21:00:53] used=1990MB total=15989MB swap_used=0MB
+[MEMLOG 21:01:03] used=1992MB total=15989MB swap_used=0MB
+[MEMLOG 21:01:13] used=1982MB total=15989MB swap_used=0MB
+[MEMLOG 21:01:23] used=1978MB total=15989MB swap_used=0MB
+[MEMLOG 21:01:33] used=1991MB total=15989MB swap_used=0MB
+[MEMLOG 21:01:43] used=1993MB total=15989MB swap_used=0MB
+[MEMLOG 21:01:53] used=1994MB total=15989MB swap_used=0MB
+[MEMLOG 21:02:03] used=1996MB total=15989MB swap_used=0MB
+[MEMLOG 21:02:13] used=1997MB total=15989MB swap_used=0MB
+[MEMLOG 21:02:23] used=2001MB total=15989MB swap_used=0MB
+[MEMLOG 21:02:33] used=2004MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
