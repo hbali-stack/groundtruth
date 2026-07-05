@@ -210,3 +210,4 @@ GT_ENDGAME_*
 
 # local design artifact (never push)
 GT_MCP_HOOKS_CONVERSION_DESIGN_*.md
+/TIER_*.md

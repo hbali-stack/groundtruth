@@ -78,6 +78,14 @@ on:
         description: "Depth+DCC master switch (2026-07 build). 0 = OFF (byte-identical: all six new flags off in code). 1 = ON = GT_NEG_EVIDENCE·GT_TYPEFLOW_FIXPOINT·GT_FIELD_CANDIDATES·GT_SEM_BODY·GT_PASSAGE_WIDE (index/brief, via substrate -e) + GT_DCC (agent, via --ae). REQUIRES a substrate baked on THIS run's commit (commit-parity)."
         required: false
         default: "0"
+      content_leg:
+        description: "Stratum-B content-BM25 leg (GT_CONTENT_LEG), independent of depth_flags. 1 = ON (default): the localizer's BM25-over-symbol-BODY-content surface (symbol_content_fts) fills the lexical slot ONLY when live-grep recalled nothing (behavior-described / stratum-B / graph-only tasks). Mutually exclusive with grep -> byte-identical on symbol-anchored (stratum-A) tasks = non-regressive by construction; test symbols excluded at source (leak=0). No rebake needed (symbol_content_fts is already baked; the flag is query-time). 0 = OFF."
+        required: false
+        default: "1"
+      cooperative_flags:
+        description: "Cooperative-localization channels, independent of depth_flags. 1 = ON = GT_POST_SEARCH (agent answers its OWN repo-wide grep of a bare symbol with def-site + verified-caller facts, in-band, via --ae) + GT_CONSENSUS_LEDGER (the <gt-localization> HIGH head renders 'N/3 signals agree' + receipts instead of the imperative 'Edit target:', via substrate -e + --ae; ranking-invariant, form-only). Both correct-or-quiet + leak-0 by construction. 0 = OFF (default; byte-identical)."
+        required: false
+        default: "0"
 
 permissions:
   contents: write   # live-log bridge force-pushes per-task logs to gha-live-logs/<task> branches
@@ -138,6 +146,16 @@ env:
   GT_SEM_BODY: ${{ inputs.depth_flags == '1' && '1' || '0' }}
   GT_PASSAGE_WIDE: ${{ inputs.depth_flags == '1' && '1' || '0' }}
   GT_DCC: ${{ inputs.depth_flags == '1' && '1' || '0' }}
+  # Stratum-B content-BM25 leg — SEPARATE from depth_flags, ON by default (non-regressive:
+  # fires only when live-grep recalled nothing; byte-identical on stratum-A). Query-time flag
+  # projected into the substrate brief-gen (-e) + agent runtime (--ae); no rebake needed.
+  GT_CONTENT_LEG: ${{ inputs.content_leg == '0' && '0' || '1' }}
+  # Cooperative-localization channels (master `cooperative_flags`, default 0 = OFF = byte-identical).
+  # GT_POST_SEARCH is agent-side (gt_mini_patch) — already forwarded via --ae below; GT_CONSENSUS_LEDGER
+  # is brief-side (v1r_brief) — projected into the substrate brief-gen via -e (substrate_proof.sh) AND
+  # via --ae for the agent-side L6-fresh brief regen. Both default-off in code; ON only when set here.
+  GT_POST_SEARCH: ${{ inputs.cooperative_flags == '1' && '1' || '0' }}
+  GT_CONSENSUS_LEDGER: ${{ inputs.cooperative_flags == '1' && '1' || '0' }}
   GT_BASELINE: ${{ inputs.gt_arm == 'baseline' && '1' || '0' }}
   # Legitimacy: the per-task graph must be built FRESH from THIS task's repo — never a
   # cross-run / stale / out-of-repo prebuilt graph.db. In substrate-consume mode the graph
@@ -1095,6 +1113,9 @@ jobs:
             --ae GT_FIELD_CANDIDATES="${GT_FIELD_CANDIDATES:-0}" \
             --ae GT_SEM_BODY="${GT_SEM_BODY:-0}" \
             --ae GT_PASSAGE_WIDE="${GT_PASSAGE_WIDE:-0}" \
+            --ae GT_CONTENT_LEG="${GT_CONTENT_LEG:-1}" \
+            --ae GT_POST_SEARCH="${GT_POST_SEARCH:-0}" \
+            --ae GT_CONSENSUS_LEDGER="${GT_CONSENSUS_LEDGER:-0}" \
             --ae GT_MOUNT_MODE="1" \
             "${GT_AE_ARGS[@]}" \
             --ae GT_ESC_ADV_TCOV="${GT_ESC_ADV_TCOV:-}" \
