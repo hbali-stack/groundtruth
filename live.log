@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #14 | 2026-07-05T21:00:29Z | task=fd-deterministic-multi-key-sorting ===
+=== LIVE SNAPSHOT #15 | 2026-07-05T21:00:50Z | task=fd-deterministic-multi-key-sorting ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_fd-deterministic-multi-key-sorting.log:[DOCKERFILE SLIM] deepswe-bench/tasks/fd-deterministic-multi-key-sorting/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh79s1ny2ab454f8caet44rv5n82za06-v1.1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_fd-deterministic-multi-key-sorting.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -8,21 +8,21 @@
 /tmp/gha_step_fd-deterministic-multi-key-sorting.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
 /tmp/gha_step_fd-deterministic-multi-key-sorting.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
-[RESMON] 21:00:10 mem=9584/15993MB disk_used=92302/147719MB free=55402MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=206MB MemAvailable:=6425MB Cached:=1626MB AnonPages:=7825MB Mapped:=410MB Slab:=4877MB 
-[RESMON] 21:00:19 mem=9413/15993MB disk_used=92302/147719MB free=55402MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=319MB MemAvailable:=6596MB Cached:=1549MB AnonPages:=7647MB Mapped:=410MB Slab:=5032MB 
 [RESMON] 21:00:27 mem=9397/15993MB disk_used=92302/147719MB free=55402MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=289MB MemAvailable:=6575MB Cached:=1548MB AnonPages:=7645MB Mapped:=411MB Slab:=5074MB 
+[RESMON] 21:00:36 mem=9390/15993MB disk_used=92302/147719MB free=55401MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=326MB MemAvailable:=6702MB Cached:=1510MB AnonPages:=7577MB Mapped:=410MB Slab:=5197MB 
+[RESMON] 21:00:44 mem=9434/15993MB disk_used=92302/147719MB free=55401MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=334MB MemAvailable:=6565MB Cached:=1510MB AnonPages:=7598MB Mapped:=410MB Slab:=5197MB 
 --- pier tail (last 15, non-RESMON) ---
 Overriding CPU count to 2 alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 Overriding memory to 9000 MB alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 --- step tail (last 8) ---
-[RESMON] 21:00:19 mem=9413/15993MB disk_used=92302/147719MB free=55402MB containers=0
-[RESTOP] 7155MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 201MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 131MB:provjobd1918346 /tmp/provjobd1918346810 | 116MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2798): VmRSS:=7326124kB RssAnon:=7271644kB RssFile:=54480kB RssShmem:=0kB VmSwap:=3014584kB 
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=319MB MemAvailable:=6596MB Cached:=1549MB AnonPages:=7647MB Mapped:=410MB Slab:=5032MB 
-[RESMON] 21:00:27 mem=9397/15993MB disk_used=92302/147719MB free=55402MB containers=0
-[RESTOP] 7156MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 201MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 131MB:provjobd1918346 /tmp/provjobd1918346810 | 116MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2798): VmRSS:=7328276kB RssAnon:=7274572kB RssFile:=53704kB RssShmem:=0kB VmSwap:=3347124kB 
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=289MB MemAvailable:=6575MB Cached:=1548MB AnonPages:=7645MB Mapped:=411MB Slab:=5074MB 
+[RESMON] 21:00:36 mem=9390/15993MB disk_used=92302/147719MB free=55401MB containers=0
+[RESTOP] 7087MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 201MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 130MB:provjobd1918346 /tmp/provjobd1918346810 | 116MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2798): VmRSS:=7256908kB RssAnon:=7203204kB RssFile:=53704kB RssShmem:=0kB VmSwap:=3341800kB 
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=326MB MemAvailable:=6702MB Cached:=1510MB AnonPages:=7577MB Mapped:=410MB Slab:=5197MB 
+[RESMON] 21:00:44 mem=9434/15993MB disk_used=92302/147719MB free=55401MB containers=0
+[RESTOP] 7108MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 201MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 129MB:provjobd1918346 /tmp/provjobd1918346810 | 116MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2798): VmRSS:=7278644kB RssAnon:=7224912kB RssFile:=53732kB RssShmem:=0kB VmSwap:=3398284kB 
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=334MB MemAvailable:=6565MB Cached:=1510MB AnonPages:=7598MB Mapped:=410MB Slab:=5197MB 
