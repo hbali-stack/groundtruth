@@ -1,0 +1,21 @@
+=== LIVE SNAPSHOT #1 | 2026-07-05T21:17:53Z | task=boa-hierarchical-evaluation-cancellation ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+/home/runner/work/groundtruth/groundtruth/trial_output.log:GT_RUN_PROOF_FAIL: gt-run-proof rc=2 (boundary/leak/missing-baked-dep)
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+      "exists": true,
+      "file_count": 51586,
+      "total_bytes": 1270123290
+    },
+    "rust_src": {
+      "path": "/tmp/gt/deps/rustup/toolchains/1.92.0-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library",
+      "exists": true,
+      "file_count": 2249,
+      "total_bytes": 46248417,
+      "active_toolchain": "1.92.0-x86_64-unknown-linux-gnu",
+      "source_in_task_image": "/root/.rustup/toolchains/1.92.0-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library"
+    }
+  }
+}
+::error::gt-run-proof exited 2 on a REQUIRED-stack run (GT_REQUIRE_FULL_STACK=1 GRAPH_VALID=0 LSP=1 EMBEDDER=1) — task FAILS (no laundering to ok)
+--- step tail (last 8) ---
