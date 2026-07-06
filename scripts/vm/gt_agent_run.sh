@@ -824,6 +824,18 @@ PYEOF
         --ae GT_CONTAINERIZED="1" \
         --ae GT_RUNTIME_STRATEGY="${GT_RUNTIME_STRATEGY:-unified_substrate}" \
         ${AE_EXTRA[@]+"${AE_EXTRA[@]}"} \
+        --ae GT_BASELINE="${GT_BASELINE:-0}" \
+        --ae GT_STEP_LIMIT="${GT_STEP_LIMIT:-}" \
+        --ae GT_CONTENT_LEG="${GT_CONTENT_LEG:-1}" \
+        --ae GT_POST_SEARCH="${GT_POST_SEARCH:-0}" \
+        --ae GT_CONSENSUS_LEDGER="${GT_CONSENSUS_LEDGER:-0}" \
+        --ae GT_SEM_BODY="${GT_SEM_BODY:-0}" \
+        --ae GT_DCC="${GT_DCC:-0}" \
+        --ae GT_NEG_EVIDENCE="${GT_NEG_EVIDENCE:-0}" \
+        --ae GT_TYPEFLOW_FIXPOINT="${GT_TYPEFLOW_FIXPOINT:-0}" \
+        --ae GT_FIELD_CANDIDATES="${GT_FIELD_CANDIDATES:-0}" \
+        --ae GT_PASSAGE_WIDE="${GT_PASSAGE_WIDE:-0}" \
+        --ae GT_VERIFY_STRUCTURAL_RISK="${GT_VERIFY_STRUCTURAL_RISK:-0}" \
         --ak version=2.2.8 \
         --ak config_file="$PIER_CONFIG" \
         2>&1 | tee -a "$trial_log"
@@ -865,11 +877,11 @@ PYEOF
     elif grep -q "error=DEEPSWE_ADAPTER_FAIL" "$trial_log"; then
       FAIL_CLASS="DEEPSWE_ADAPTER_FAIL"
       grep "DEEPSWE_ADAPTER_FAIL" "$trial_log" | head -5
-    elif ! grep -q "gt_prebuilt_active=true" "$trial_log"; then
+    elif [ "${GT_BASELINE:-0}" != "1" ] && ! grep -q "gt_prebuilt_active=true" "$trial_log"; then
       FAIL_CLASS="GT_ARTIFACT_NOT_CONSUMED"
       echo "GT_ARTIFACT_NOT_CONSUMED: no [GT_META] witness with gt_prebuilt_active=true (delivery, not telemetry)" | tee -a "$trial_log"
       grep "\[GT_META\]" "$trial_log" | head -5 || echo "(no [GT_META] line at all)"
-    elif grep -q "hook_graph_hash_matches_post_lsp=False" "$trial_log"; then
+    elif [ "${GT_BASELINE:-0}" != "1" ] && grep -q "hook_graph_hash_matches_post_lsp=False" "$trial_log"; then
       FAIL_CLASS="GRAPH_FAIL_HASH_MISMATCH"
       echo "GRAPH_FAIL_HASH_MISMATCH: hook_graph_hash != graph_hash_after_lsp" | tee -a "$trial_log"
       grep "hook_graph_hash_matches_post_lsp" "$trial_log" | head -3
