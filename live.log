@@ -1,19 +1,26 @@
-=== LIVE SNAPSHOT #9 | 2026-07-06T01:28:12Z | task=arcane-drift-detection-baselines ===
+=== LIVE SNAPSHOT #10 | 2026-07-06T01:28:33Z | task=arcane-drift-detection-baselines ===
 --- KEY EVENTS (full logs, non-RESMON) ---
+/tmp/gha_step_arcane-drift-detection-baselines.log:[DOCKERFILE SLIM] deepswe-bench/tasks/arcane-drift-detection-baselines/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70nj38qyatmsmj1d5zh57j25820vrx-v1.1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
+/tmp/gha_step_arcane-drift-detection-baselines.log:[SLIM-VERIFY] rewritten Dockerfile is now:
+/tmp/gha_step_arcane-drift-detection-baselines.log:[SLIM-VERIFY]   FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70nj38qyatmsmj1d5zh57j25820vrx-v1.1
+/tmp/gha_step_arcane-drift-detection-baselines.log:[SLIM-VERIFY]   CMD ["/bin/bash"]
+/tmp/gha_step_arcane-drift-detection-baselines.log:[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
+/tmp/gha_step_arcane-drift-detection-baselines.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
+/tmp/gha_step_arcane-drift-detection-baselines.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
-[RESMON] 01:27:55 mem=1177/15989MB disk_used=89436/147719MB free=58267MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=3654MB MemAvailable:=14801MB Cached:=9768MB AnonPages:=344MB Mapped:=340MB Slab:=1019MB 
-[RESMON] 01:28:03 mem=1188/15989MB disk_used=89917/147719MB free=57787MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=3089MB MemAvailable:=14797MB Cached:=10214MB AnonPages:=361MB Mapped:=340MB Slab:=1113MB 
 [RESMON] 01:28:12 mem=1212/15989MB disk_used=90277/147719MB free=57426MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2609MB MemAvailable:=14767MB Cached:=10562MB AnonPages:=398MB Mapped:=340MB Slab:=1204MB 
+[RESMON] 01:28:20 mem=1227/15989MB disk_used=90743/147719MB free=56961MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2015MB MemAvailable:=14754MB Cached:=11041MB AnonPages:=400MB Mapped:=339MB Slab:=1295MB 
+[RESMON] 01:28:28 mem=1249/15989MB disk_used=91405/147719MB free=56299MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1243MB MemAvailable:=14733MB Cached:=11691MB AnonPages:=421MB Mapped:=340MB Slab:=1384MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[RESMON] 01:28:03 mem=1188/15989MB disk_used=89917/147719MB free=57787MB containers=0
-[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 132MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 128MB:provjobd1864080 /tmp/provjobd186408094 | 98MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 
-[MEMDIAG] dockerd(2790): VmRSS:=135596kB RssAnon:=84352kB RssFile:=51244kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=3089MB MemAvailable:=14797MB Cached:=10214MB AnonPages:=361MB Mapped:=340MB Slab:=1113MB 
-[RESMON] 01:28:12 mem=1212/15989MB disk_used=90277/147719MB free=57426MB containers=0
-[RESTOP] 168MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 98MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 
-[MEMDIAG] dockerd(2790): VmRSS:=172836kB RssAnon:=121592kB RssFile:=51244kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2609MB MemAvailable:=14767MB Cached:=10562MB AnonPages:=398MB Mapped:=340MB Slab:=1204MB 
+[PREPULL] task image warm (local)
+[DOCKERFILE SLIM] deepswe-bench/tasks/arcane-drift-detection-baselines/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70nj38qyatmsmj1d5zh57j25820vrx-v1.1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
+[SLIM-VERIFY] rewritten Dockerfile is now:
+[SLIM-VERIFY]   FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70nj38qyatmsmj1d5zh57j25820vrx-v1.1
+[SLIM-VERIFY]   CMD ["/bin/bash"]
+[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
+[gt-shim] active; resolved=/tmp/gt-shim/docker
+[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
