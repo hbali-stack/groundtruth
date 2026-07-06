@@ -1,19 +1,19 @@
-=== LIVE SNAPSHOT #7 | 2026-07-06T01:27:30Z | task=arcane-drift-detection-baselines ===
+=== LIVE SNAPSHOT #8 | 2026-07-06T01:27:51Z | task=arcane-drift-detection-baselines ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
-[RESMON] 01:27:07 mem=1205/15989MB disk_used=85205/147719MB free=62499MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=8284MB MemAvailable:=14782MB Cached:=5590MB AnonPages:=314MB Mapped:=340MB Slab:=608MB 
-[RESMON] 01:27:15 mem=1129/15989MB disk_used=85891/147719MB free=61812MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=7600MB MemAvailable:=14857MB Cached:=6270MB AnonPages:=321MB Mapped:=339MB Slab:=675MB 
-[RESMON] 01:27:23 mem=1086/15989MB disk_used=86950/147719MB free=60754MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=6504MB MemAvailable:=14893MB Cached:=7320MB AnonPages:=325MB Mapped:=340MB Slab:=757MB 
+[RESMON] 01:27:31 mem=1120/15989MB disk_used=87638/147719MB free=60066MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=5672MB MemAvailable:=14858MB Cached:=8016MB AnonPages:=341MB Mapped:=340MB Slab:=857MB 
+[RESMON] 01:27:39 mem=1277/15989MB disk_used=87987/147719MB free=59716MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=5184MB MemAvailable:=14706MB Cached:=8344MB AnonPages:=314MB Mapped:=340MB Slab:=854MB 
+[RESMON] 01:27:47 mem=1164/15989MB disk_used=88924/147719MB free=58780MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=4285MB MemAvailable:=14819MB Cached:=9269MB AnonPages:=325MB Mapped:=340MB Slab:=924MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[RESMON] 01:27:15 mem=1129/15989MB disk_used=85891/147719MB free=61812MB containers=0
-[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 97MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 91MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2790): VmRSS:=93552kB RssAnon:=42316kB RssFile:=51236kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=7600MB MemAvailable:=14857MB Cached:=6270MB AnonPages:=321MB Mapped:=339MB Slab:=675MB 
-[RESMON] 01:27:23 mem=1086/15989MB disk_used=86950/147719MB free=60754MB containers=0
-[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 97MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 95MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2790): VmRSS:=97804kB RssAnon:=46568kB RssFile:=51236kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=6504MB MemAvailable:=14893MB Cached:=7320MB AnonPages:=325MB Mapped:=340MB Slab:=757MB 
+[RESMON] 01:27:39 mem=1277/15989MB disk_used=87987/147719MB free=59716MB containers=0
+[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 97MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 85MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] dockerd(2790): VmRSS:=87072kB RssAnon:=35832kB RssFile:=51240kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=5184MB MemAvailable:=14706MB Cached:=8344MB AnonPages:=314MB Mapped:=340MB Slab:=854MB 
+[RESMON] 01:27:47 mem=1164/15989MB disk_used=88924/147719MB free=58780MB containers=0
+[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 99MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 94MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] dockerd(2790): VmRSS:=96260kB RssAnon:=45016kB RssFile:=51244kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=4285MB MemAvailable:=14819MB Cached:=9269MB AnonPages:=325MB Mapped:=340MB Slab:=924MB 
