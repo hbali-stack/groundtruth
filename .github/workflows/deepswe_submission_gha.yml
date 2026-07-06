@@ -1,0 +1,60 @@
+name: DeepSWE Submission — GHA arm (75 light tasks · MiMo · full-stack GT)
+
+# Dedicated hbali-stack workflow for the DeepSWE benchmark-submission run.
+# Hybrid split: the UpCloud box runs the 38 heaviest tasks; this GHA arm runs the 75
+# disk-light tasks (fit the ~14GB runner). Full-stack GT (depth_flags=1 + cooperative
+# channels via the probe-branch default). Drives the tested deepswe_full.yml engine with
+# the submission params baked; per-task jobs appear under the dispatched deepswe_full run.
+#
+# PREREQUISITE for full-stack: a substrate REBUILT at THIS run's commit (commit-parity=match).
+# The depth features live in the graph.db built INSIDE the substrate, so the substrate must
+# carry the depth-capable code. Pass that image as gt_substrate_digest.
+
+on:
+  workflow_dispatch:
+    inputs:
+      gt_substrate_digest:
+        description: "Substrate rebuilt at THIS commit (ghcr.io/hbali-stack/gt-substrate@sha256:...). REQUIRED for full-stack."
+        required: true
+      max_parallel:
+        description: "Concurrent GHA task jobs (~14GB disk each)"
+        required: true
+        default: "8"
+      instance_ids:
+        description: "Override the baked 75-task submission split (csv). Empty = the split."
+        required: false
+        default: ""
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  launch-gha-arm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deepswe_full.yml (75-task GHA submission arm, full-stack MiMo)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BAKED_IDS: "dynamodb-toolbox-lazy-recursive-schemas,dynamodb-toolbox-conditional-attribute-requirements,superjson-error-stack-serialization,psd-tools-blend-range-api,pebble-durability-wait-apis,koota-query-predicates,koota-pair-relation-tracking,koota-deferred-mutation-buffer,koota-composite-trait-aspects,koota-entity-snapshot-rollback,true-myth-iterable-collection-combinators,httpx-deterministic-cookie-store,httpx-streaming-json-iteration,httpx-multipart-response-parsing,ytt-jsonpath-query-api,obsidian-linter-scoped-ignore-markers,obsidian-linter-link-format-conversion,obsidian-linter-auto-table-of-contents,go-git-worktree-merge-conflicts,kea-atomic-signal-selectors,clack-async-autocomplete-options,ts-pattern-match-each,testem-bail-on-test-failure,testem-per-launcher-reports,ofetch-per-origin-circuit-breaker,cliffy-config-file-parsing,awilix-async-container-initialization,optique-conditional-option-dependencies,abs-stepped-slices,abs-module-cache-flags,fastapi-implicit-head-options,fastapi-deprecation-response-headers,textual-richlog-follow-state,aiomonitor-task-snapshots-diff,dasel-html-document-format,kombu-virtual-queue-dead-lettering,kombu-single-active-consumer-priority,updo-policy-alerting,tomlkit-toml-table-converters,ipython-session-bundle-replay,yjs-map-conflict-detection,wazero-multi-module-snapshots,go-genai-streamed-function-args,python-statemachine-state-data-scoping,vulture-persistent-analysis-cache,pwntools-tube-multiplexing,scc-bounded-memory-spilling,yaegi-go-embed-directives,scriggo-method-declarations,anko-typed-variable-bindings,gql-incremental-graphql-delivery,kcp-go-multiplexed-kcp-streams,csstree-shorthand-expansion-compression,go-critic-doc-link-checker,actionlint-action-pinning-lint,termenv-preserve-ansi-resets,expr-try-catch-errors,bandit-structured-nosec-directives,bandit-interprocedural-taint-checks,bandit-incremental-cache-control,tengo-destructuring-bindings,tengo-callable-instance-isolation,participle-grammar-conflict-analysis,geo-shapeindex-serialization,etree-xml-diff-patch,anko-default-function-arguments,mnamer-daemon-watch-lifecycle,dateutil-rfc5545-timezone-interop,sqlite-utils-safe-import-checkpoints,sqlfmt-create-table-ddl-formatting,returns-validated-error-accumulation,cattrs-partial-structuring-recovery,mobly-grouped-test-barriers,mashumaro-flattened-dataclass-fields,adaptix-name-mapping-aliases"
+        run: |
+          set -euo pipefail
+          IDS="${{ inputs.instance_ids }}"
+          [ -z "$IDS" ] && IDS="$BAKED_IDS"
+          N=$(echo "$IDS" | tr ',' '\n' | grep -c .)
+          echo "GHA submission arm: $N tasks | max_parallel=${{ inputs.max_parallel }} | full-stack MiMo | substrate ${{ inputs.gt_substrate_digest }}"
+          gh workflow run deepswe_full.yml \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.ref_name }}" \
+            -f model=openrouter/xiaomi/mimo-v2.5-pro \
+            -f max_tasks=0 \
+            -f instance_ids="$IDS" \
+            -f max_parallel="${{ inputs.max_parallel }}" \
+            -f step_limit=900 \
+            -f eval_cpus=2 \
+            -f assets_repo="${{ github.repository }}" \
+            -f gt_substrate_digest="${{ inputs.gt_substrate_digest }}" \
+            -f require_pinned_substrate=1 \
+            -f depth_flags=1 \
+            -f gt_arm=gt
+          echo "dispatched deepswe_full.yml — per-task jobs appear under that run"
