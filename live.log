@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #84 | 2026-07-06T03:54:44Z | task=eicrud-keyset-pagination-cursor ===
+=== LIVE SNAPSHOT #85 | 2026-07-06T03:55:05Z | task=eicrud-keyset-pagination-cursor ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_eicrud-keyset-pagination-cursor.log:[DOCKERFILE SLIM] deepswe-bench/tasks/eicrud-keyset-pagination-cursor/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh79vgnwnp3wfz0b63ft8zbs81822re8-v1.1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_eicrud-keyset-pagination-cursor.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,21 @@
 /tmp/gha_step_eicrud-keyset-pagination-cursor.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_eicrud-keyset-pagination-cursor.log:[ENV-START] eval container UP on attempt 1 (~30s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 03:54:26 mem=2584/15989MB disk_used=89278/147719MB free=58426MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2577MB MemAvailable:=13401MB Cached:=9328MB AnonPages:=1724MB Mapped:=548MB Slab:=1079MB 
-[RESMON] 03:54:35 mem=2596/15989MB disk_used=89278/147719MB free=58425MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2571MB MemAvailable:=13396MB Cached:=9328MB AnonPages:=1741MB Mapped:=555MB Slab:=1079MB 
 [RESMON] 03:54:43 mem=2641/15989MB disk_used=89279/147719MB free=58425MB containers=2
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2523MB MemAvailable:=13351MB Cached:=9330MB AnonPages:=1781MB Mapped:=547MB Slab:=1080MB 
+[RESMON] 03:54:51 mem=2671/15989MB disk_used=89279/147719MB free=58424MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2483MB MemAvailable:=13313MB Cached:=9331MB AnonPages:=1816MB Mapped:=549MB Slab:=1081MB 
+[RESMON] 03:54:59 mem=2766/15989MB disk_used=89280/147719MB free=58423MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2391MB MemAvailable:=13222MB Cached:=9332MB AnonPages:=1893MB Mapped:=548MB Slab:=1084MB 
 --- pier tail (last 15, non-RESMON) ---
 Overriding CPU count to 2 alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 Overriding memory to 9000 MB alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 --- step tail (last 8) ---
-[RESMON] 03:54:35 mem=2596/15989MB disk_used=89278/147719MB free=58425MB containers=2
-[RESTOP] 727MB:MainThread node /app/node_modules/.bin/jest --forceExit --maxWorkers=5 | 359MB:mongod mongod --dbpath /tmp/mongodb --fork --logpath /tmp/mongodb/mong | 220MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 204MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
+[RESMON] 03:54:51 mem=2671/15989MB disk_used=89279/147719MB free=58424MB containers=2
+[RESTOP] 780MB:MainThread node /app/node_modules/.bin/jest --forceExit --maxWorkers=5 | 384MB:mongod mongod --dbpath /tmp/mongodb --fork --logpath /tmp/mongodb/mong | 220MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 204MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
 [MEMDIAG] dockerd(2775): VmRSS:=225672kB RssAnon:=168988kB RssFile:=56684kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2571MB MemAvailable:=13396MB Cached:=9328MB AnonPages:=1741MB Mapped:=555MB Slab:=1079MB 
-[RESMON] 03:54:43 mem=2641/15989MB disk_used=89279/147719MB free=58425MB containers=2
-[RESTOP] 754MB:MainThread node /app/node_modules/.bin/jest --forceExit --maxWorkers=5 | 375MB:mongod mongod --dbpath /tmp/mongodb --fork --logpath /tmp/mongodb/mong | 220MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 204MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
-[MEMDIAG] dockerd(2775): VmRSS:=225672kB RssAnon:=168988kB RssFile:=56684kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2523MB MemAvailable:=13351MB Cached:=9330MB AnonPages:=1781MB Mapped:=547MB Slab:=1080MB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2483MB MemAvailable:=13313MB Cached:=9331MB AnonPages:=1816MB Mapped:=549MB Slab:=1081MB 
+[RESMON] 03:54:59 mem=2766/15989MB disk_used=89280/147719MB free=58423MB containers=2
+[RESTOP] 831MB:MainThread node /app/node_modules/.bin/jest --forceExit --maxWorkers=5 | 410MB:mongod mongod --dbpath /tmp/mongodb --fork --logpath /tmp/mongodb/mong | 220MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 204MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
+[MEMDIAG] dockerd(2775): VmRSS:=225720kB RssAnon:=168988kB RssFile:=56732kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2391MB MemAvailable:=13222MB Cached:=9332MB AnonPages:=1893MB Mapped:=548MB Slab:=1084MB 
