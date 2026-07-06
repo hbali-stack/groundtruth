@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #63 | 2026-07-06T01:47:06Z | task=arcane-drift-detection-baselines ===
+=== LIVE SNAPSHOT #64 | 2026-07-06T01:47:27Z | task=arcane-drift-detection-baselines ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_arcane-drift-detection-baselines.log:[DOCKERFILE SLIM] deepswe-bench/tasks/arcane-drift-detection-baselines/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh70nj38qyatmsmj1d5zh57j25820vrx-v1.1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_arcane-drift-detection-baselines.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,21 @@
 /tmp/gha_step_arcane-drift-detection-baselines.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_arcane-drift-detection-baselines.log:[ENV-START] eval container UP on attempt 1 (~40s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 01:46:44 mem=1590/15989MB disk_used=91999/147719MB free=55705MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1909MB MemAvailable:=14404MB Cached:=10703MB AnonPages:=758MB Mapped:=430MB Slab:=1363MB 
-[RESMON] 01:46:52 mem=1580/15989MB disk_used=91999/147719MB free=55705MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1916MB MemAvailable:=14410MB Cached:=10703MB AnonPages:=758MB Mapped:=431MB Slab:=1363MB 
-[RESMON] 01:47:00 mem=1590/15989MB disk_used=91999/147719MB free=55705MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1904MB MemAvailable:=14399MB Cached:=10703MB AnonPages:=758MB Mapped:=430MB Slab:=1363MB 
+[RESMON] 01:47:08 mem=1587/15989MB disk_used=91999/147719MB free=55705MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1914MB MemAvailable:=14409MB Cached:=10703MB AnonPages:=759MB Mapped:=430MB Slab:=1363MB 
+[RESMON] 01:47:16 mem=1575/15989MB disk_used=91999/147719MB free=55705MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1923MB MemAvailable:=14417MB Cached:=10703MB AnonPages:=758MB Mapped:=430MB Slab:=1363MB 
+[RESMON] 01:47:24 mem=1580/15989MB disk_used=91999/147719MB free=55705MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1913MB MemAvailable:=14407MB Cached:=10704MB AnonPages:=770MB Mapped:=439MB Slab:=1363MB 
 --- pier tail (last 15, non-RESMON) ---
 Overriding CPU count to 2 alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 Overriding memory to 9000 MB alters the task from its intended configuration. This could disqualify you from leaderboard submissions for some benchmarks.
 --- step tail (last 8) ---
-[RESMON] 01:46:52 mem=1580/15989MB disk_used=91999/147719MB free=55705MB containers=2
+[RESMON] 01:47:16 mem=1575/15989MB disk_used=91999/147719MB free=55705MB containers=2
 [RESTOP] 244MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 202MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 134MB:provjobd1864080 /tmp/provjobd186408094 | 
 [MEMDIAG] dockerd(2790): VmRSS:=250428kB RssAnon:=194460kB RssFile:=55968kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1916MB MemAvailable:=14410MB Cached:=10703MB AnonPages:=758MB Mapped:=431MB Slab:=1363MB 
-[RESMON] 01:47:00 mem=1590/15989MB disk_used=91999/147719MB free=55705MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1923MB MemAvailable:=14417MB Cached:=10703MB AnonPages:=758MB Mapped:=430MB Slab:=1363MB 
+[RESMON] 01:47:24 mem=1580/15989MB disk_used=91999/147719MB free=55705MB containers=2
 [RESTOP] 244MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 202MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 134MB:provjobd1864080 /tmp/provjobd186408094 | 
 [MEMDIAG] dockerd(2790): VmRSS:=250428kB RssAnon:=194460kB RssFile:=55968kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1904MB MemAvailable:=14399MB Cached:=10703MB AnonPages:=758MB Mapped:=430MB Slab:=1363MB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1913MB MemAvailable:=14407MB Cached:=10704MB AnonPages:=770MB Mapped:=439MB Slab:=1363MB 
