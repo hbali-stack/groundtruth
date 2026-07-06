@@ -1,11 +1,13 @@
-=== LIVE SNAPSHOT #2 | 2026-07-06T01:25:44Z | task=arcane-drift-detection-baselines ===
+=== LIVE SNAPSHOT #3 | 2026-07-06T01:26:06Z | task=arcane-drift-detection-baselines ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-=== DeepSWE GT Trial: arcane-drift-detection-baselines (model openrouter/xiaomi/mimo-v2.5-pro) ===
-HOST  GT_CERT_DIR=<unset>  GT_HOST_GRAPH_DB=<unset>
 GT_PROOF_MODE=1  GT_CONTAINERIZED=1  GT_SUBSTRATE_DIGEST=ghcr.io/hbali-stack/gt-substrate@sha256:bc253e32873b1478c019bfa727d6b33f47c44cef85a86b5fcf64a9fa82700383
 GT inject staged: 71 Python files
 go: downloading github.com/smacker/go-tree-sitter v0.0.0-20240625050157-a31a98a7c0f6
 go: downloading github.com/mattn/go-sqlite3 v1.14.22
+# github.com/smacker/go-tree-sitter/lua
+parser.c:254:17: warning: null character(s) preserved in literal
+  254 |   [anon_sym_] = " ",
+      |                 ^
