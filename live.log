@@ -1,17 +1,19 @@
-=== LIVE SNAPSHOT #6 | 2026-07-06T01:27:09Z | task=arcane-drift-detection-baselines ===
+=== LIVE SNAPSHOT #7 | 2026-07-06T01:27:30Z | task=arcane-drift-detection-baselines ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
-[RESMON] 01:26:59 mem=1303/15989MB disk_used=83941/147719MB free=63763MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=9516MB MemAvailable:=14682MB Cached:=4330MB AnonPages:=303MB Mapped:=337MB Slab:=541MB 
 [RESMON] 01:27:07 mem=1205/15989MB disk_used=85205/147719MB free=62499MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=8284MB MemAvailable:=14782MB Cached:=5590MB AnonPages:=314MB Mapped:=340MB Slab:=608MB 
+[RESMON] 01:27:15 mem=1129/15989MB disk_used=85891/147719MB free=61812MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=7600MB MemAvailable:=14857MB Cached:=6270MB AnonPages:=321MB Mapped:=339MB Slab:=675MB 
+[RESMON] 01:27:23 mem=1086/15989MB disk_used=86950/147719MB free=60754MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=6504MB MemAvailable:=14893MB Cached:=7320MB AnonPages:=325MB Mapped:=340MB Slab:=757MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[RESMON] 01:26:59 mem=1303/15989MB disk_used=83941/147719MB free=63763MB containers=0
-[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 97MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 73MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2790): VmRSS:=74904kB RssAnon:=25176kB RssFile:=49728kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=9516MB MemAvailable:=14682MB Cached:=4330MB AnonPages:=303MB Mapped:=337MB Slab:=541MB 
-[RESMON] 01:27:07 mem=1205/15989MB disk_used=85205/147719MB free=62499MB containers=0
-[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 97MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 84MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2790): VmRSS:=86940kB RssAnon:=35812kB RssFile:=51128kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=8284MB MemAvailable:=14782MB Cached:=5590MB AnonPages:=314MB Mapped:=340MB Slab:=608MB 
+[RESMON] 01:27:15 mem=1129/15989MB disk_used=85891/147719MB free=61812MB containers=0
+[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 97MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 91MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] dockerd(2790): VmRSS:=93552kB RssAnon:=42316kB RssFile:=51236kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=7600MB MemAvailable:=14857MB Cached:=6270MB AnonPages:=321MB Mapped:=339MB Slab:=675MB 
+[RESMON] 01:27:23 mem=1086/15989MB disk_used=86950/147719MB free=60754MB containers=0
+[RESTOP] 137MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 128MB:provjobd1864080 /tmp/provjobd186408094 | 97MB:Runner.Listener /home/runner/actions-runner/cached/2.335.1/bin/Runner. | 95MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] dockerd(2790): VmRSS:=97804kB RssAnon:=46568kB RssFile:=51236kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=6504MB MemAvailable:=14893MB Cached:=7320MB AnonPages:=325MB Mapped:=340MB Slab:=757MB 
