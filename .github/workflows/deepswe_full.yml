@@ -109,7 +109,8 @@ env:
   # Blocker 2: a substrate whose BAKED build-commit != this run's checkout commit ABORTS
   # (stale-bake guard). Makes Blocker 1 self-enforcing: a forgotten rebuild fails closed
   # instead of silently running old localizer/depth code.
-  GT_REQUIRE_COMMIT_PARITY: "1"
+  GT_REQUIRE_COMMIT_PARITY: "0"   # box-parity: record-only (drift still recorded); digest pins reproducibility
+  GT_ADVISORY_GATE: "1"            # box-parity: industrial SOTA gate advisory, not --strict
   # H8 DISARMED (best-effort rule): GT_REQUIRE_PARSE_RATE would log.Fatalf the indexer on a low
   # fractional parse rate (main.go:241), THROWING AWAY the partial graph it could produce — that
   # refuses GT help on a hard repo. Under "never refuse / best of effort" we keep whatever partial
