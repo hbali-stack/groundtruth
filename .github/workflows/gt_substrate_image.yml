@@ -99,3 +99,5 @@ jobs:
           name: gt-substrate-digest
           path: /tmp/gt_digest/GT_SUBSTRATE_DIGEST.txt
           if-no-files-found: warn
+
+# dispatch registration nudge — enable workflow_dispatch on the default branch
