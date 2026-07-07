@@ -20,7 +20,7 @@ while [ $# -gt 0 ]; do case "$1" in
 esac; done
 
 EXP_TAG="${GT_DEEPSWE_TAG:-v1.0.0}"
-EXP_TAG_SHA="${GT_DEEPSWE_TAG_SHA_PREFIX:-79a508a9}"
+EXP_TAG_SHA="${GT_DEEPSWE_TAG_SHA_PREFIX:-c33fa70e}"  # v1.0.0 COMMIT (rev-parse HEAD); 79a508a9 is the annotated tag OBJECT
 EXP_PIER="0.2.0"
 fail() { echo "PREFLIGHT_FAIL[$SURFACE]: $*" >&2; exit 1; }
 ok()   { echo "  [OK] $*"; }
