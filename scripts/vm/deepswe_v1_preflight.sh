@@ -36,9 +36,12 @@ ok "deep-swe @ $DESC ($HEAD)"
 
 # 2. DeepSWE task format (v1.0.0 grading path) ----------------------------
 [ -d "$BENCH/tasks" ] || fail "no $BENCH/tasks"
-find "$BENCH/tasks" -maxdepth 2 -name task.toml | head -1 | grep -q . || fail "no task.toml"
-find "$BENCH/tasks" -maxdepth 3 -path '*/tests/test.sh' | head -1 | grep -q . || fail "no tests/test.sh"
-find "$BENCH/tasks" -maxdepth 3 -path '*/tests/test.patch' | head -1 | grep -q . || fail "no tests/test.patch"
+# Command substitution (NOT `find | head | grep -q`): under `set -o pipefail`,
+# GNU find SIGPIPEs when head closes the pipe early -> a false "no task.toml".
+echo "  tasks/: $(find "$BENCH/tasks" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l) dirs; task.toml=$(find "$BENCH/tasks" -maxdepth 2 -name task.toml 2>/dev/null | wc -l)"
+[ -n "$(find "$BENCH/tasks" -maxdepth 2 -name task.toml 2>/dev/null | head -1)" ] || fail "no task.toml"
+[ -n "$(find "$BENCH/tasks" -maxdepth 3 -path '*/tests/test.sh' 2>/dev/null | head -1)" ] || fail "no tests/test.sh"
+[ -n "$(find "$BENCH/tasks" -maxdepth 3 -path '*/tests/test.patch' 2>/dev/null | head -1)" ] || fail "no tests/test.patch"
 ok "task format: task.toml + tests/test.sh + tests/test.patch present"
 
 # 3. Reject v1.1 grader indicators ----------------------------------------
