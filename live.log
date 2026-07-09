@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #11 | 2026-07-09T05:37:09Z | task=abs-module-cache-flags ===
+=== LIVE SNAPSHOT #12 | 2026-07-09T05:37:30Z | task=abs-module-cache-flags ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_abs-module-cache-flags.log:[DOCKERFILE SLIM] deepswe-bench/tasks/abs-module-cache-flags/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh75679ajj3b8dtd7se3h7z0a1833y6r (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_abs-module-cache-flags.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -8,19 +8,19 @@
 /tmp/gha_step_abs-module-cache-flags.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
 /tmp/gha_step_abs-module-cache-flags.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
-[RESMON] 05:36:52 mem=1186/15989MB disk_used=89798/147719MB free=57905MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=3204MB MemAvailable:=14808MB Cached:=10146MB AnonPages:=342MB Mapped:=327MB Slab:=1087MB 
-[RESMON] 05:37:00 mem=1573/15989MB disk_used=89980/147719MB free=57724MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2565MB MemAvailable:=14408MB Cached:=10366MB AnonPages:=744MB Mapped:=474MB Slab:=1103MB 
 [RESMON] 05:37:08 mem=1781/15989MB disk_used=90603/147719MB free=57100MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1668MB MemAvailable:=14206MB Cached:=10963MB AnonPages:=820MB Mapped:=484MB Slab:=1179MB 
+[RESMON] 05:37:16 mem=1671/15989MB disk_used=90614/147719MB free=57089MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1781MB MemAvailable:=14322MB Cached:=10962MB AnonPages:=627MB Mapped:=454MB Slab:=1176MB 
+[RESMON] 05:37:25 mem=2086/15989MB disk_used=90619/147719MB free=57085MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1014MB MemAvailable:=13836MB Cached:=10966MB AnonPages:=1215MB Mapped:=447MB Slab:=1494MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[RESMON] 05:37:00 mem=1573/15989MB disk_used=89980/147719MB free=57724MB containers=0
+[RESMON] 05:37:16 mem=1671/15989MB disk_used=90614/147719MB free=57089MB containers=0
 [RESTOP] 207MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 138MB:provjobd2821518 /tmp/provjobd2821518329 | 122MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2784): VmRSS:=125048kB RssAnon:=69080kB RssFile:=55968kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2565MB MemAvailable:=14408MB Cached:=10366MB AnonPages:=744MB Mapped:=474MB Slab:=1103MB 
-[RESMON] 05:37:08 mem=1781/15989MB disk_used=90603/147719MB free=57100MB containers=0
-[RESTOP] 207MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 138MB:provjobd2821518 /tmp/provjobd2821518329 | 
-[MEMDIAG] dockerd(2784): VmRSS:=125096kB RssAnon:=69104kB RssFile:=55992kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1668MB MemAvailable:=14206MB Cached:=10963MB AnonPages:=820MB Mapped:=484MB Slab:=1179MB 
+[MEMDIAG] dockerd(2784): VmRSS:=127020kB RssAnon:=70104kB RssFile:=56916kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1781MB MemAvailable:=14322MB Cached:=10962MB AnonPages:=627MB Mapped:=454MB Slab:=1176MB 
+[RESMON] 05:37:25 mem=2086/15989MB disk_used=90619/147719MB free=57085MB containers=0
+[RESTOP] 720MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 207MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 138MB:provjobd2821518 /tmp/provjobd2821518329 | 
+[MEMDIAG] dockerd(2784): VmRSS:=738300kB RssAnon:=680724kB RssFile:=57576kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1014MB MemAvailable:=13836MB Cached:=10966MB AnonPages:=1215MB Mapped:=447MB Slab:=1494MB 
