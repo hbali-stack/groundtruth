@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:24:41Z | task=fastapi-deprecation-response-headers ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 06:22:13] used=1884MB total=15989MB swap_used=0MB
+[MEMLOG 06:22:23] used=1846MB total=15989MB swap_used=0MB
+[MEMLOG 06:22:33] used=1850MB total=15989MB swap_used=0MB
+[MEMLOG 06:22:43] used=1848MB total=15989MB swap_used=0MB
+[MEMLOG 06:22:53] used=1847MB total=15989MB swap_used=0MB
+[MEMLOG 06:23:03] used=1847MB total=15989MB swap_used=0MB
+[MEMLOG 06:23:13] used=1847MB total=15989MB swap_used=0MB
+[MEMLOG 06:23:23] used=1850MB total=15989MB swap_used=0MB
+[MEMLOG 06:23:33] used=1850MB total=15989MB swap_used=0MB
+[MEMLOG 06:23:43] used=1851MB total=15989MB swap_used=0MB
+[MEMLOG 06:23:53] used=1851MB total=15989MB swap_used=0MB
+[MEMLOG 06:24:03] used=1857MB total=15989MB swap_used=0MB
+[MEMLOG 06:24:13] used=1866MB total=15989MB swap_used=0MB
+[MEMLOG 06:24:23] used=1876MB total=15989MB swap_used=0MB
+[MEMLOG 06:24:33] used=1868MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
