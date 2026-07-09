@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:04:11Z | task=gql-incremental-graphql-delivery ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 06:01:40] used=1353MB total=15993MB swap_used=0MB
+[MEMLOG 06:01:51] used=1420MB total=15993MB swap_used=0MB
+[MEMLOG 06:02:01] used=1405MB total=15993MB swap_used=0MB
+[MEMLOG 06:02:11] used=1562MB total=15993MB swap_used=0MB
+[MEMLOG 06:02:21] used=1652MB total=15993MB swap_used=0MB
+[MEMLOG 06:02:31] used=2190MB total=15993MB swap_used=0MB
+[MEMLOG 06:02:41] used=1944MB total=15993MB swap_used=0MB
+[MEMLOG 06:02:51] used=1884MB total=15993MB swap_used=0MB
+[MEMLOG 06:03:01] used=1885MB total=15993MB swap_used=0MB
+[MEMLOG 06:03:11] used=1883MB total=15993MB swap_used=0MB
+[MEMLOG 06:03:21] used=1885MB total=15993MB swap_used=0MB
+[MEMLOG 06:03:31] used=1886MB total=15993MB swap_used=0MB
+[MEMLOG 06:03:41] used=1888MB total=15993MB swap_used=0MB
+[MEMLOG 06:03:51] used=1883MB total=15993MB swap_used=0MB
+[MEMLOG 06:04:01] used=1884MB total=15993MB swap_used=0MB
+--- step tail (last 8) ---
