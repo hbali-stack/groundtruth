@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:44:07Z | task=dynamodb-toolbox-conditional-attribute-requirements ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 06:41:37] used=1873MB total=15989MB swap_used=0MB
+[MEMLOG 06:41:47] used=1874MB total=15989MB swap_used=0MB
+[MEMLOG 06:41:57] used=1874MB total=15989MB swap_used=0MB
+[MEMLOG 06:42:07] used=1874MB total=15989MB swap_used=0MB
+[MEMLOG 06:42:17] used=1875MB total=15989MB swap_used=0MB
+[MEMLOG 06:42:27] used=1883MB total=15989MB swap_used=0MB
+[MEMLOG 06:42:37] used=1884MB total=15989MB swap_used=0MB
+[MEMLOG 06:42:47] used=1886MB total=15989MB swap_used=0MB
+[MEMLOG 06:42:57] used=1887MB total=15989MB swap_used=0MB
+[MEMLOG 06:43:07] used=1888MB total=15989MB swap_used=0MB
+[MEMLOG 06:43:17] used=1888MB total=15989MB swap_used=0MB
+[MEMLOG 06:43:27] used=1889MB total=15989MB swap_used=0MB
+[MEMLOG 06:43:37] used=1890MB total=15989MB swap_used=0MB
+[MEMLOG 06:43:47] used=1891MB total=15989MB swap_used=0MB
+[MEMLOG 06:43:57] used=1892MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
