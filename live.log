@@ -1,0 +1,19 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:37:43Z | task=bandit-incremental-cache-control ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 06:35:23] used=1304MB total=15989MB swap_used=0MB
+[MEMLOG 06:35:33] used=1279MB total=15989MB swap_used=0MB
+[MEMLOG 06:35:43] used=1254MB total=15989MB swap_used=0MB
+[MEMLOG 06:35:53] used=1240MB total=15989MB swap_used=0MB
+[MEMLOG 06:36:03] used=1256MB total=15989MB swap_used=0MB
+[MEMLOG 06:36:13] used=1265MB total=15989MB swap_used=0MB
+[MEMLOG 06:36:23] used=1303MB total=15989MB swap_used=0MB
+[MEMLOG 06:36:33] used=1336MB total=15989MB swap_used=0MB
+[MEMLOG 06:36:43] used=1348MB total=15989MB swap_used=0MB
+[MEMLOG 06:36:53] used=1606MB total=15989MB swap_used=0MB
+[MEMLOG 06:37:03] used=1657MB total=15989MB swap_used=0MB
+[MEMLOG 06:37:13] used=2036MB total=15989MB swap_used=0MB
+[MEMLOG 06:37:23] used=1877MB total=15989MB swap_used=0MB
+[MEMLOG 06:37:33] used=1850MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
