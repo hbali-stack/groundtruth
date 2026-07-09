@@ -24,9 +24,9 @@ on:
         required: true
         default: "eval_preds/baseline_dewrapped_preds.jsonl"
       batch_size:
-        description: "Tasks per eval job (300 total)"
+        description: "Tasks per eval job (300 total). 75 -> 4 batches, keeps dockerhub pulls <100/IP."
         required: true
-        default: "100"
+        default: "75"
       max_workers:
         description: "Docker parallelism within each eval job (bounds peak disk)"
         required: true
@@ -34,11 +34,11 @@ on:
       max_parallel:
         description: "Max concurrent eval jobs"
         required: true
-        default: "3"
+        default: "4"
       namespace:
-        description: "Image source namespace (ghcr.io/harneet2512 = GHCR cache; starryzhang = Docker Hub)"
+        description: "Image source namespace (starryzhang = complete Docker Hub source; ghcr.io/harneet2512 = PARTIAL cache)"
         required: true
-        default: "ghcr.io/harneet2512"
+        default: "starryzhang"
       run_tag:
         description: "Run id prefix for harness logs"
         required: true
@@ -151,12 +151,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker Hub (fallback namespace source)
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        continue-on-error: true
+      - name: Log in to Docker Hub (spread pulls across 2 accounts by batch parity)
+        env:
+          U1: ${{ secrets.DOCKERHUB_USER_1 }}
+          P1: ${{ secrets.DOCKERHUB_PAT_1 }}
+          U2: ${{ secrets.DOCKERHUB_USER_2 }}
+          P2: ${{ secrets.DOCKERHUB_PAT_2 }}
+        run: |
+          # Split so each account stays under the 200-pull/6h authenticated limit:
+          # even batches -> account 1, odd -> account 2 (4 batches x 75 => 150/account).
+          BID=${{ matrix.batch_id }}
+          if [ $((BID % 2)) -eq 0 ]; then U="$U1"; P="$P1"; ACC=1; else U="$U2"; P="$P2"; ACC=2; fi
+          if [ -n "$U" ] && [ -n "$P" ]; then
+            echo "$P" | docker login docker.io -u "$U" --password-stdin \
+              && echo "dockerhub login OK (account $ACC) for batch $BID" \
+              || echo "::warning::dockerhub login failed (account $ACC) — falling back to anonymous"
+          else
+            echo "::warning::dockerhub creds for account $ACC absent — anonymous pulls for batch $BID"
+          fi
 
       - name: Run evaluation (official harness)
         run: |
@@ -184,12 +196,16 @@ jobs:
           set -uo pipefail
           RUN_ID="${{ inputs.run_tag }}_b${{ matrix.batch_id }}"
           OUT="/tmp/reeval_out"
-          mkdir -p "$OUT"
-          # (a) full per-instance report tree (authoritative)
-          if [ -d "logs/run_evaluation/$RUN_ID" ]; then
-            cp -r "logs/run_evaluation/$RUN_ID" "$OUT/report_tree"
-          fi
-          # (b) harness top-level summary json (has resolved_ids/completed_ids/...)
+          mkdir -p "$OUT/reports"
+          # (a) flatten per-instance report.json to safe filenames. The model dir
+          # 'mini-swe-agent-... (baseline)' has spaces+parens that broke the v4
+          # artifact upload of the nested tree, so copy each report to reports/<instance>.json.
+          find "logs/run_evaluation/$RUN_ID" -name report.json 2>/dev/null | while read -r rp; do
+            INST="$(basename "$(dirname "$rp")")"
+            cp "$rp" "$OUT/reports/${INST}.json"
+          done
+          echo "captured $(ls "$OUT/reports" 2>/dev/null | wc -l) per-instance report.json"
+          # (b) harness top-level summary json (has resolved_ids/completed_ids/error_ids/...)
           find . -maxdepth 1 -name "*.$RUN_ID.json" -exec cp -v {} "$OUT/" \; 2>/dev/null || true
           cp -v /tmp/eval_b${{ matrix.batch_id }}.log "$OUT/" 2>/dev/null || true
 
@@ -197,21 +213,20 @@ jobs:
           python3 - "$OUT" "$RUN_ID" << 'PYEOF'
           import json, glob, os, sys
           out, run_id = sys.argv[1], sys.argv[2]
-          reports = glob.glob(os.path.join(out, "report_tree", "**", "report.json"), recursive=True)
+          reports = glob.glob(os.path.join(out, "reports", "*.json"))
           resolved, applied, total = [], 0, len(reports)
           for rp in reports:
               try:
                   d = json.load(open(rp))
                   for iid, r in d.items():
                       if r.get("resolved"): resolved.append(iid)
-                      if r.get("patch_successfully_applied") or r.get("patch_is_None") is False:
-                          applied += 1
+                      if r.get("patch_successfully_applied"): applied += 1
               except Exception as e:
                   print("WARN parse", rp, e)
           tally = {"run_id": run_id, "reports": total, "resolved": len(resolved),
-                   "resolved_ids": sorted(resolved)}
+                   "applied": applied, "resolved_ids": sorted(resolved)}
           json.dump(tally, open(os.path.join(out, "batch_tally.json"), "w"), indent=2)
-          print(f"[{run_id}] reports={total} resolved={len(resolved)}")
+          print(f"[{run_id}] reports={total} resolved={len(resolved)} applied={applied}")
           gsm = os.environ.get("GITHUB_STEP_SUMMARY")
           if gsm:
               with open(gsm, "a") as f:
