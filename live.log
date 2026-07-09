@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T05:33:34Z | task=dateutil-rfc5545-timezone-interop ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 05:31:06] used=1346MB total=15989MB swap_used=0MB
+[MEMLOG 05:31:16] used=1374MB total=15989MB swap_used=0MB
+[MEMLOG 05:31:26] used=1367MB total=15989MB swap_used=0MB
+[MEMLOG 05:31:36] used=1738MB total=15989MB swap_used=0MB
+[MEMLOG 05:31:46] used=1843MB total=15989MB swap_used=0MB
+[MEMLOG 05:31:56] used=1872MB total=15989MB swap_used=0MB
+[MEMLOG 05:32:06] used=2176MB total=15989MB swap_used=0MB
+[MEMLOG 05:32:16] used=1954MB total=15989MB swap_used=0MB
+[MEMLOG 05:32:26] used=1890MB total=15989MB swap_used=0MB
+[MEMLOG 05:32:36] used=1889MB total=15989MB swap_used=0MB
+[MEMLOG 05:32:46] used=1889MB total=15989MB swap_used=0MB
+[MEMLOG 05:32:56] used=1888MB total=15989MB swap_used=0MB
+[MEMLOG 05:33:06] used=1887MB total=15989MB swap_used=0MB
+[MEMLOG 05:33:16] used=1901MB total=15989MB swap_used=0MB
+[MEMLOG 05:33:26] used=1903MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
