@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:02:38Z | task=go-critic-doc-link-checker ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 06:00:08] used=1320MB total=15988MB swap_used=0MB
+[MEMLOG 06:00:18] used=1312MB total=15988MB swap_used=0MB
+[MEMLOG 06:00:28] used=1560MB total=15988MB swap_used=0MB
+[MEMLOG 06:00:38] used=1805MB total=15988MB swap_used=0MB
+[MEMLOG 06:00:48] used=2017MB total=15988MB swap_used=0MB
+[MEMLOG 06:00:58] used=1859MB total=15988MB swap_used=0MB
+[MEMLOG 06:01:08] used=1854MB total=15988MB swap_used=0MB
+[MEMLOG 06:01:18] used=1853MB total=15988MB swap_used=0MB
+[MEMLOG 06:01:28] used=1859MB total=15988MB swap_used=0MB
+[MEMLOG 06:01:38] used=1859MB total=15988MB swap_used=0MB
+[MEMLOG 06:01:48] used=1861MB total=15988MB swap_used=0MB
+[MEMLOG 06:01:58] used=1863MB total=15988MB swap_used=0MB
+[MEMLOG 06:02:08] used=1866MB total=15988MB swap_used=0MB
+[MEMLOG 06:02:18] used=1866MB total=15988MB swap_used=0MB
+[MEMLOG 06:02:28] used=1876MB total=15988MB swap_used=0MB
+--- step tail (last 8) ---
