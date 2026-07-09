@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #18 | 2026-07-09T06:07:13Z | task=clack-async-autocomplete-options ===
+=== LIVE SNAPSHOT #19 | 2026-07-09T06:07:34Z | task=clack-async-autocomplete-options ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_clack-async-autocomplete-options.log:[DOCKERFILE SLIM] deepswe-bench/tasks/clack-async-autocomplete-options/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh78c5dwwna57y757p2y5ktw79836dnv (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_clack-async-autocomplete-options.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -8,17 +8,19 @@
 /tmp/gha_step_clack-async-autocomplete-options.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
 /tmp/gha_step_clack-async-autocomplete-options.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
-[RESMON] 06:07:05 mem=1166/15989MB disk_used=90277/147719MB free=57426MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2960MB MemAvailable:=14818MB Cached:=10327MB AnonPages:=347MB Mapped:=324MB Slab:=1124MB 
 [RESMON] 06:07:13 mem=1499/15989MB disk_used=90299/147719MB free=57404MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2580MB MemAvailable:=14490MB Cached:=10374MB AnonPages:=638MB Mapped:=465MB Slab:=1129MB 
+[RESMON] 06:07:21 mem=1857/15989MB disk_used=90922/147719MB free=56781MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1516MB MemAvailable:=14129MB Cached:=10998MB AnonPages:=801MB Mapped:=482MB Slab:=1194MB 
+[RESMON] 06:07:29 mem=1810/15989MB disk_used=91090/147719MB free=56613MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1356MB MemAvailable:=14179MB Cached:=11174MB AnonPages:=734MB Mapped:=466MB Slab:=1212MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2960MB MemAvailable:=14818MB Cached:=10327MB AnonPages:=347MB Mapped:=324MB Slab:=1124MB 
-[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
-[gt-shim] active; resolved=/tmp/gt-shim/docker
-[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
-[RESMON] 06:07:13 mem=1499/15989MB disk_used=90299/147719MB free=57404MB containers=0
-[RESTOP] 207MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 141MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 139MB:provjobd7416686 /tmp/provjobd741668668 | 135MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2744): VmRSS:=138780kB RssAnon:=82440kB RssFile:=56340kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2580MB MemAvailable:=14490MB Cached:=10374MB AnonPages:=638MB Mapped:=465MB Slab:=1129MB 
+[RESMON] 06:07:21 mem=1857/15989MB disk_used=90922/147719MB free=56781MB containers=0
+[RESTOP] 207MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 141MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 141MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 138MB:provjobd7416686 /tmp/provjobd741668668 | 
+[MEMDIAG] dockerd(2744): VmRSS:=145152kB RssAnon:=88672kB RssFile:=56480kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1516MB MemAvailable:=14129MB Cached:=10998MB AnonPages:=801MB Mapped:=482MB Slab:=1194MB 
+[RESMON] 06:07:29 mem=1810/15989MB disk_used=91090/147719MB free=56613MB containers=0
+[RESTOP] 207MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 141MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 138MB:provjobd7416686 /tmp/provjobd741668668 | 126MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] dockerd(2744): VmRSS:=129580kB RssAnon:=72524kB RssFile:=57056kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1356MB MemAvailable:=14179MB Cached:=11174MB AnonPages:=734MB Mapped:=466MB Slab:=1212MB 
