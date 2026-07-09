@@ -19,11 +19,19 @@ on:
         required: true
         default: "eval_preds/baseline_dewrapped_preds.jsonl"
       half:
-        description: "Which 150-task half (300 > 256 matrix cap)"
+        description: "Which 150-task half (300 > 256 matrix cap). Ignored when task_ids is set."
         required: true
         type: choice
         options: ["0", "1"]
         default: "0"
+      task_ids:
+        description: "Comma-separated instance_ids to re-run (overrides half slice). Blank = use half."
+        required: false
+        default: ""
+      harness_timeout:
+        description: "Per-instance harness --timeout seconds (raise for slow suites e.g. conan)"
+        required: true
+        default: "1800"
       max_parallel:
         description: "Concurrent task jobs in THIS half (keep both halves' sum under the account concurrency cap)"
         required: true
@@ -57,22 +65,29 @@ jobs:
           test -f "$PREDS" || { echo "::error::preds not found: $PREDS"; exit 1; }
           BYTES=$(wc -c < "$PREDS")
           [ "$BYTES" -ge 1000 ] || { echo "::error::preds suspiciously small ($BYTES B) — LFS pointer?"; head -c 300 "$PREDS"; exit 1; }
-          python3 - "$PREDS" "${{ inputs.half }}" << 'PYEOF'
+          python3 - "$PREDS" "${{ inputs.half }}" "${{ inputs.task_ids }}" << 'PYEOF'
           import json, os, sys
-          src, half = sys.argv[1], int(sys.argv[2])
+          src, half, task_ids = sys.argv[1], int(sys.argv[2]), sys.argv[3].strip()
           ids = [json.loads(l)["instance_id"] for l in open(src, encoding="utf-8") if l.strip()]
-          chunk = ids[half*150:(half+1)*150]
+          if task_ids:
+              want = [x.strip() for x in task_ids.split(",") if x.strip()]
+              chunk = [i for i in ids if i in set(want)]   # preserve preds order, only known ids
+              print(f"task_ids override: {len(chunk)}/{len(want)} requested ids matched")
+          else:
+              chunk = ids[half*150:(half+1)*150]
+              print(f"half {half}: {len(chunk)} tasks ({chunk[0]} .. {chunk[-1]})")
+          if not chunk:
+              raise SystemExit("no tasks selected")
           matrix = {"include": [{"iid": i} for i in chunk]}
           with open(os.environ["GITHUB_OUTPUT"], "a") as gh:
               gh.write(f"matrix={json.dumps(matrix)}\n")
               gh.write(f"count={len(chunk)}\n")
-          print(f"half {half}: {len(chunk)} tasks ({chunk[0]} .. {chunk[-1]})")
           PYEOF
 
   eval:
     needs: prepare
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       DOCKER_CLIENT_TIMEOUT: "300"
       COMPOSE_HTTP_TIMEOUT: "300"
@@ -81,8 +96,14 @@ jobs:
       fail-fast: false
       max-parallel: ${{ fromJson(inputs.max_parallel) }}
     steps:
-      - name: Light disk prep (single image per job)
-        run: docker system prune -af >/dev/null 2>&1 || true
+      - name: Free disk space (headroom for slow/large suites)
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/share/swift /opt/hostedtoolcache/CodeQL \
+            /usr/local/share/powershell /usr/local/share/chromium \
+            /opt/hostedtoolcache/go /opt/hostedtoolcache/node 2>/dev/null || true
+          docker system prune -af >/dev/null 2>&1 || true
+          df -h /
 
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -149,6 +170,7 @@ jobs:
             --split lite \
             --namespace "${{ inputs.namespace }}" \
             --cache_level none \
+            --timeout ${{ inputs.harness_timeout }} \
             --predictions_path /tmp/task.jsonl \
             --max_workers 1 \
             --run_id "$RUN_ID" \
@@ -165,9 +187,13 @@ jobs:
           if [ -n "$RP" ]; then
             cp "$RP" "$OUT/${IID}.report.json"
           else
-            echo "::warning::no report.json for $IID (harness error — infra)"
+            echo "::warning::no report.json for $IID (harness error) — capturing run_instance.log for diagnosis"
           fi
+          # capture run_instance.log (real error cause when no report) + FULL harness stdout
+          RIL="$(find "logs/run_evaluation/$RUN_ID" -name run_instance.log 2>/dev/null | head -1)"
+          [ -n "$RIL" ] && cp "$RIL" "$OUT/${IID}.run_instance.log" 2>/dev/null || true
           find . -maxdepth 1 -name "*.$RUN_ID.json" -exec cp {} "$OUT/${IID}.summary.json" \; 2>/dev/null || true
+          cp /tmp/task.log "$OUT/${IID}.full.log" 2>/dev/null || true
           tail -40 /tmp/task.log > "$OUT/${IID}.tail.log" 2>/dev/null || true
           # one-line verdict for quick reading
           python3 - "$OUT" "$IID" << 'PYEOF'
