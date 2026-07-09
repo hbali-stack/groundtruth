@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:01:17Z | task=clack-async-autocomplete-options ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 05:58:47] used=1399MB total=15989MB swap_used=0MB
+[MEMLOG 05:58:57] used=1346MB total=15989MB swap_used=0MB
+[MEMLOG 05:59:07] used=1338MB total=15989MB swap_used=0MB
+[MEMLOG 05:59:17] used=1350MB total=15989MB swap_used=0MB
+[MEMLOG 05:59:27] used=1369MB total=15989MB swap_used=0MB
+[MEMLOG 05:59:37] used=1387MB total=15989MB swap_used=0MB
+[MEMLOG 05:59:47] used=1381MB total=15989MB swap_used=0MB
+[MEMLOG 05:59:57] used=1614MB total=15989MB swap_used=0MB
+[MEMLOG 06:00:07] used=1838MB total=15989MB swap_used=0MB
+[MEMLOG 06:00:17] used=1760MB total=15989MB swap_used=0MB
+[MEMLOG 06:00:27] used=1963MB total=15989MB swap_used=0MB
+[MEMLOG 06:00:37] used=1862MB total=15989MB swap_used=0MB
+[MEMLOG 06:00:47] used=1864MB total=15989MB swap_used=0MB
+[MEMLOG 06:00:57] used=1862MB total=15989MB swap_used=0MB
+[MEMLOG 06:01:07] used=1861MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
