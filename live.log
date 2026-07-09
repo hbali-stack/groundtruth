@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:53:37Z | task=go-genai-streamed-function-args ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 06:51:10] used=2095MB total=15989MB swap_used=0MB
+[MEMLOG 06:51:20] used=1981MB total=15989MB swap_used=0MB
+[MEMLOG 06:51:30] used=1958MB total=15989MB swap_used=0MB
+[MEMLOG 06:51:40] used=1959MB total=15989MB swap_used=0MB
+[MEMLOG 06:51:50] used=1972MB total=15989MB swap_used=0MB
+[MEMLOG 06:52:00] used=1959MB total=15989MB swap_used=0MB
+[MEMLOG 06:52:10] used=1962MB total=15989MB swap_used=0MB
+[MEMLOG 06:52:20] used=1959MB total=15989MB swap_used=0MB
+[MEMLOG 06:52:30] used=1959MB total=15989MB swap_used=0MB
+[MEMLOG 06:52:40] used=1958MB total=15989MB swap_used=0MB
+[MEMLOG 06:52:50] used=1962MB total=15989MB swap_used=0MB
+[MEMLOG 06:53:00] used=1963MB total=15989MB swap_used=0MB
+[MEMLOG 06:53:10] used=1964MB total=15989MB swap_used=0MB
+[MEMLOG 06:53:20] used=1971MB total=15989MB swap_used=0MB
+[MEMLOG 06:53:30] used=1973MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
