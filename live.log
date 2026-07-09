@@ -1,0 +1,18 @@
+=== LIVE SNAPSHOT #1 | 2026-07-09T06:07:59Z | task=etree-xml-diff-patch ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 06:05:50] used=1495MB total=15989MB swap_used=0MB
+[MEMLOG 06:06:00] used=1469MB total=15989MB swap_used=0MB
+[MEMLOG 06:06:10] used=1410MB total=15989MB swap_used=0MB
+[MEMLOG 06:06:20] used=1328MB total=15989MB swap_used=0MB
+[MEMLOG 06:06:30] used=1370MB total=15989MB swap_used=0MB
+[MEMLOG 06:06:40] used=1382MB total=15989MB swap_used=0MB
+[MEMLOG 06:06:50] used=1407MB total=15989MB swap_used=0MB
+[MEMLOG 06:07:00] used=1528MB total=15989MB swap_used=0MB
+[MEMLOG 06:07:10] used=1899MB total=15989MB swap_used=0MB
+[MEMLOG 06:07:20] used=2108MB total=15989MB swap_used=0MB
+[MEMLOG 06:07:30] used=1921MB total=15989MB swap_used=0MB
+[MEMLOG 06:07:40] used=1885MB total=15989MB swap_used=0MB
+[MEMLOG 06:07:50] used=1898MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
