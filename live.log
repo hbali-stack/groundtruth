@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #34 | 2026-07-22T08:51:26Z | task=helm-unified-manifest-stream ===
+=== LIVE SNAPSHOT #35 | 2026-07-22T08:51:48Z | task=helm-unified-manifest-stream ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_helm-unified-manifest-stream.log:[DOCKERFILE SLIM] deepswe-bench/tasks/helm-unified-manifest-stream/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7dvkse99x41x83c5z6f2eq7n82w8fm (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_helm-unified-manifest-stream.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -8,17 +8,19 @@
 /tmp/gha_step_helm-unified-manifest-stream.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
 /tmp/gha_step_helm-unified-manifest-stream.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
-[RESMON] 08:51:16 mem=1365/15988MB disk_used=92489/147719MB free=55214MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=450MB MemAvailable:=14620MB Cached:=12542MB AnonPages:=423MB Mapped:=329MB Slab:=1311MB 
 [RESMON] 08:51:24 mem=1601/15988MB disk_used=92593/147719MB free=55110MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=226MB MemAvailable:=14379MB Cached:=12411MB AnonPages:=772MB Mapped:=480MB Slab:=1306MB 
+[RESMON] 08:51:32 mem=1657/15988MB disk_used=93160/147719MB free=54544MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=251MB MemAvailable:=14326MB Cached:=12291MB AnonPages:=824MB Mapped:=485MB Slab:=1336MB 
+[RESMON] 08:51:40 mem=2243/15988MB disk_used=93314/147719MB free=54390MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=277MB MemAvailable:=13759MB Cached:=11402MB AnonPages:=1390MB Mapped:=468MB Slab:=1664MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=450MB MemAvailable:=14620MB Cached:=12542MB AnonPages:=423MB Mapped:=329MB Slab:=1311MB 
-[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
-[gt-shim] active; resolved=/tmp/gt-shim/docker
-[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
-[RESMON] 08:51:24 mem=1601/15988MB disk_used=92593/147719MB free=55110MB containers=0
+[RESMON] 08:51:32 mem=1657/15988MB disk_used=93160/147719MB free=54544MB containers=0
 [RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 212MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 137MB:provjobd1797933 /tmp/provjobd1797933271 | 112MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2564): VmRSS:=115632kB RssAnon:=57672kB RssFile:=57960kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=226MB MemAvailable:=14379MB Cached:=12411MB AnonPages:=772MB Mapped:=480MB Slab:=1306MB 
+[MEMDIAG] dockerd(2564): VmRSS:=115704kB RssAnon:=57732kB RssFile:=57972kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=251MB MemAvailable:=14326MB Cached:=12291MB AnonPages:=824MB Mapped:=485MB Slab:=1336MB 
+[RESMON] 08:51:40 mem=2243/15988MB disk_used=93314/147719MB free=54390MB containers=0
+[RESTOP] 726MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 212MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 137MB:provjobd1797933 /tmp/provjobd1797933271 | 
+[MEMDIAG] dockerd(2564): VmRSS:=748352kB RssAnon:=690340kB RssFile:=58012kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15988MB MemFree:=277MB MemAvailable:=13759MB Cached:=11402MB AnonPages:=1390MB Mapped:=468MB Slab:=1664MB 
