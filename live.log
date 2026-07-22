@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T10:24:46Z | task=yjs-map-conflict-detection ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 10:22:16] used=1843MB total=15988MB swap_used=0MB
+[MEMLOG 10:22:26] used=1838MB total=15988MB swap_used=0MB
+[MEMLOG 10:22:36] used=1839MB total=15988MB swap_used=0MB
+[MEMLOG 10:22:46] used=1841MB total=15988MB swap_used=0MB
+[MEMLOG 10:22:56] used=1850MB total=15988MB swap_used=0MB
+[MEMLOG 10:23:06] used=1790MB total=15988MB swap_used=0MB
+[MEMLOG 10:23:16] used=2153MB total=15988MB swap_used=0MB
+[MEMLOG 10:23:26] used=2169MB total=15988MB swap_used=0MB
+[MEMLOG 10:23:36] used=2153MB total=15988MB swap_used=0MB
+[MEMLOG 10:23:46] used=2154MB total=15988MB swap_used=0MB
+[MEMLOG 10:23:56] used=2157MB total=15988MB swap_used=0MB
+[MEMLOG 10:24:06] used=2162MB total=15988MB swap_used=0MB
+[MEMLOG 10:24:16] used=2163MB total=15988MB swap_used=0MB
+[MEMLOG 10:24:26] used=2168MB total=15988MB swap_used=0MB
+[MEMLOG 10:24:36] used=2171MB total=15988MB swap_used=0MB
+--- step tail (last 8) ---
