@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #59 | 2026-07-22T09:58:55Z | task=quill-shared-toolbar-focus ===
+=== LIVE SNAPSHOT #60 | 2026-07-22T09:59:17Z | task=quill-shared-toolbar-focus ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_quill-shared-toolbar-focus.log:[DOCKERFILE SLIM] deepswe-bench/tasks/quill-shared-toolbar-focus/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh73sgee6751fmh72hwwctyscx832frj (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_quill-shared-toolbar-focus.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,21 @@
 /tmp/gha_step_quill-shared-toolbar-focus.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_quill-shared-toolbar-focus.log:[ENV-START] eval container UP on attempt 1 (~50s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 09:58:31 mem=2919/15989MB disk_used=94896/147719MB free=52808MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=710MB MemAvailable:=13069MB Cached:=10589MB AnonPages:=1948MB Mapped:=726MB Slab:=1356MB 
-[RESMON] 09:58:39 mem=2959/15989MB disk_used=94895/147719MB free=52808MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=671MB MemAvailable:=13030MB Cached:=10589MB AnonPages:=2010MB Mapped:=727MB Slab:=1356MB 
-[RESMON] 09:58:47 mem=3017/15989MB disk_used=94895/147719MB free=52808MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=608MB MemAvailable:=12966MB Cached:=10589MB AnonPages:=2077MB Mapped:=727MB Slab:=1356MB 
+[RESMON] 09:58:56 mem=3093/15989MB disk_used=94895/147719MB free=52808MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=532MB MemAvailable:=12891MB Cached:=10589MB AnonPages:=2152MB Mapped:=735MB Slab:=1356MB 
+[RESMON] 09:59:04 mem=3166/15989MB disk_used=94895/147719MB free=52808MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=459MB MemAvailable:=12818MB Cached:=10589MB AnonPages:=2216MB Mapped:=727MB Slab:=1356MB 
+[RESMON] 09:59:12 mem=3202/15989MB disk_used=94899/147719MB free=52804MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=436MB MemAvailable:=12795MB Cached:=10589MB AnonPages:=2271MB Mapped:=727MB Slab:=1356MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=cbb9d3ecb3e49a6858050f2cbaa929cc146ae7b268291dfa432a8ad29e8090a7 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=cbb9d3ecb3e49a6858050f2cbaa929cc146ae7b268291dfa432a8ad29e8090a7; graph_hash_after_lsp=cbb9d3ecb3e49a6858050f2cbaa929cc146ae7b268291dfa432a8ad29e8090a7; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
 Successfully converted trajectory to ATIF format: jobs/2026-07-22__09-41-48/quill-shared-toolbar-focus__zfrHoET/agent/trajectory.json
 --- step tail (last 8) ---
-[RESMON] 09:58:39 mem=2959/15989MB disk_used=94895/147719MB free=52808MB containers=2
-[RESTOP] 767MB:chrome /root/.cache/ms-playwright/chromium-1181/chrome-linux/chrome -- | 544MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 228MB:node (vitest) node (vitest) | 
-[MEMDIAG] dockerd(2737): VmRSS:=558044kB RssAnon:=501916kB RssFile:=56128kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=671MB MemAvailable:=13030MB Cached:=10589MB AnonPages:=2010MB Mapped:=727MB Slab:=1356MB 
-[RESMON] 09:58:47 mem=3017/15989MB disk_used=94895/147719MB free=52808MB containers=2
-[RESTOP] 834MB:chrome /root/.cache/ms-playwright/chromium-1181/chrome-linux/chrome -- | 544MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 228MB:node (vitest) node (vitest) | 
-[MEMDIAG] dockerd(2737): VmRSS:=558044kB RssAnon:=501916kB RssFile:=56128kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=608MB MemAvailable:=12966MB Cached:=10589MB AnonPages:=2077MB Mapped:=727MB Slab:=1356MB 
+[RESMON] 09:59:04 mem=3166/15989MB disk_used=94895/147719MB free=52808MB containers=2
+[RESTOP] 955MB:chrome /root/.cache/ms-playwright/chromium-1181/chrome-linux/chrome -- | 562MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 228MB:node (vitest) node (vitest) | 
+[MEMDIAG] dockerd(2737): VmRSS:=576396kB RssAnon:=520268kB RssFile:=56128kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=459MB MemAvailable:=12818MB Cached:=10589MB AnonPages:=2216MB Mapped:=727MB Slab:=1356MB 
+[RESMON] 09:59:12 mem=3202/15989MB disk_used=94899/147719MB free=52804MB containers=2
+[RESTOP] 1005MB:chrome /root/.cache/ms-playwright/chromium-1181/chrome-linux/chrome -- | 566MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 228MB:node (vitest) node (vitest) | 
+[MEMDIAG] dockerd(2737): VmRSS:=580476kB RssAnon:=524348kB RssFile:=56128kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=436MB MemAvailable:=12795MB Cached:=10589MB AnonPages:=2271MB Mapped:=727MB Slab:=1356MB 
