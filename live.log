@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #505 | 2026-07-22T13:47:09Z | task=vitest-duration-sharding ===
+=== LIVE SNAPSHOT #506 | 2026-07-22T13:47:30Z | task=vitest-duration-sharding ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_vitest-duration-sharding.log:[DOCKERFILE SLIM] deepswe-bench/tasks/vitest-duration-sharding/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh788hvxvxaz825205djm3ctth822xms (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_vitest-duration-sharding.log:[SLIM-VERIFY] rewritten Dockerfile is now:
