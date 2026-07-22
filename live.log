@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T19:24:17Z | task=happy-dom-abort-pending-body-reads ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 19:21:47] used=2187MB total=15989MB swap_used=0MB
+[MEMLOG 19:21:57] used=2187MB total=15989MB swap_used=0MB
+[MEMLOG 19:22:07] used=2189MB total=15989MB swap_used=0MB
+[MEMLOG 19:22:17] used=2191MB total=15989MB swap_used=0MB
+[MEMLOG 19:22:27] used=2193MB total=15989MB swap_used=0MB
+[MEMLOG 19:22:37] used=2198MB total=15989MB swap_used=0MB
+[MEMLOG 19:22:47] used=2198MB total=15989MB swap_used=0MB
+[MEMLOG 19:22:57] used=2199MB total=15989MB swap_used=0MB
+[MEMLOG 19:23:07] used=2200MB total=15989MB swap_used=0MB
+[MEMLOG 19:23:17] used=2204MB total=15989MB swap_used=0MB
+[MEMLOG 19:23:27] used=2209MB total=15989MB swap_used=0MB
+[MEMLOG 19:23:37] used=2211MB total=15989MB swap_used=0MB
+[MEMLOG 19:23:47] used=2224MB total=15989MB swap_used=0MB
+[MEMLOG 19:23:57] used=2233MB total=15989MB swap_used=0MB
+[MEMLOG 19:24:07] used=2234MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
