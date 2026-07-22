@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T10:10:33Z | task=tomlkit-toml-table-converters ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 10:08:06] used=1883MB total=15989MB swap_used=0MB
+[MEMLOG 10:08:16] used=1724MB total=15989MB swap_used=0MB
+[MEMLOG 10:08:26] used=1986MB total=15989MB swap_used=0MB
+[MEMLOG 10:08:36] used=1828MB total=15989MB swap_used=0MB
+[MEMLOG 10:08:46] used=1774MB total=15989MB swap_used=0MB
+[MEMLOG 10:08:56] used=1776MB total=15989MB swap_used=0MB
+[MEMLOG 10:09:06] used=1782MB total=15989MB swap_used=0MB
+[MEMLOG 10:09:16] used=1786MB total=15989MB swap_used=0MB
+[MEMLOG 10:09:26] used=1759MB total=15989MB swap_used=0MB
+[MEMLOG 10:09:36] used=2122MB total=15989MB swap_used=0MB
+[MEMLOG 10:09:46] used=2088MB total=15989MB swap_used=0MB
+[MEMLOG 10:09:56] used=2089MB total=15989MB swap_used=0MB
+[MEMLOG 10:10:06] used=2093MB total=15989MB swap_used=0MB
+[MEMLOG 10:10:16] used=2202MB total=15989MB swap_used=0MB
+[MEMLOG 10:10:26] used=2214MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
