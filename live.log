@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #43 | 2026-07-22T09:57:23Z | task=query-persist-restored-query-state ===
+=== LIVE SNAPSHOT #44 | 2026-07-22T09:57:45Z | task=query-persist-restored-query-state ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_query-persist-restored-query-state.log:[DOCKERFILE SLIM] deepswe-bench/tasks/query-persist-restored-query-state/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh76g3pdaddrcg12k7jse0xrzn83a5fd (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_query-persist-restored-query-state.log:[SLIM-VERIFY] rewritten Dockerfile is now:
