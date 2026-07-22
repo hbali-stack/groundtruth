@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T08:57:03Z | task=happy-dom-deterministic-intersectionobserver ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 08:54:36] used=2201MB total=15989MB swap_used=0MB
+[MEMLOG 08:54:46] used=2201MB total=15989MB swap_used=0MB
+[MEMLOG 08:54:56] used=2201MB total=15989MB swap_used=0MB
+[MEMLOG 08:55:06] used=2202MB total=15989MB swap_used=0MB
+[MEMLOG 08:55:16] used=2206MB total=15989MB swap_used=0MB
+[MEMLOG 08:55:26] used=2207MB total=15989MB swap_used=0MB
+[MEMLOG 08:55:36] used=2207MB total=15989MB swap_used=0MB
+[MEMLOG 08:55:46] used=2209MB total=15989MB swap_used=0MB
+[MEMLOG 08:55:56] used=2211MB total=15989MB swap_used=0MB
+[MEMLOG 08:56:06] used=2213MB total=15989MB swap_used=0MB
+[MEMLOG 08:56:16] used=2213MB total=15989MB swap_used=0MB
+[MEMLOG 08:56:26] used=2213MB total=15989MB swap_used=0MB
+[MEMLOG 08:56:36] used=2246MB total=15989MB swap_used=0MB
+[MEMLOG 08:56:46] used=2217MB total=15989MB swap_used=0MB
+[MEMLOG 08:56:56] used=2254MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
