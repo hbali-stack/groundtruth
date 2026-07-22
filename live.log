@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T10:16:05Z | task=updo-policy-alerting ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 10:13:39] used=1446MB total=15989MB swap_used=0MB
+[MEMLOG 10:13:49] used=1731MB total=15989MB swap_used=0MB
+[MEMLOG 10:13:59] used=2057MB total=15989MB swap_used=0MB
+[MEMLOG 10:14:09] used=1954MB total=15989MB swap_used=0MB
+[MEMLOG 10:14:19] used=1832MB total=15989MB swap_used=0MB
+[MEMLOG 10:14:29] used=1798MB total=15989MB swap_used=0MB
+[MEMLOG 10:14:39] used=1792MB total=15989MB swap_used=0MB
+[MEMLOG 10:14:49] used=1812MB total=15989MB swap_used=0MB
+[MEMLOG 10:14:59] used=1789MB total=15989MB swap_used=0MB
+[MEMLOG 10:15:09] used=2144MB total=15989MB swap_used=0MB
+[MEMLOG 10:15:19] used=2111MB total=15989MB swap_used=0MB
+[MEMLOG 10:15:29] used=2112MB total=15989MB swap_used=0MB
+[MEMLOG 10:15:39] used=2114MB total=15989MB swap_used=0MB
+[MEMLOG 10:15:49] used=2108MB total=15989MB swap_used=0MB
+[MEMLOG 10:15:59] used=2115MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
