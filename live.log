@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T09:25:12Z | task=oxvg-structural-selector-preservation ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 09:22:42] used=2130MB total=15993MB swap_used=0MB
+[MEMLOG 09:22:52] used=2130MB total=15993MB swap_used=0MB
+[MEMLOG 09:23:02] used=2130MB total=15993MB swap_used=0MB
+[MEMLOG 09:23:12] used=2130MB total=15993MB swap_used=0MB
+[MEMLOG 09:23:22] used=2132MB total=15993MB swap_used=0MB
+[MEMLOG 09:23:32] used=2134MB total=15993MB swap_used=0MB
+[MEMLOG 09:23:42] used=2140MB total=15993MB swap_used=0MB
+[MEMLOG 09:23:52] used=2142MB total=15993MB swap_used=0MB
+[MEMLOG 09:24:02] used=2141MB total=15993MB swap_used=0MB
+[MEMLOG 09:24:12] used=2142MB total=15993MB swap_used=0MB
+[MEMLOG 09:24:22] used=2145MB total=15993MB swap_used=0MB
+[MEMLOG 09:24:32] used=2149MB total=15993MB swap_used=0MB
+[MEMLOG 09:24:42] used=2147MB total=15993MB swap_used=0MB
+[MEMLOG 09:24:52] used=2152MB total=15993MB swap_used=0MB
+[MEMLOG 09:25:02] used=2171MB total=15993MB swap_used=0MB
+--- step tail (last 8) ---
