@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #52 | 2026-07-22T10:11:06Z | task=skrub-duration-encoding ===
+=== LIVE SNAPSHOT #53 | 2026-07-22T10:11:27Z | task=skrub-duration-encoding ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_skrub-duration-encoding.log:[DOCKERFILE SLIM] deepswe-bench/tasks/skrub-duration-encoding/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh77y2107s6xkqyf61mj1dsm0983kmp1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_skrub-duration-encoding.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,20 +9,20 @@
 /tmp/gha_step_skrub-duration-encoding.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_skrub-duration-encoding.log:[ENV-START] eval container UP on attempt 1 (~40s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 10:10:42 mem=2363/15989MB disk_used=92163/147719MB free=55541MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1052MB MemAvailable:=13625MB Cached:=11227MB AnonPages:=1106MB Mapped:=447MB Slab:=1223MB 
-[RESMON] 10:10:50 mem=2552/15989MB disk_used=92163/147719MB free=55541MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=861MB MemAvailable:=13434MB Cached:=11227MB AnonPages:=1303MB Mapped:=545MB Slab:=1224MB 
-[RESMON] 10:10:58 mem=2967/15989MB disk_used=92163/147719MB free=55541MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=448MB MemAvailable:=13021MB Cached:=11228MB AnonPages:=1695MB Mapped:=557MB Slab:=1225MB 
+[RESMON] 10:11:06 mem=2436/15989MB disk_used=92163/147719MB free=55541MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=978MB MemAvailable:=13552MB Cached:=11228MB AnonPages:=1157MB Mapped:=463MB Slab:=1224MB 
+[RESMON] 10:11:15 mem=2409/15989MB disk_used=92163/147719MB free=55541MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1005MB MemAvailable:=13579MB Cached:=11228MB AnonPages:=1133MB Mapped:=447MB Slab:=1224MB 
+[RESMON] 10:11:23 mem=2384/15989MB disk_used=92163/147719MB free=55541MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1030MB MemAvailable:=13603MB Cached:=11228MB AnonPages:=1137MB Mapped:=447MB Slab:=1224MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=6eb032b56d07ccd7e52f22d0df70d20294c6b6926962af08b0cf9b255afd0f14 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=6eb032b56d07ccd7e52f22d0df70d20294c6b6926962af08b0cf9b255afd0f14; graph_hash_after_lsp=6eb032b56d07ccd7e52f22d0df70d20294c6b6926962af08b0cf9b255afd0f14; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
 --- step tail (last 8) ---
-[RESMON] 10:10:50 mem=2552/15989MB disk_used=92163/147719MB free=55541MB containers=2
-[RESTOP] 391MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 298MB:python3 python3 -m pytest skrub/tests/test_datetime_encoder.py skrub/t | 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 215MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 
-[MEMDIAG] dockerd(2763): VmRSS:=400888kB RssAnon:=344288kB RssFile:=56600kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=861MB MemAvailable:=13434MB Cached:=11227MB AnonPages:=1303MB Mapped:=545MB Slab:=1224MB 
-[RESMON] 10:10:58 mem=2967/15989MB disk_used=92163/147719MB free=55541MB containers=2
-[RESTOP] 403MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 310MB:python3 python3 -m pytest skrub/tests/test_datetime_encoder.py skrub/t | 275MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 272MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 
-[MEMDIAG] dockerd(2763): VmRSS:=413112kB RssAnon:=356512kB RssFile:=56600kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=448MB MemAvailable:=13021MB Cached:=11228MB AnonPages:=1695MB Mapped:=557MB Slab:=1225MB 
+[RESMON] 10:11:15 mem=2409/15989MB disk_used=92163/147719MB free=55541MB containers=2
+[RESTOP] 405MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 216MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 145MB:provjobd1692955 /tmp/provjobd1692955484 | 
+[MEMDIAG] dockerd(2763): VmRSS:=415168kB RssAnon:=358552kB RssFile:=56616kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1005MB MemAvailable:=13579MB Cached:=11228MB AnonPages:=1133MB Mapped:=447MB Slab:=1224MB 
+[RESMON] 10:11:23 mem=2384/15989MB disk_used=92163/147719MB free=55541MB containers=2
+[RESTOP] 407MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 216MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 146MB:provjobd1692955 /tmp/provjobd1692955484 | 
+[MEMDIAG] dockerd(2763): VmRSS:=417208kB RssAnon:=360592kB RssFile:=56616kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1030MB MemAvailable:=13603MB Cached:=11228MB AnonPages:=1137MB Mapped:=447MB Slab:=1224MB 
