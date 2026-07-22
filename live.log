@@ -1,0 +1,24 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T10:03:11Z | task=testem-bail-on-test-failure ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 10:00:42] used=1335MB total=15989MB swap_used=0MB
+[MEMLOG 10:00:52] used=1473MB total=15989MB swap_used=0MB
+[MEMLOG 10:01:02] used=2010MB total=15989MB swap_used=0MB
+[MEMLOG 10:01:12] used=1880MB total=15989MB swap_used=0MB
+[MEMLOG 10:01:22] used=1825MB total=15989MB swap_used=0MB
+[MEMLOG 10:01:32] used=1821MB total=15989MB swap_used=0MB
+[MEMLOG 10:01:42] used=1818MB total=15989MB swap_used=0MB
+[MEMLOG 10:01:52] used=1823MB total=15989MB swap_used=0MB
+[MEMLOG 10:02:02] used=2146MB total=15989MB swap_used=0MB
+[MEMLOG 10:02:12] used=2137MB total=15989MB swap_used=0MB
+[MEMLOG 10:02:22] used=2146MB total=15989MB swap_used=0MB
+[MEMLOG 10:02:32] used=2137MB total=15989MB swap_used=0MB
+[MEMLOG 10:02:42] used=2135MB total=15989MB swap_used=0MB
+[MEMLOG 10:02:52] used=2137MB total=15989MB swap_used=0MB
+[MEMLOG 10:03:02] used=2130MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
+=== DeepSWE GT Trial: testem-bail-on-test-failure (model deepseek/deepseek-v4-pro) ===
+HOST  GT_CERT_DIR=/tmp/gt  GT_HOST_GRAPH_DB=/tmp/gt/graph.db
+GT_PROOF_MODE=1  GT_CONTAINERIZED=1  GT_SUBSTRATE_DIGEST=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
+GT inject staged: 122 Python files
