@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T08:33:54Z | task=kea-atomic-signal-selectors ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 08:31:26] used=1357MB total=15988MB swap_used=0MB
+[MEMLOG 08:31:36] used=1299MB total=15988MB swap_used=0MB
+[MEMLOG 08:31:46] used=1328MB total=15988MB swap_used=0MB
+[MEMLOG 08:31:56] used=1339MB total=15988MB swap_used=0MB
+[MEMLOG 08:32:06] used=1333MB total=15988MB swap_used=0MB
+[MEMLOG 08:32:16] used=1455MB total=15988MB swap_used=0MB
+[MEMLOG 08:32:26] used=1446MB total=15988MB swap_used=0MB
+[MEMLOG 08:32:36] used=1764MB total=15988MB swap_used=0MB
+[MEMLOG 08:32:46] used=1624MB total=15988MB swap_used=0MB
+[MEMLOG 08:32:56] used=1512MB total=15988MB swap_used=0MB
+[MEMLOG 08:33:06] used=2013MB total=15988MB swap_used=0MB
+[MEMLOG 08:33:16] used=1950MB total=15988MB swap_used=0MB
+[MEMLOG 08:33:26] used=1909MB total=15988MB swap_used=0MB
+[MEMLOG 08:33:36] used=2270MB total=15988MB swap_used=0MB
+[MEMLOG 08:33:46] used=2243MB total=15988MB swap_used=0MB
+--- step tail (last 8) ---
