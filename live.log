@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T09:42:20Z | task=query-persist-restored-query-state ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 09:39:53] used=2375MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:03] used=2372MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:13] used=2373MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:23] used=2374MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:33] used=2373MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:43] used=2374MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:53] used=2368MB total=15989MB swap_used=0MB
+[MEMLOG 09:41:03] used=2375MB total=15989MB swap_used=0MB
+[MEMLOG 09:41:13] used=2374MB total=15989MB swap_used=0MB
+[MEMLOG 09:41:23] used=2375MB total=15989MB swap_used=0MB
+[MEMLOG 09:41:33] used=2375MB total=15989MB swap_used=0MB
+[MEMLOG 09:41:43] used=2375MB total=15989MB swap_used=0MB
+[MEMLOG 09:41:53] used=2377MB total=15989MB swap_used=0MB
+[MEMLOG 09:42:03] used=2385MB total=15989MB swap_used=0MB
+[MEMLOG 09:42:13] used=1312MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
