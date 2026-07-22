@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T08:59:59Z | task=kysely-window-grouping-helpers ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 08:57:29] used=2197MB total=15989MB swap_used=0MB
+[MEMLOG 08:57:39] used=2198MB total=15989MB swap_used=0MB
+[MEMLOG 08:57:49] used=2199MB total=15989MB swap_used=0MB
+[MEMLOG 08:57:59] used=2202MB total=15989MB swap_used=0MB
+[MEMLOG 08:58:09] used=2210MB total=15989MB swap_used=0MB
+[MEMLOG 08:58:19] used=2207MB total=15989MB swap_used=0MB
+[MEMLOG 08:58:29] used=2207MB total=15989MB swap_used=0MB
+[MEMLOG 08:58:39] used=2215MB total=15989MB swap_used=0MB
+[MEMLOG 08:58:49] used=2216MB total=15989MB swap_used=0MB
+[MEMLOG 08:58:59] used=2214MB total=15989MB swap_used=0MB
+[MEMLOG 08:59:09] used=2216MB total=15989MB swap_used=0MB
+[MEMLOG 08:59:19] used=2215MB total=15989MB swap_used=0MB
+[MEMLOG 08:59:29] used=2214MB total=15989MB swap_used=0MB
+[MEMLOG 08:59:39] used=2250MB total=15989MB swap_used=0MB
+[MEMLOG 08:59:49] used=2258MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
