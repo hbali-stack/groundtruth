@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #56 | 2026-07-22T10:12:43Z | task=prometheus-transactional-reload-status ===
+=== LIVE SNAPSHOT #57 | 2026-07-22T10:13:04Z | task=prometheus-transactional-reload-status ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_prometheus-transactional-reload-status.log:[DOCKERFILE SLIM] deepswe-bench/tasks/prometheus-transactional-reload-status/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7faaexjnnv9h4vt84e0r1v4d82qtv7 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_prometheus-transactional-reload-status.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,20 +9,20 @@
 /tmp/gha_step_prometheus-transactional-reload-status.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_prometheus-transactional-reload-status.log:[ENV-START] eval container UP on attempt 1 (~50s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 10:12:23 mem=6671/15989MB disk_used=100542/147719MB free=47162MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=577MB MemAvailable:=9317MB Cached:=7129MB AnonPages:=5511MB Mapped:=478MB Slab:=1525MB 
-[RESMON] 10:12:32 mem=6372/15989MB disk_used=100663/147719MB free=47040MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=956MB MemAvailable:=9610MB Cached:=7063MB AnonPages:=5223MB Mapped:=488MB Slab:=1522MB 
 [RESMON] 10:12:40 mem=6479/15989MB disk_used=100697/147719MB free=47007MB containers=2
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=813MB MemAvailable:=9500MB Cached:=7097MB AnonPages:=5328MB Mapped:=493MB Slab:=1523MB 
+[RESMON] 10:12:48 mem=6044/15989MB disk_used=100775/147719MB free=46929MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1181MB MemAvailable:=9947MB Cached:=7176MB AnonPages:=4876MB Mapped:=494MB Slab:=1523MB 
+[RESMON] 10:12:56 mem=6262/15989MB disk_used=100826/147719MB free=46877MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1008MB MemAvailable:=9826MB Cached:=7227MB AnonPages:=4952MB Mapped:=494MB Slab:=1523MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=312d695c712731fa331552c2aba8f7bac9829ae4ca5f514117b84a3fd457f19c _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=312d695c712731fa331552c2aba8f7bac9829ae4ca5f514117b84a3fd457f19c; graph_hash_after_lsp=312d695c712731fa331552c2aba8f7bac9829ae4ca5f514117b84a3fd457f19c; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
 --- step tail (last 8) ---
-[RESMON] 10:12:32 mem=6372/15989MB disk_used=100663/147719MB free=47040MB containers=2
-[RESTOP] 1163MB:compile /usr/local/go/pkg/tool/linux_amd64/compile @/tmp/args616394447 | 460MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build354 | 410MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build375 | 410MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[RESMON] 10:12:48 mem=6044/15989MB disk_used=100775/147719MB free=46929MB containers=2
+[RESTOP] 1219MB:compile /usr/local/go/pkg/tool/linux_amd64/compile @/tmp/args616394447 | 439MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build361 | 416MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build210 | 415MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build354 | 
 [MEMDIAG] dockerd(2766): VmRSS:=419956kB RssAnon:=364432kB RssFile:=55524kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=956MB MemAvailable:=9610MB Cached:=7063MB AnonPages:=5223MB Mapped:=488MB Slab:=1522MB 
-[RESMON] 10:12:40 mem=6479/15989MB disk_used=100697/147719MB free=47007MB containers=2
-[RESTOP] 1201MB:compile /usr/local/go/pkg/tool/linux_amd64/compile @/tmp/args616394447 | 473MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build375 | 436MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build375 | 410MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1181MB MemAvailable:=9947MB Cached:=7176MB AnonPages:=4876MB Mapped:=494MB Slab:=1523MB 
+[RESMON] 10:12:56 mem=6262/15989MB disk_used=100826/147719MB free=46877MB containers=2
+[RESTOP] 1219MB:compile /usr/local/go/pkg/tool/linux_amd64/compile @/tmp/args616394447 | 464MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build210 | 458MB:compile /usr/local/go/pkg/tool/linux_amd64/compile -o /tmp/go-build354 | 410MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
 [MEMDIAG] dockerd(2766): VmRSS:=419956kB RssAnon:=364432kB RssFile:=55524kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=813MB MemAvailable:=9500MB Cached:=7097MB AnonPages:=5328MB Mapped:=493MB Slab:=1523MB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1008MB MemAvailable:=9826MB Cached:=7227MB AnonPages:=4952MB Mapped:=494MB Slab:=1523MB 
