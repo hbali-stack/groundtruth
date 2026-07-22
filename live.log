@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T19:10:59Z | task=wazero-multi-module-snapshots ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 19:08:29] used=2199MB total=15988MB swap_used=0MB
+[MEMLOG 19:08:39] used=2198MB total=15988MB swap_used=0MB
+[MEMLOG 19:08:49] used=2196MB total=15988MB swap_used=0MB
+[MEMLOG 19:08:59] used=2197MB total=15988MB swap_used=0MB
+[MEMLOG 19:09:09] used=2205MB total=15988MB swap_used=0MB
+[MEMLOG 19:09:19] used=2203MB total=15988MB swap_used=0MB
+[MEMLOG 19:09:29] used=2203MB total=15988MB swap_used=0MB
+[MEMLOG 19:09:39] used=2203MB total=15988MB swap_used=0MB
+[MEMLOG 19:09:49] used=2206MB total=15988MB swap_used=0MB
+[MEMLOG 19:09:59] used=2205MB total=15988MB swap_used=0MB
+[MEMLOG 19:10:09] used=2209MB total=15988MB swap_used=0MB
+[MEMLOG 19:10:19] used=2211MB total=15988MB swap_used=0MB
+[MEMLOG 19:10:29] used=2211MB total=15988MB swap_used=0MB
+[MEMLOG 19:10:39] used=2252MB total=15988MB swap_used=0MB
+[MEMLOG 19:10:49] used=2256MB total=15988MB swap_used=0MB
+--- step tail (last 8) ---
