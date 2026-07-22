@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T23:26:58Z | task=true-myth-iterable-collection-combinators ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 23:24:27] used=1555MB total=15989MB swap_used=0MB
+[MEMLOG 23:24:37] used=1763MB total=15989MB swap_used=0MB
+[MEMLOG 23:24:47] used=1905MB total=15989MB swap_used=0MB
+[MEMLOG 23:24:58] used=1837MB total=15989MB swap_used=0MB
+[MEMLOG 23:25:08] used=1821MB total=15989MB swap_used=0MB
+[MEMLOG 23:25:18] used=1817MB total=15989MB swap_used=0MB
+[MEMLOG 23:25:28] used=1845MB total=15989MB swap_used=0MB
+[MEMLOG 23:25:38] used=1848MB total=15989MB swap_used=0MB
+[MEMLOG 23:25:48] used=1763MB total=15989MB swap_used=0MB
+[MEMLOG 23:25:58] used=2180MB total=15989MB swap_used=0MB
+[MEMLOG 23:26:08] used=2176MB total=15989MB swap_used=0MB
+[MEMLOG 23:26:18] used=2177MB total=15989MB swap_used=0MB
+[MEMLOG 23:26:28] used=2179MB total=15989MB swap_used=0MB
+[MEMLOG 23:26:38] used=2211MB total=15989MB swap_used=0MB
+[MEMLOG 23:26:48] used=2220MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
