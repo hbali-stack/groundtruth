@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #13 | 2026-07-22T09:14:03Z | task=obsidian-linter-scoped-ignore-markers ===
+=== LIVE SNAPSHOT #14 | 2026-07-22T09:14:25Z | task=obsidian-linter-scoped-ignore-markers ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_obsidian-linter-scoped-ignore-markers.log:[DOCKERFILE SLIM] deepswe-bench/tasks/obsidian-linter-scoped-ignore-markers/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7fmf1y6r9ajpg3htmaj237h182vztd (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_obsidian-linter-scoped-ignore-markers.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -8,19 +8,20 @@
 /tmp/gha_step_obsidian-linter-scoped-ignore-markers.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
 /tmp/gha_step_obsidian-linter-scoped-ignore-markers.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
-[RESMON] 09:13:46 mem=1179/15993MB disk_used=91492/147719MB free=56212MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=1833MB MemAvailable:=14824MB Cached:=11313MB AnonPages:=356MB Mapped:=329MB Slab:=1226MB 
-[RESMON] 09:13:54 mem=1503/15993MB disk_used=91512/147719MB free=56192MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=1440MB MemAvailable:=14489MB Cached:=11367MB AnonPages:=688MB Mapped:=475MB Slab:=1230MB 
 [RESMON] 09:14:02 mem=1696/15993MB disk_used=92127/147719MB free=55577MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=559MB MemAvailable:=14292MB Cached:=11968MB AnonPages:=817MB Mapped:=488MB Slab:=1298MB 
+[RESMON] 09:14:10 mem=2401/15993MB disk_used=92181/147719MB free=55523MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=201MB MemAvailable:=13580MB Cached:=11353MB AnonPages:=1530MB Mapped:=462MB Slab:=1609MB 
+[RESMON] 09:14:18 mem=3494/15993MB disk_used=92317/147719MB free=55387MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=344MB MemAvailable:=12497MB Cached:=10551MB AnonPages:=2345MB Mapped:=463MB Slab:=1469MB 
 --- pier tail (last 15, non-RESMON) ---
+[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=75e0ce4e7a1621858465943564f379e549f758d1954bfd2965f937af3ceea5e0 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=75e0ce4e7a1621858465943564f379e549f758d1954bfd2965f937af3ceea5e0; graph_hash_after_lsp=75e0ce4e7a1621858465943564f379e549f758d1954bfd2965f937af3ceea5e0; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
 --- step tail (last 8) ---
-[RESMON] 09:13:54 mem=1503/15993MB disk_used=91512/147719MB free=56192MB containers=0
-[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 137MB:provjobd1145233 /tmp/provjobd1145233508 | 109MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2799): VmRSS:=112580kB RssAnon:=56180kB RssFile:=56400kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=1440MB MemAvailable:=14489MB Cached:=11367MB AnonPages:=688MB Mapped:=475MB Slab:=1230MB 
-[RESMON] 09:14:02 mem=1696/15993MB disk_used=92127/147719MB free=55577MB containers=0
-[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 137MB:provjobd1145233 /tmp/provjobd1145233508 | 134MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 
-[MEMDIAG] dockerd(2799): VmRSS:=112704kB RssAnon:=56280kB RssFile:=56424kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=559MB MemAvailable:=14292MB Cached:=11968MB AnonPages:=817MB Mapped:=488MB Slab:=1298MB 
+[RESMON] 09:14:10 mem=2401/15993MB disk_used=92181/147719MB free=55523MB containers=0
+[RESTOP] 930MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 136MB:provjobd1145233 /tmp/provjobd1145233508 | 
+[MEMDIAG] dockerd(2799): VmRSS:=960516kB RssAnon:=903976kB RssFile:=56540kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=201MB MemAvailable:=13580MB Cached:=11353MB AnonPages:=1530MB Mapped:=462MB Slab:=1609MB 
+[RESMON] 09:14:18 mem=3494/15993MB disk_used=92317/147719MB free=55387MB containers=0
+[RESTOP] 1755MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 136MB:provjobd1145233 /tmp/provjobd1145233508 | 
+[MEMDIAG] dockerd(2799): VmRSS:=1797480kB RssAnon:=1741060kB RssFile:=56420kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=344MB MemAvailable:=12497MB Cached:=10551MB AnonPages:=2345MB Mapped:=463MB Slab:=1469MB 
