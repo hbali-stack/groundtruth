@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T08:34:32Z | task=koota-deferred-mutation-buffer ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 08:32:03] used=1504MB total=15993MB swap_used=0MB
+[MEMLOG 08:32:13] used=1542MB total=15993MB swap_used=0MB
+[MEMLOG 08:32:23] used=1856MB total=15993MB swap_used=0MB
+[MEMLOG 08:32:33] used=1879MB total=15993MB swap_used=0MB
+[MEMLOG 08:32:43] used=2036MB total=15993MB swap_used=0MB
+[MEMLOG 08:32:53] used=1918MB total=15993MB swap_used=0MB
+[MEMLOG 08:33:03] used=1839MB total=15993MB swap_used=0MB
+[MEMLOG 08:33:13] used=1825MB total=15993MB swap_used=0MB
+[MEMLOG 08:33:23] used=1825MB total=15993MB swap_used=0MB
+[MEMLOG 08:33:33] used=1756MB total=15993MB swap_used=0MB
+[MEMLOG 08:33:43] used=2110MB total=15993MB swap_used=0MB
+[MEMLOG 08:33:53] used=2111MB total=15993MB swap_used=0MB
+[MEMLOG 08:34:03] used=2111MB total=15993MB swap_used=0MB
+[MEMLOG 08:34:13] used=2112MB total=15993MB swap_used=0MB
+[MEMLOG 08:34:23] used=2118MB total=15993MB swap_used=0MB
+--- step tail (last 8) ---
