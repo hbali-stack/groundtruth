@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #65 | 2026-07-22T10:08:00Z | task=numba-stencil-boundary-modes ===
+=== LIVE SNAPSHOT #66 | 2026-07-22T10:08:21Z | task=numba-stencil-boundary-modes ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_numba-stencil-boundary-modes.log:[DOCKERFILE SLIM] deepswe-bench/tasks/numba-stencil-boundary-modes/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7ag6w2nh5a47ta6bg7hj2mk1823qwj (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_numba-stencil-boundary-modes.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,21 @@
 /tmp/gha_step_numba-stencil-boundary-modes.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_numba-stencil-boundary-modes.log:[ENV-START] eval container UP on attempt 1 (~50s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 10:07:43 mem=3760/15989MB disk_used=91964/147719MB free=55740MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=192MB MemAvailable:=12224MB Cached:=10474MB AnonPages:=2949MB Mapped:=532MB Slab:=1170MB 
-[RESMON] 10:07:51 mem=3828/15989MB disk_used=91964/147719MB free=55740MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=244MB MemAvailable:=12162MB Cached:=10376MB AnonPages:=3006MB Mapped:=530MB Slab:=1162MB 
 [RESMON] 10:07:59 mem=3887/15989MB disk_used=91964/147719MB free=55740MB containers=2
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=188MB MemAvailable:=12106MB Cached:=10376MB AnonPages:=3065MB Mapped:=530MB Slab:=1162MB 
+[RESMON] 10:08:07 mem=3961/15989MB disk_used=91964/147719MB free=55740MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=213MB MemAvailable:=12023MB Cached:=10269MB AnonPages:=3121MB Mapped:=530MB Slab:=1161MB 
+[RESMON] 10:08:16 mem=4007/15989MB disk_used=91964/147719MB free=55740MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=183MB MemAvailable:=11992MB Cached:=10269MB AnonPages:=3179MB Mapped:=531MB Slab:=1161MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=47d393021f68cda2f70a8a03a18481922c2dfe3b2ced32728b6f8f3cb6bb8b5d _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=47d393021f68cda2f70a8a03a18481922c2dfe3b2ced32728b6f8f3cb6bb8b5d; graph_hash_after_lsp=47d393021f68cda2f70a8a03a18481922c2dfe3b2ced32728b6f8f3cb6bb8b5d; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
 Successfully converted trajectory to ATIF format: jobs/2026-07-22__09-48-42/numba-stencil-boundary-modes__dnkNA24/agent/trajectory.json
 --- step tail (last 8) ---
-[RESMON] 10:07:51 mem=3828/15989MB disk_used=91964/147719MB free=55740MB containers=2
-[RESTOP] 2252MB:python3 python3 -m pytest -k not TestStencilBoundaryModes -v numba/cud | 341MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2826): VmRSS:=350032kB RssAnon:=293288kB RssFile:=56744kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=244MB MemAvailable:=12162MB Cached:=10376MB AnonPages:=3006MB Mapped:=530MB Slab:=1162MB 
-[RESMON] 10:07:59 mem=3887/15989MB disk_used=91964/147719MB free=55740MB containers=2
-[RESTOP] 2310MB:python3 python3 -m pytest -k not TestStencilBoundaryModes -v numba/cud | 341MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2826): VmRSS:=350060kB RssAnon:=293316kB RssFile:=56744kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=188MB MemAvailable:=12106MB Cached:=10376MB AnonPages:=3065MB Mapped:=530MB Slab:=1162MB 
+[RESMON] 10:08:07 mem=3961/15989MB disk_used=91964/147719MB free=55740MB containers=2
+[RESTOP] 2366MB:python3 python3 -m pytest -k not TestStencilBoundaryModes -v numba/cud | 341MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2826): VmRSS:=350076kB RssAnon:=293332kB RssFile:=56744kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=213MB MemAvailable:=12023MB Cached:=10269MB AnonPages:=3121MB Mapped:=530MB Slab:=1161MB 
+[RESMON] 10:08:16 mem=4007/15989MB disk_used=91964/147719MB free=55740MB containers=2
+[RESTOP] 2425MB:python3 python3 -m pytest -k not TestStencilBoundaryModes -v numba/cud | 341MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 251MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.335.1/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2826): VmRSS:=350080kB RssAnon:=293336kB RssFile:=56744kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=183MB MemAvailable:=11992MB Cached:=10269MB AnonPages:=3179MB Mapped:=531MB Slab:=1161MB 
