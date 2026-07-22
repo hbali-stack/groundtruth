@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T09:50:57Z | task=superjson-error-stack-serialization ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 09:48:27] used=1405MB total=15989MB swap_used=0MB
+[MEMLOG 09:48:37] used=1373MB total=15989MB swap_used=0MB
+[MEMLOG 09:48:47] used=1402MB total=15989MB swap_used=0MB
+[MEMLOG 09:48:57] used=1380MB total=15989MB swap_used=0MB
+[MEMLOG 09:49:07] used=1531MB total=15989MB swap_used=0MB
+[MEMLOG 09:49:17] used=1587MB total=15989MB swap_used=0MB
+[MEMLOG 09:49:27] used=1717MB total=15989MB swap_used=0MB
+[MEMLOG 09:49:37] used=1595MB total=15989MB swap_used=0MB
+[MEMLOG 09:49:47] used=1574MB total=15989MB swap_used=0MB
+[MEMLOG 09:49:57] used=1840MB total=15989MB swap_used=0MB
+[MEMLOG 09:50:07] used=1808MB total=15989MB swap_used=0MB
+[MEMLOG 09:50:17] used=1836MB total=15989MB swap_used=0MB
+[MEMLOG 09:50:27] used=1805MB total=15989MB swap_used=0MB
+[MEMLOG 09:50:37] used=2159MB total=15989MB swap_used=0MB
+[MEMLOG 09:50:47] used=2152MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
