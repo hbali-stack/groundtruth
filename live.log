@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T14:21:39Z | task=sql-formatter-bigquery-pipe-formatting ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 14:19:09] used=1588MB total=15989MB swap_used=0MB
+[MEMLOG 14:19:19] used=1994MB total=15989MB swap_used=0MB
+[MEMLOG 14:19:29] used=1895MB total=15989MB swap_used=0MB
+[MEMLOG 14:19:39] used=1822MB total=15989MB swap_used=0MB
+[MEMLOG 14:19:49] used=1811MB total=15989MB swap_used=0MB
+[MEMLOG 14:19:59] used=1811MB total=15989MB swap_used=0MB
+[MEMLOG 14:20:09] used=1811MB total=15989MB swap_used=0MB
+[MEMLOG 14:20:19] used=1811MB total=15989MB swap_used=0MB
+[MEMLOG 14:20:29] used=1783MB total=15989MB swap_used=0MB
+[MEMLOG 14:20:39] used=2117MB total=15989MB swap_used=0MB
+[MEMLOG 14:20:49] used=2122MB total=15989MB swap_used=0MB
+[MEMLOG 14:20:59] used=2129MB total=15989MB swap_used=0MB
+[MEMLOG 14:21:09] used=2131MB total=15989MB swap_used=0MB
+[MEMLOG 14:21:19] used=2132MB total=15989MB swap_used=0MB
+[MEMLOG 14:21:29] used=2134MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
