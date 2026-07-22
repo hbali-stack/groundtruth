@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T08:39:43Z | task=helm-unified-manifest-stream ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 08:37:16] used=2210MB total=15988MB swap_used=0MB
+[MEMLOG 08:37:26] used=2212MB total=15988MB swap_used=0MB
+[MEMLOG 08:37:36] used=2210MB total=15988MB swap_used=0MB
+[MEMLOG 08:37:46] used=2211MB total=15988MB swap_used=0MB
+[MEMLOG 08:37:56] used=2213MB total=15988MB swap_used=0MB
+[MEMLOG 08:38:06] used=2217MB total=15988MB swap_used=0MB
+[MEMLOG 08:38:16] used=2211MB total=15988MB swap_used=0MB
+[MEMLOG 08:38:26] used=2213MB total=15988MB swap_used=0MB
+[MEMLOG 08:38:36] used=2216MB total=15988MB swap_used=0MB
+[MEMLOG 08:38:46] used=2222MB total=15988MB swap_used=0MB
+[MEMLOG 08:38:56] used=2219MB total=15988MB swap_used=0MB
+[MEMLOG 08:39:06] used=2219MB total=15988MB swap_used=0MB
+[MEMLOG 08:39:16] used=2225MB total=15988MB swap_used=0MB
+[MEMLOG 08:39:26] used=2227MB total=15988MB swap_used=0MB
+[MEMLOG 08:39:36] used=2225MB total=15988MB swap_used=0MB
+--- step tail (last 8) ---
