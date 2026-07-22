@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #81 | 2026-07-22T10:21:33Z | task=prometheus-transactional-reload-status ===
+=== LIVE SNAPSHOT #82 | 2026-07-22T10:21:54Z | task=prometheus-transactional-reload-status ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_prometheus-transactional-reload-status.log:[DOCKERFILE SLIM] deepswe-bench/tasks/prometheus-transactional-reload-status/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7faaexjnnv9h4vt84e0r1v4d82qtv7 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_prometheus-transactional-reload-status.log:[SLIM-VERIFY] rewritten Dockerfile is now:
