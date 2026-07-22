@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #62 | 2026-07-22T09:41:08Z | task=narwhals-rolling-window-suite ===
+=== LIVE SNAPSHOT #63 | 2026-07-22T09:41:29Z | task=narwhals-rolling-window-suite ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_narwhals-rolling-window-suite.log:[DOCKERFILE SLIM] deepswe-bench/tasks/narwhals-rolling-window-suite/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7987m8hz4g19ngkk2zfe3v4n82y0e2 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_narwhals-rolling-window-suite.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,21 @@
 /tmp/gha_step_narwhals-rolling-window-suite.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_narwhals-rolling-window-suite.log:[ENV-START] eval container UP on attempt 1 (~110s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 09:40:50 mem=2244/15989MB disk_used=92631/147719MB free=55073MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=810MB MemAvailable:=13747MB Cached:=11485MB AnonPages:=1180MB Mapped:=604MB Slab:=1211MB 
-[RESMON] 09:40:58 mem=2270/15989MB disk_used=92631/147719MB free=55072MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=791MB MemAvailable:=13730MB Cached:=11485MB AnonPages:=1188MB Mapped:=606MB Slab:=1212MB 
 [RESMON] 09:41:06 mem=2257/15989MB disk_used=92631/147719MB free=55072MB containers=2
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=794MB MemAvailable:=13733MB Cached:=11485MB AnonPages:=1196MB Mapped:=607MB Slab:=1212MB 
+[RESMON] 09:41:14 mem=2268/15989MB disk_used=92632/147719MB free=55072MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=782MB MemAvailable:=13721MB Cached:=11486MB AnonPages:=1212MB Mapped:=608MB Slab:=1212MB 
+[RESMON] 09:41:22 mem=1905/15989MB disk_used=92632/147719MB free=55072MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1146MB MemAvailable:=14082MB Cached:=11486MB AnonPages:=855MB Mapped:=427MB Slab:=1211MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=e370354bd6dbdf45ecf941a3570ad934da92519104bcb99a39a0c1f8c92a1239 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=e370354bd6dbdf45ecf941a3570ad934da92519104bcb99a39a0c1f8c92a1239; graph_hash_after_lsp=e370354bd6dbdf45ecf941a3570ad934da92519104bcb99a39a0c1f8c92a1239; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
 Successfully converted trajectory to ATIF format: jobs/2026-07-22__09-21-49/narwhals-rolling-window-suite__sXJwuse/agent/trajectory.json
 --- step tail (last 8) ---
-[RESMON] 09:40:58 mem=2270/15989MB disk_used=92631/147719MB free=55072MB containers=2
-[RESTOP] 537MB:python python -m pytest tests --ignore=tests/expr_and_series/rolling_m | 316MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2757): VmRSS:=323748kB RssAnon:=266528kB RssFile:=57220kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=791MB MemAvailable:=13730MB Cached:=11485MB AnonPages:=1188MB Mapped:=606MB Slab:=1212MB 
-[RESMON] 09:41:06 mem=2257/15989MB disk_used=92631/147719MB free=55072MB containers=2
-[RESTOP] 547MB:python python -m pytest tests --ignore=tests/expr_and_series/rolling_m | 316MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2757): VmRSS:=323892kB RssAnon:=266672kB RssFile:=57220kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=794MB MemAvailable:=13733MB Cached:=11485MB AnonPages:=1196MB Mapped:=607MB Slab:=1212MB 
+[RESMON] 09:41:14 mem=2268/15989MB disk_used=92632/147719MB free=55072MB containers=2
+[RESTOP] 562MB:python python -m pytest tests --ignore=tests/expr_and_series/rolling_m | 316MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2757): VmRSS:=323928kB RssAnon:=266708kB RssFile:=57220kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=782MB MemAvailable:=13721MB Cached:=11486MB AnonPages:=1212MB Mapped:=608MB Slab:=1212MB 
+[RESMON] 09:41:22 mem=1905/15989MB disk_used=92632/147719MB free=55072MB containers=2
+[RESTOP] 316MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:provjobd3620483 /tmp/provjobd3620483326 | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 
+[MEMDIAG] dockerd(2757): VmRSS:=323956kB RssAnon:=266736kB RssFile:=57220kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1146MB MemAvailable:=14082MB Cached:=11486MB AnonPages:=855MB Mapped:=427MB Slab:=1211MB 
