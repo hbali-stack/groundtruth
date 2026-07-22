@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T09:40:44Z | task=returns-validated-error-accumulation ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 09:38:13] used=2083MB total=15989MB swap_used=0MB
+[MEMLOG 09:38:23] used=2083MB total=15989MB swap_used=0MB
+[MEMLOG 09:38:33] used=2083MB total=15989MB swap_used=0MB
+[MEMLOG 09:38:43] used=2083MB total=15989MB swap_used=0MB
+[MEMLOG 09:38:53] used=2091MB total=15989MB swap_used=0MB
+[MEMLOG 09:39:03] used=2106MB total=15989MB swap_used=0MB
+[MEMLOG 09:39:13] used=2096MB total=15989MB swap_used=0MB
+[MEMLOG 09:39:23] used=2096MB total=15989MB swap_used=0MB
+[MEMLOG 09:39:33] used=2097MB total=15989MB swap_used=0MB
+[MEMLOG 09:39:43] used=2099MB total=15989MB swap_used=0MB
+[MEMLOG 09:39:53] used=2100MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:03] used=2104MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:13] used=2105MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:23] used=2105MB total=15989MB swap_used=0MB
+[MEMLOG 09:40:33] used=2102MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
