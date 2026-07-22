@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #45 | 2026-07-22T08:48:30Z | task=igel-persist-feature-schema ===
+=== LIVE SNAPSHOT #46 | 2026-07-22T08:48:52Z | task=igel-persist-feature-schema ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_igel-persist-feature-schema.log:[DOCKERFILE SLIM] deepswe-bench/tasks/igel-persist-feature-schema/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7brwh7cv23ggeshkz85ac5fx831x5k (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_igel-persist-feature-schema.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,34 @@
 /tmp/gha_step_igel-persist-feature-schema.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_igel-persist-feature-schema.log:[ENV-START] eval container UP on attempt 1 (~40s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 08:48:08 mem=1791/15989MB disk_used=92431/147719MB free=55273MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1378MB MemAvailable:=14193MB Cached:=11255MB AnonPages:=880MB Mapped:=445MB Slab:=1260MB 
-[RESMON] 08:48:16 mem=1787/15989MB disk_used=92431/147719MB free=55273MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1378MB MemAvailable:=14193MB Cached:=11255MB AnonPages:=880MB Mapped:=446MB Slab:=1260MB 
-[RESMON] 08:48:24 mem=1872/15989MB disk_used=92431/147719MB free=55273MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1308MB MemAvailable:=14123MB Cached:=11255MB AnonPages:=880MB Mapped:=446MB Slab:=1260MB 
+[RESMON] 08:48:32 mem=1776/15989MB disk_used=92431/147719MB free=55272MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1402MB MemAvailable:=14218MB Cached:=11256MB AnonPages:=731MB Mapped:=443MB Slab:=1259MB 
+[RESMON] 08:48:41 mem=1699/15989MB disk_used=92432/147719MB free=55272MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1480MB MemAvailable:=14297MB Cached:=11256MB AnonPages:=698MB Mapped:=425MB Slab:=1260MB 
+[RESMON] 08:48:49 mem=1583/15989MB disk_used=92425/147719MB free=55279MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1609MB MemAvailable:=14412MB Cached:=11250MB AnonPages:=662MB Mapped:=402MB Slab:=1252MB 
 --- pier tail (last 15, non-RESMON) ---
-[GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=21e23c04614c6f58c0bb7efb9394d2a03044db55a2303f7fc30003ac6201aa29 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=21e23c04614c6f58c0bb7efb9394d2a03044db55a2303f7fc30003ac6201aa29; graph_hash_after_lsp=21e23c04614c6f58c0bb7efb9394d2a03044db55a2303f7fc30003ac6201aa29; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
-Successfully converted trajectory to ATIF format: jobs/2026-07-22__08-35-43/igel-persist-feature-schema__oFZw2sm/agent/trajectory.json
+└────────┴────────────┴───────┘
+
+┏━━━━━━━━┳━━━━━━━┓
+┃ Reward ┃ Count ┃
+┡━━━━━━━━╇━━━━━━━┩
+│ 0.0    │     1 │
+└────────┴───────┘
+
+Job Info
+Total runtime: 13m 6s
+Results written to jobs/2026-07-22__08-35-43/result.json
+Inspect results by running `pier view jobs`
+
+=== Trial complete (pier rc=0) ===
+PIER_EXIT_CODE=0
 --- step tail (last 8) ---
-[RESMON] 08:48:16 mem=1787/15989MB disk_used=92431/147719MB free=55273MB containers=2
-[RESTOP] 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 209MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 166MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2752): VmRSS:=170612kB RssAnon:=113744kB RssFile:=56868kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1378MB MemAvailable:=14193MB Cached:=11255MB AnonPages:=880MB Mapped:=446MB Slab:=1260MB 
-[RESMON] 08:48:24 mem=1872/15989MB disk_used=92431/147719MB free=55273MB containers=2
-[RESTOP] 252MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 209MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 166MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 
-[MEMDIAG] dockerd(2752): VmRSS:=170612kB RssAnon:=113744kB RssFile:=56868kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1308MB MemAvailable:=14123MB Cached:=11255MB AnonPages:=880MB Mapped:=446MB Slab:=1260MB 
+└────────┴───────┘
+
+Job Info
+Total runtime: 13m 6s
+Results written to jobs/2026-07-22__08-35-43/result.json
+Inspect results by running `pier view jobs`
+
+=== Trial complete (pier rc=0) ===
