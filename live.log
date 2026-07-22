@@ -1,28 +1,26 @@
-=== LIVE SNAPSHOT #12 | 2026-07-22T10:19:59Z | task=updo-policy-alerting ===
+=== LIVE SNAPSHOT #13 | 2026-07-22T10:20:20Z | task=updo-policy-alerting ===
 --- KEY EVENTS (full logs, non-RESMON) ---
+/tmp/gha_step_updo-policy-alerting.log:[DOCKERFILE SLIM] deepswe-bench/tasks/updo-policy-alerting/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7dk7mmh6ewnyc9h46wyag19d831gmy (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
+/tmp/gha_step_updo-policy-alerting.log:[SLIM-VERIFY] rewritten Dockerfile is now:
+/tmp/gha_step_updo-policy-alerting.log:[SLIM-VERIFY]   FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7dk7mmh6ewnyc9h46wyag19d831gmy
+/tmp/gha_step_updo-policy-alerting.log:[SLIM-VERIFY]   CMD ["/bin/bash"]
+/tmp/gha_step_updo-policy-alerting.log:[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
+/tmp/gha_step_updo-policy-alerting.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
+/tmp/gha_step_updo-policy-alerting.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
+[RESMON] 10:20:00 mem=1154/15989MB disk_used=91268/147719MB free=56436MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2174MB MemAvailable:=14833MB Cached:=11106MB AnonPages:=335MB Mapped:=328MB Slab:=1157MB 
+[RESMON] 10:20:08 mem=1465/15989MB disk_used=91288/147719MB free=56416MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1796MB MemAvailable:=14514MB Cached:=11161MB AnonPages:=655MB Mapped:=472MB Slab:=1162MB 
+[RESMON] 10:20:17 mem=1686/15989MB disk_used=91873/147719MB free=55831MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=933MB MemAvailable:=14303MB Cached:=11734MB AnonPages:=711MB Mapped:=486MB Slab:=1227MB 
 --- pier tail (last 15, non-RESMON) ---
-[MEMLOG 10:13:39] used=1446MB total=15989MB swap_used=0MB
-[MEMLOG 10:13:49] used=1731MB total=15989MB swap_used=0MB
-[MEMLOG 10:13:59] used=2057MB total=15989MB swap_used=0MB
-[MEMLOG 10:14:09] used=1954MB total=15989MB swap_used=0MB
-[MEMLOG 10:14:19] used=1832MB total=15989MB swap_used=0MB
-[MEMLOG 10:14:29] used=1798MB total=15989MB swap_used=0MB
-[MEMLOG 10:14:39] used=1792MB total=15989MB swap_used=0MB
-[MEMLOG 10:14:49] used=1812MB total=15989MB swap_used=0MB
-[MEMLOG 10:14:59] used=1789MB total=15989MB swap_used=0MB
-[MEMLOG 10:15:09] used=2144MB total=15989MB swap_used=0MB
-[MEMLOG 10:15:19] used=2111MB total=15989MB swap_used=0MB
-[MEMLOG 10:15:29] used=2112MB total=15989MB swap_used=0MB
-[MEMLOG 10:15:39] used=2114MB total=15989MB swap_used=0MB
-[MEMLOG 10:15:49] used=2108MB total=15989MB swap_used=0MB
-[MEMLOG 10:15:59] used=2115MB total=15989MB swap_used=0MB
 --- step tail (last 8) ---
-L6 gt-index built static/musl+FTS5: /tmp/gt_inject/opt/gt/gt-index: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, BuildID[sha1]=0331be500bdf7fa012d0e2d330241a69cf5caa26, for GNU/Linux 3.2.0, stripped
-CONTAINER mount: /tmp/gt -> /gt_artifacts (ro); /tmp/gt_out -> /gt_out (rw); /tmp/gt_inject/opt/gt -> /opt/gt (ro)
-mounts-json: [{"type":"bind","source":"/tmp/gt","target":"/gt_artifacts","read_only":true},{"type":"bind","source":"/tmp/gt_out","target":"/gt_out","read_only":false},{"type":"bind","source":"/tmp/gt_inject/opt/gt","target":"/opt/gt","read_only":true}]
-[GT] capability receipt (host): {"brief_minimal":false,"gt_index_bin":"/tmp/gt_inject/opt/gt/gt-index","sem_body_rows":0,"symbol_content_fts_rows":210}
-GT_RL_PROFILE=2 fan-out: export GT_BRIEF_MINIMAL=1 export GT_BRIEF_NATIVE=1 export GT_CERT_DELIVERY=1 export GT_CHANGE_SURFACE=1 export GT_COMPLETION_CERT=1 export GT_CONTENT_LEG=1 export GT_CONTRACT_BILATERAL=1 export GT_CONTRACT_MODE=1 export GT_CONTRACT_NATIVE=1 export GT_D7_RELATEDNESS=1 export GT_EDIT_CHECK=1 export GT_EDIT_OVERLAY=1 export GT_EVIDENCE_NATIVE=1 export GT_GATEWAY=1 export GT_GATEWAY_EDIT_BRIDGES=1 export GT_GATEWAY_NATIVE=1 export GT_GLOBAL_ARBITER=1 export GT_HYPOTHESIS=1 export GT_INSEAM_METRICS=1 export GT_L6_FRESH=1 export GT_LANE_ENVELOPE=1 export GT_LOC_RESLOT=1 export GT_NUDGE_NATIVE=1 export GT_OBLIGATION_FRESHNESS=1 export GT_PATCH_DELTA=1 export GT_POST_SEARCH=0 export GT_POST_SEARCH_NATIVE=0 export GT_REGISTRY_ENFORCE=1 export GT_SCOPE_NATIVE=1 export GT_SEM_BODY=0 export GT_SS_ACK_FORM=1 export GT_SS_ACK_METRICS=1 export GT_SS_ARBITER_V2=1 export GT_SS_COHERENCE_V2=1 export GT_SS_DEDUP2=1 export GT_SS_ELIGIBILITY=1 export GT_SS_EXEC_TRUTH=1 export GT_SS_LATE_DROP=1 export GT_SS_NOVELTY=1 export GT_SS_PROVENANCE=1 export GT_SS_RECOVERY_V2=1 export GT_SS_SHADOW=1 export GT_SS_SUBMIT_RED=1 export GT_STEER_NATIVE=1 export GT_VERIFICATION_PLAN=1 export GT_VERIFY_EXECUTE=1 export GT_XSESSION_MEMORY=1 export GT_XSESSION_RANKUP=1
-GT_AE_ARGS (block): --ae GT_VERIFY_STRUCTURAL_RISK=1 --ae GT_VERIFY_RISK_TRIGGER=0.5 --ae GT_ORACLE_ROUTE=1 --ae GT_GATEWAY_NATIVE=1 --ae GT_STEER_NATIVE=1 --ae GT_LANE_ENVELOPE=1 --ae GT_OBLIGATION_FRESHNESS=1 --ae GT_D7_RELATEDNESS=1 --ae GT_CONTRACT_MODE=1 --ae GT_CONTRACT_BILATERAL=1 --ae GT_GATEWAY_EDIT_BRIDGES=1 --ae GT_GATEWAY=1 --ae GT_EDIT_CHECK=1 --ae GT_VERIFY_EXECUTE=1 --ae GT_POST_SEARCH_NATIVE=0 --ae GT_SCOPE_NATIVE=1 --ae GT_CONTRACT_NATIVE=1 --ae GT_EVIDENCE_NATIVE=1 --ae GT_NUDGE_NATIVE=1 --ae GT_BRIEF_NATIVE=1 --ae GT_INSEAM_METRICS=1 --ae GT_LOC_RESLOT=1 --ae GT_POST_SEARCH=0 --ae GT_COMPLETION_CERT=1 --ae GT_HYPOTHESIS=1 --ae GT_VERIFICATION_PLAN=1 --ae GT_EDIT_OVERLAY=1 --ae GT_CERT_DELIVERY=1 --ae GT_GLOBAL_ARBITER=1 --ae GT_CHANGE_SURFACE=1 --ae GT_PATCH_DELTA=1 --ae GT_XSESSION_MEMORY=1 --ae GT_REGISTRY_ENFORCE=1 --ae GT_XSESSION_RANKUP=1 --ae GT_BRIEF_MINIMAL=1 --ae GT_SEM_BODY=0 --ae GT_CONTENT_LEG=1 --ae GT_L6_FRESH=1 --ae GT_SS_NOVELTY=1 --ae GT_SS_DEDUP2=1 --ae GT_SS_COHERENCE_V2=1 --ae GT_SS_RECOVERY_V2=1 --ae GT_SS_PROVENANCE=1 --ae GT_SS_LATE_DROP=1 --ae GT_SS_ACK_METRICS=1 --ae GT_SS_ARBITER_V2=1 --ae GT_SS_EXEC_TRUTH=1 --ae GT_SS_SUBMIT_RED=1 --ae GT_SS_ACK_FORM=1 --ae GT_SS_ELIGIBILITY=1 --ae GT_SS_SHADOW=1 --ae GT_SS_SHADOW_RATE=0 --ae GT_SS_SHADOW_SEED= --ae GT_C_OUT=/gt_out --ae GT_ORACLE_EVENTS=/gt_out/gt_oracle_events.jsonl --ae GT_RUNTIME_LEDGER=/gt_out/gt_runtime_ledger.jsonl --ae GT_HOOK_FIRE_COUNTS=/gt_out/gt_hook_fire_counts.json --ae GT_L6_REVISION_ATTESTATIONS=/gt_out/gt_l6_revision_attestations.jsonl --ae GT_XSESSION_DIR=/gt_out/gt_xsession
-=== Model routed via DeepSeek native: deepseek/deepseek-v4-pro ===
-[OOMFIX] 24G swap enabled; Swap:          27647           0       27647
+[RESMON] 10:20:08 mem=1465/15989MB disk_used=91288/147719MB free=56416MB containers=0
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 133MB:provjobd2965632 /tmp/provjobd2965632491 | 106MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] dockerd(2846): VmRSS:=108564kB RssAnon:=52764kB RssFile:=55800kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1796MB MemAvailable:=14514MB Cached:=11161MB AnonPages:=655MB Mapped:=472MB Slab:=1162MB 
+[RESMON] 10:20:17 mem=1686/15989MB disk_used=91873/147719MB free=55831MB containers=0
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 142MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 133MB:provjobd2965632 /tmp/provjobd2965632491 | 110MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 
+[MEMDIAG] dockerd(2846): VmRSS:=108620kB RssAnon:=52808kB RssFile:=55812kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=933MB MemAvailable:=14303MB Cached:=11734MB AnonPages:=711MB Mapped:=486MB Slab:=1227MB 
