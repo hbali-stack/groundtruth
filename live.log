@@ -1,34 +1,26 @@
-=== LIVE SNAPSHOT #11 | 2026-07-22T09:06:22Z | task=mobly-grouped-test-barriers ===
+=== LIVE SNAPSHOT #12 | 2026-07-22T09:06:43Z | task=mobly-grouped-test-barriers ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_mobly-grouped-test-barriers.log:[DOCKERFILE SLIM] deepswe-bench/tasks/mobly-grouped-test-barriers/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh74b2m0tjfn59vq8btqrj774s821570 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_mobly-grouped-test-barriers.log:[SLIM-VERIFY] rewritten Dockerfile is now:
 /tmp/gha_step_mobly-grouped-test-barriers.log:[SLIM-VERIFY]   FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh74b2m0tjfn59vq8btqrj774s821570
 /tmp/gha_step_mobly-grouped-test-barriers.log:[SLIM-VERIFY]   CMD ["/bin/bash"]
+/tmp/gha_step_mobly-grouped-test-barriers.log:[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
+/tmp/gha_step_mobly-grouped-test-barriers.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
+/tmp/gha_step_mobly-grouped-test-barriers.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
 [RESMON] 09:06:21 mem=1169/15989MB disk_used=91038/147719MB free=56666MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2428MB MemAvailable:=14831MB Cached:=10888MB AnonPages:=340MB Mapped:=328MB Slab:=1132MB 
+[RESMON] 09:06:29 mem=1499/15989MB disk_used=91068/147719MB free=56636MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2004MB MemAvailable:=14479MB Cached:=10953MB AnonPages:=673MB Mapped:=473MB Slab:=1137MB 
+[RESMON] 09:06:37 mem=1697/15989MB disk_used=91691/147719MB free=56012MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1126MB MemAvailable:=14290MB Cached:=11563MB AnonPages:=730MB Mapped:=488MB Slab:=1203MB 
 --- pier tail (last 15, non-RESMON) ---
-[MEMLOG 09:00:15] used=1765MB total=15989MB swap_used=0MB
-[MEMLOG 09:00:25] used=2092MB total=15989MB swap_used=0MB
-[MEMLOG 09:00:35] used=2092MB total=15989MB swap_used=0MB
-[MEMLOG 09:00:45] used=2093MB total=15989MB swap_used=0MB
-[MEMLOG 09:00:55] used=2094MB total=15989MB swap_used=0MB
-[MEMLOG 09:01:05] used=2096MB total=15989MB swap_used=0MB
-[MEMLOG 09:01:15] used=2099MB total=15989MB swap_used=0MB
-[MEMLOG 09:01:25] used=2100MB total=15989MB swap_used=0MB
-[MEMLOG 09:01:35] used=2102MB total=15989MB swap_used=0MB
-[MEMLOG 09:01:45] used=2102MB total=15989MB swap_used=0MB
-[MEMLOG 09:01:55] used=2102MB total=15989MB swap_used=0MB
-[MEMLOG 09:02:05] used=2103MB total=15989MB swap_used=0MB
-[MEMLOG 09:02:15] used=2109MB total=15989MB swap_used=0MB
-[MEMLOG 09:02:25] used=2109MB total=15989MB swap_used=0MB
-[MEMLOG 09:02:35] used=2136MB total=15989MB swap_used=0MB
 --- step tail (last 8) ---
-[DOCKERFILE SLIM] deepswe-bench/tasks/mobly-grouped-test-barriers/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh74b2m0tjfn59vq8btqrj774s821570 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
-[SLIM-VERIFY] rewritten Dockerfile is now:
-[SLIM-VERIFY]   FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh74b2m0tjfn59vq8btqrj774s821570
-[SLIM-VERIFY]   CMD ["/bin/bash"]
-[RESMON] 09:06:21 mem=1169/15989MB disk_used=91038/147719MB free=56666MB containers=0
-[RESTOP] 143MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 130MB:provjobd3311100 /tmp/provjobd3311100740 | 107MB:Runner.Listener /home/runner/actions-runner/cached/2.336.0/bin/Runner. | 98MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2759): VmRSS:=101156kB RssAnon:=48704kB RssFile:=52452kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2428MB MemAvailable:=14831MB Cached:=10888MB AnonPages:=340MB Mapped:=328MB Slab:=1132MB 
+[RESMON] 09:06:29 mem=1499/15989MB disk_used=91068/147719MB free=56636MB containers=0
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 143MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 130MB:provjobd3311100 /tmp/provjobd3311100740 | 107MB:Runner.Listener /home/runner/actions-runner/cached/2.336.0/bin/Runner. | 
+[MEMDIAG] dockerd(2759): VmRSS:=107096kB RssAnon:=51392kB RssFile:=55704kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2004MB MemAvailable:=14479MB Cached:=10953MB AnonPages:=673MB Mapped:=473MB Slab:=1137MB 
+[RESMON] 09:06:37 mem=1697/15989MB disk_used=91691/147719MB free=56012MB containers=0
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 143MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 131MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 130MB:provjobd3311100 /tmp/provjobd3311100740 | 
+[MEMDIAG] dockerd(2759): VmRSS:=107148kB RssAnon:=51428kB RssFile:=55720kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1126MB MemAvailable:=14290MB Cached:=11563MB AnonPages:=730MB Mapped:=488MB Slab:=1203MB 
