@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #50 | 2026-07-22T23:44:15Z | task=true-myth-iterable-collection-combinators ===
+=== LIVE SNAPSHOT #51 | 2026-07-22T23:44:36Z | task=true-myth-iterable-collection-combinators ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_true-myth-iterable-collection-combinators.log:[DOCKERFILE SLIM] deepswe-bench/tasks/true-myth-iterable-collection-combinators/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh74r2t7kdnt7h2efdk0hf5asx82zr0s (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_true-myth-iterable-collection-combinators.log:[SLIM-VERIFY] rewritten Dockerfile is now:
