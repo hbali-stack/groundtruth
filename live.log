@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #2 | 2026-07-22T19:11:20Z | task=wazero-multi-module-snapshots ===
+=== LIVE SNAPSHOT #3 | 2026-07-22T19:11:42Z | task=wazero-multi-module-snapshots ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
@@ -18,9 +18,11 @@
 [MEMLOG 19:10:39] used=2252MB total=15988MB swap_used=0MB
 [MEMLOG 19:10:49] used=2256MB total=15988MB swap_used=0MB
 --- step tail (last 8) ---
-=== DeepSWE GT Trial: wazero-multi-module-snapshots (model deepseek/deepseek-v4-flash) ===
-HOST  GT_CERT_DIR=/tmp/gt  GT_HOST_GRAPH_DB=/tmp/gt/graph.db
 GT_PROOF_MODE=1  GT_CONTAINERIZED=1  GT_SUBSTRATE_DIGEST=ghcr.io/hbali-stack/gt-substrate@sha256:9ed30ff217f85584618b99b14f7a12434f14bf62b1eaf326e3c8ae055da4ab0e
 GT inject staged: 122 Python files
 go: downloading github.com/smacker/go-tree-sitter v0.0.0-20240625050157-a31a98a7c0f6
 go: downloading github.com/mattn/go-sqlite3 v1.14.22
+# github.com/smacker/go-tree-sitter/lua
+parser.c:254:17: warning: null character(s) preserved in literal
+  254 |   [anon_sym_] = " ",
+      |                 ^
