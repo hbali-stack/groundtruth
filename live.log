@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #14 | 2026-07-22T10:07:50Z | task=testem-bail-on-test-failure ===
+=== LIVE SNAPSHOT #15 | 2026-07-22T10:08:12Z | task=testem-bail-on-test-failure ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_testem-bail-on-test-failure.log:[DOCKERFILE SLIM] deepswe-bench/tasks/testem-bail-on-test-failure/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh77k18d31qx7jj0c7nyv0xd8s82cznp (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_testem-bail-on-test-failure.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -10,13 +10,17 @@
 --- mem trend (last 6) ---
 [RESMON] 10:07:48 mem=1176/15989MB disk_used=91426/147719MB free=56277MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1380MB MemAvailable:=14814MB Cached:=11786MB AnonPages:=346MB Mapped:=334MB Slab:=1218MB 
+[RESMON] 10:07:57 mem=1488/15989MB disk_used=91493/147719MB free=56210MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=967MB MemAvailable:=14501MB Cached:=11878MB AnonPages:=633MB Mapped:=486MB Slab:=1226MB 
+[RESMON] 10:08:05 mem=1711/15989MB disk_used=92101/147719MB free=55603MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=283MB MemAvailable:=14288MB Cached:=12288MB AnonPages:=879MB Mapped:=500MB Slab:=1290MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[SLIM-VERIFY]   CMD ["/bin/bash"]
-[RESMON] 10:07:48 mem=1176/15989MB disk_used=91426/147719MB free=56277MB containers=0
-[RESTOP] 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 138MB:provjobd1251795 /tmp/provjobd125179581 | 107MB:Runner.Listener /home/runner/actions-runner/cached/2.336.0/bin/Runner. | 104MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2692): VmRSS:=106512kB RssAnon:=51248kB RssFile:=55264kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1380MB MemAvailable:=14814MB Cached:=11786MB AnonPages:=346MB Mapped:=334MB Slab:=1218MB 
-[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
-[gt-shim] active; resolved=/tmp/gt-shim/docker
-[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
+[RESMON] 10:07:57 mem=1488/15989MB disk_used=91493/147719MB free=56210MB containers=0
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 144MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 138MB:provjobd1251795 /tmp/provjobd125179581 | 109MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
+[MEMDIAG] dockerd(2692): VmRSS:=112048kB RssAnon:=53656kB RssFile:=58392kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=967MB MemAvailable:=14501MB Cached:=11878MB AnonPages:=633MB Mapped:=486MB Slab:=1226MB 
+[RESMON] 10:08:05 mem=1711/15989MB disk_used=92101/147719MB free=55603MB containers=0
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 203MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 145MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 138MB:provjobd1251795 /tmp/provjobd125179581 | 
+[MEMDIAG] dockerd(2692): VmRSS:=106928kB RssAnon:=48536kB RssFile:=58392kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=283MB MemAvailable:=14288MB Cached:=12288MB AnonPages:=879MB Mapped:=500MB Slab:=1290MB 
