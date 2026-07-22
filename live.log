@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #12 | 2026-07-22T09:49:57Z | task=sqlfmt-create-table-ddl-formatting ===
+=== LIVE SNAPSHOT #13 | 2026-07-22T09:50:18Z | task=sqlfmt-create-table-ddl-formatting ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_sqlfmt-create-table-ddl-formatting.log:[DOCKERFILE SLIM] deepswe-bench/tasks/sqlfmt-create-table-ddl-formatting/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh71t2fb7qvx4y0svvv77e5p3182hnvq (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_sqlfmt-create-table-ddl-formatting.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -7,18 +7,21 @@
 /tmp/gha_step_sqlfmt-create-table-ddl-formatting.log:[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
 /tmp/gha_step_sqlfmt-create-table-ddl-formatting.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
 /tmp/gha_step_sqlfmt-create-table-ddl-formatting.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
+/tmp/gha_step_sqlfmt-create-table-ddl-formatting.log:[ENV-START] eval container UP on attempt 1 (~30s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 09:49:46 mem=1161/15993MB disk_used=91017/147719MB free=56686MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=2459MB MemAvailable:=14837MB Cached:=10862MB AnonPages:=335MB Mapped:=328MB Slab:=1130MB 
 [RESMON] 09:49:54 mem=1508/15993MB disk_used=91076/147719MB free=56628MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=1984MB MemAvailable:=14471MB Cached:=10964MB AnonPages:=696MB Mapped:=474MB Slab:=1137MB 
+[RESMON] 09:50:02 mem=1764/15993MB disk_used=91695/147719MB free=56008MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=1045MB MemAvailable:=14233MB Cached:=11574MB AnonPages:=808MB Mapped:=486MB Slab:=1210MB 
+[RESMON] 09:50:10 mem=2006/15993MB disk_used=91759/147719MB free=55944MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=426MB MemAvailable:=13962MB Cached:=11646MB AnonPages:=1155MB Mapped:=447MB Slab:=1513MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=2459MB MemAvailable:=14837MB Cached:=10862MB AnonPages:=335MB Mapped:=328MB Slab:=1130MB 
-[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
-[gt-shim] active; resolved=/tmp/gt-shim/docker
-[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
-[RESMON] 09:49:54 mem=1508/15993MB disk_used=91076/147719MB free=56628MB containers=0
-[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 140MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 132MB:provjobd4222035 /tmp/provjobd4222035975 | 111MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 
-[MEMDIAG] dockerd(2773): VmRSS:=113672kB RssAnon:=57632kB RssFile:=56040kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=1984MB MemAvailable:=14471MB Cached:=10964MB AnonPages:=696MB Mapped:=474MB Slab:=1137MB 
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 140MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 136MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 132MB:provjobd4222035 /tmp/provjobd4222035975 | 
+[MEMDIAG] dockerd(2773): VmRSS:=113720kB RssAnon:=57664kB RssFile:=56056kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=1045MB MemAvailable:=14233MB Cached:=11574MB AnonPages:=808MB Mapped:=486MB Slab:=1210MB 
+[RESMON] 09:50:10 mem=2006/15993MB disk_used=91759/147719MB free=55944MB containers=0
+[RESTOP] 651MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 140MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 132MB:provjobd4222035 /tmp/provjobd4222035975 | 
+[MEMDIAG] dockerd(2773): VmRSS:=673700kB RssAnon:=617448kB RssFile:=56252kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15993MB MemFree:=426MB MemAvailable:=13962MB Cached:=11646MB AnonPages:=1155MB Mapped:=447MB Slab:=1513MB 
+[ENV-START] eval container UP on attempt 1 (~30s) — agent running, awaiting completion
