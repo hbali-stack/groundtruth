@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #11 | 2026-07-22T10:14:06Z | task=tomlkit-toml-table-converters ===
+=== LIVE SNAPSHOT #12 | 2026-07-22T10:14:27Z | task=tomlkit-toml-table-converters ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_tomlkit-toml-table-converters.log:[DOCKERFILE SLIM] deepswe-bench/tasks/tomlkit-toml-table-converters/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh7ezsk4ze1jyjta967ypwnxhh83etpm (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_tomlkit-toml-table-converters.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -8,17 +8,19 @@
 /tmp/gha_step_tomlkit-toml-table-converters.log:[gt-shim] active; resolved=/tmp/gt-shim/docker
 /tmp/gha_step_tomlkit-toml-table-converters.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 --- mem trend (last 6) ---
-[RESMON] 10:13:56 mem=1145/15989MB disk_used=91182/147719MB free=56521MB containers=0
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2240MB MemAvailable:=14843MB Cached:=11059MB AnonPages:=340MB Mapped:=328MB Slab:=1151MB 
 [RESMON] 10:14:04 mem=1554/15989MB disk_used=91274/147719MB free=56429MB containers=0
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1745MB MemAvailable:=14454MB Cached:=11156MB AnonPages:=630MB Mapped:=464MB Slab:=1159MB 
+[RESMON] 10:14:12 mem=1675/15989MB disk_used=91873/147719MB free=55831MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=916MB MemAvailable:=14301MB Cached:=11748MB AnonPages:=838MB Mapped:=486MB Slab:=1228MB 
+[RESMON] 10:14:20 mem=2063/15989MB disk_used=91924/147719MB free=55779MB containers=0
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=289MB MemAvailable:=13935MB Cached:=11724MB AnonPages:=1186MB Mapped:=446MB Slab:=1562MB 
 --- pier tail (last 15, non-RESMON) ---
 --- step tail (last 8) ---
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=2240MB MemAvailable:=14843MB Cached:=11059MB AnonPages:=340MB Mapped:=328MB Slab:=1151MB 
-[gt-shim] installed in-place at: /bin/docker /tmp/docker-cli-cache/docker /usr/bin/docker + PATH(/tmp/gt-shim); real-suffix=.gtreal
-[gt-shim] active; resolved=/tmp/gt-shim/docker
-[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
-[RESMON] 10:14:04 mem=1554/15989MB disk_used=91274/147719MB free=56429MB containers=0
-[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 143MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 134MB:provjobd4128310 /tmp/provjobd4128310100 | 106MB:Runner.Listener /home/runner/actions-runner/cached/2.336.0/bin/Runner. | 
-[MEMDIAG] dockerd(2807): VmRSS:=106040kB RssAnon:=49536kB RssFile:=56504kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=1745MB MemAvailable:=14454MB Cached:=11156MB AnonPages:=630MB Mapped:=464MB Slab:=1159MB 
+[RESMON] 10:14:12 mem=1675/15989MB disk_used=91873/147719MB free=55831MB containers=0
+[RESTOP] 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 160MB:python /root/.local/share/uv/tools/mini-swe-agent/bin/python | 143MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 134MB:provjobd4128310 /tmp/provjobd4128310100 | 
+[MEMDIAG] dockerd(2807): VmRSS:=103680kB RssAnon:=47176kB RssFile:=56504kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=916MB MemAvailable:=14301MB Cached:=11748MB AnonPages:=838MB Mapped:=486MB Slab:=1228MB 
+[RESMON] 10:14:20 mem=2063/15989MB disk_used=91924/147719MB free=55779MB containers=0
+[RESTOP] 676MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 250MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 143MB:Runner.Worker /home/runner/actions-runner/cached/2.336.0/bin/Runner.Wo | 134MB:provjobd4128310 /tmp/provjobd4128310100 | 
+[MEMDIAG] dockerd(2807): VmRSS:=698152kB RssAnon:=641472kB RssFile:=56680kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=289MB MemAvailable:=13935MB Cached:=11724MB AnonPages:=1186MB Mapped:=446MB Slab:=1562MB 
