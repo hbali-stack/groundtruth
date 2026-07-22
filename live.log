@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #71 | 2026-07-22T10:17:54Z | task=skrub-duration-encoding ===
+=== LIVE SNAPSHOT #72 | 2026-07-22T10:18:16Z | task=skrub-duration-encoding ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_skrub-duration-encoding.log:[DOCKERFILE SLIM] deepswe-bench/tasks/skrub-duration-encoding/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh77y2107s6xkqyf61mj1dsm0983kmp1 (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_skrub-duration-encoding.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,21 @@
 /tmp/gha_step_skrub-duration-encoding.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_skrub-duration-encoding.log:[ENV-START] eval container UP on attempt 1 (~40s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 10:17:34 mem=2909/15989MB disk_used=92165/147719MB free=55538MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=499MB MemAvailable:=13077MB Cached:=11231MB AnonPages:=1740MB Mapped:=570MB Slab:=1227MB 
-[RESMON] 10:17:42 mem=2887/15989MB disk_used=92165/147719MB free=55538MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=519MB MemAvailable:=13097MB Cached:=11231MB AnonPages:=1737MB Mapped:=563MB Slab:=1226MB 
-[RESMON] 10:17:50 mem=2876/15989MB disk_used=92165/147719MB free=55538MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=538MB MemAvailable:=13116MB Cached:=11231MB AnonPages:=1740MB Mapped:=563MB Slab:=1226MB 
+[RESMON] 10:17:58 mem=2900/15989MB disk_used=92165/147719MB free=55538MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=502MB MemAvailable:=13080MB Cached:=11232MB AnonPages:=1753MB Mapped:=571MB Slab:=1226MB 
+[RESMON] 10:18:06 mem=2890/15989MB disk_used=92165/147719MB free=55538MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=515MB MemAvailable:=13094MB Cached:=11232MB AnonPages:=1759MB Mapped:=571MB Slab:=1226MB 
+[RESMON] 10:18:14 mem=2906/15989MB disk_used=92165/147719MB free=55538MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=504MB MemAvailable:=13082MB Cached:=11232MB AnonPages:=1765MB Mapped:=575MB Slab:=1227MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=6eb032b56d07ccd7e52f22d0df70d20294c6b6926962af08b0cf9b255afd0f14 _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=6eb032b56d07ccd7e52f22d0df70d20294c6b6926962af08b0cf9b255afd0f14; graph_hash_after_lsp=6eb032b56d07ccd7e52f22d0df70d20294c6b6926962af08b0cf9b255afd0f14; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=1; substrate_digest=ghcr.io/harneet2512/gt-substrate@sha256:576f49d44f227da3cdc7abcfd398ba44dab7ff9442c33021e2a3e18a256bd8b9
 Successfully converted trajectory to ATIF format: jobs/2026-07-22__09-56-16/skrub-duration-encoding__eretq6e/agent/trajectory.json
 --- step tail (last 8) ---
-[RESMON] 10:17:42 mem=2887/15989MB disk_used=92165/147719MB free=55538MB containers=2
-[RESTOP] 559MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 399MB:pytest /usr/local/bin/python3 /usr/local/bin/pytest skrub -k not optun | 285MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 282MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 
-[MEMDIAG] dockerd(2763): VmRSS:=572728kB RssAnon:=516056kB RssFile:=56672kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=519MB MemAvailable:=13097MB Cached:=11231MB AnonPages:=1737MB Mapped:=563MB Slab:=1226MB 
-[RESMON] 10:17:50 mem=2876/15989MB disk_used=92165/147719MB free=55538MB containers=2
-[RESTOP] 563MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 399MB:pytest /usr/local/bin/python3 /usr/local/bin/pytest skrub -k not optun | 285MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 282MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 
-[MEMDIAG] dockerd(2763): VmRSS:=576808kB RssAnon:=520136kB RssFile:=56672kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=538MB MemAvailable:=13116MB Cached:=11231MB AnonPages:=1740MB Mapped:=563MB Slab:=1226MB 
+[RESMON] 10:18:06 mem=2890/15989MB disk_used=92165/147719MB free=55538MB containers=2
+[RESTOP] 571MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 418MB:pytest /usr/local/bin/python3 /usr/local/bin/pytest skrub -k not optun | 285MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 282MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 
+[MEMDIAG] dockerd(2763): VmRSS:=584960kB RssAnon:=528288kB RssFile:=56672kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=515MB MemAvailable:=13094MB Cached:=11232MB AnonPages:=1759MB Mapped:=571MB Slab:=1226MB 
+[RESMON] 10:18:14 mem=2906/15989MB disk_used=92165/147719MB free=55538MB containers=2
+[RESTOP] 575MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 423MB:pytest /usr/local/bin/python3 /usr/local/bin/pytest skrub -k not optun | 285MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 282MB:python3 /usr/local/bin/python3 -m joblib.externals.loky.backend.popen_ | 
+[MEMDIAG] dockerd(2763): VmRSS:=589040kB RssAnon:=532368kB RssFile:=56672kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=504MB MemAvailable:=13082MB Cached:=11232MB AnonPages:=1765MB Mapped:=575MB Slab:=1227MB 
