@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T10:32:00Z | task=textual-richlog-follow-state ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 10:29:30] used=2190MB total=15993MB swap_used=0MB
+[MEMLOG 10:29:40] used=2190MB total=15993MB swap_used=0MB
+[MEMLOG 10:29:50] used=2197MB total=15993MB swap_used=0MB
+[MEMLOG 10:30:00] used=2198MB total=15993MB swap_used=0MB
+[MEMLOG 10:30:10] used=2197MB total=15993MB swap_used=0MB
+[MEMLOG 10:30:20] used=2197MB total=15993MB swap_used=0MB
+[MEMLOG 10:30:30] used=2196MB total=15993MB swap_used=0MB
+[MEMLOG 10:30:40] used=2197MB total=15993MB swap_used=0MB
+[MEMLOG 10:30:50] used=2240MB total=15993MB swap_used=0MB
+[MEMLOG 10:31:00] used=2203MB total=15993MB swap_used=0MB
+[MEMLOG 10:31:10] used=2202MB total=15993MB swap_used=0MB
+[MEMLOG 10:31:20] used=2202MB total=15993MB swap_used=0MB
+[MEMLOG 10:31:30] used=2202MB total=15993MB swap_used=0MB
+[MEMLOG 10:31:40] used=2202MB total=15993MB swap_used=0MB
+[MEMLOG 10:31:50] used=2202MB total=15993MB swap_used=0MB
+--- step tail (last 8) ---
