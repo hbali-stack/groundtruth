@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T09:19:14Z | task=narwhals-rolling-window-suite ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 09:16:44] used=2158MB total=15989MB swap_used=0MB
+[MEMLOG 09:16:54] used=2158MB total=15989MB swap_used=0MB
+[MEMLOG 09:17:04] used=2158MB total=15989MB swap_used=0MB
+[MEMLOG 09:17:14] used=2158MB total=15989MB swap_used=0MB
+[MEMLOG 09:17:24] used=2158MB total=15989MB swap_used=0MB
+[MEMLOG 09:17:34] used=2166MB total=15989MB swap_used=0MB
+[MEMLOG 09:17:44] used=2163MB total=15989MB swap_used=0MB
+[MEMLOG 09:17:54] used=2163MB total=15989MB swap_used=0MB
+[MEMLOG 09:18:04] used=2167MB total=15989MB swap_used=0MB
+[MEMLOG 09:18:14] used=2151MB total=15989MB swap_used=0MB
+[MEMLOG 09:18:24] used=2151MB total=15989MB swap_used=0MB
+[MEMLOG 09:18:34] used=2150MB total=15989MB swap_used=0MB
+[MEMLOG 09:18:44] used=2151MB total=15989MB swap_used=0MB
+[MEMLOG 09:18:54] used=2151MB total=15989MB swap_used=0MB
+[MEMLOG 09:19:04] used=2151MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
