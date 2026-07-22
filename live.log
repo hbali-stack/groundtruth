@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-22T09:53:17Z | task=prometheus-transactional-reload-status ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 09:50:46] used=2260MB total=15989MB swap_used=0MB
+[MEMLOG 09:50:56] used=2263MB total=15989MB swap_used=0MB
+[MEMLOG 09:51:06] used=2263MB total=15989MB swap_used=0MB
+[MEMLOG 09:51:16] used=2246MB total=15989MB swap_used=0MB
+[MEMLOG 09:51:26] used=2258MB total=15989MB swap_used=0MB
+[MEMLOG 09:51:36] used=2253MB total=15989MB swap_used=0MB
+[MEMLOG 09:51:46] used=2254MB total=15989MB swap_used=0MB
+[MEMLOG 09:51:56] used=2262MB total=15989MB swap_used=0MB
+[MEMLOG 09:52:06] used=2284MB total=15989MB swap_used=0MB
+[MEMLOG 09:52:16] used=2284MB total=15989MB swap_used=0MB
+[MEMLOG 09:52:26] used=2263MB total=15989MB swap_used=0MB
+[MEMLOG 09:52:36] used=2249MB total=15989MB swap_used=0MB
+[MEMLOG 09:52:46] used=2248MB total=15989MB swap_used=0MB
+[MEMLOG 09:52:56] used=2248MB total=15989MB swap_used=0MB
+[MEMLOG 09:53:06] used=2305MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
