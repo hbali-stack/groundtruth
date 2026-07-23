@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #1 | 2026-07-23T02:57:26Z | task=bandit-structured-nosec-directives ===
+=== LIVE SNAPSHOT #2 | 2026-07-23T02:57:47Z | task=bandit-structured-nosec-directives ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 --- mem trend (last 6) ---
 --- pier tail (last 15, non-RESMON) ---
@@ -18,3 +18,9 @@
 [MEMLOG 02:57:07] used=2137MB total=15989MB swap_used=0MB
 [MEMLOG 02:57:17] used=2152MB total=15989MB swap_used=0MB
 --- step tail (last 8) ---
+=== DeepSWE GT Trial: bandit-structured-nosec-directives (model deepseek/deepseek-v4-flash) ===
+HOST  GT_CERT_DIR=/tmp/gt  GT_HOST_GRAPH_DB=/tmp/gt/graph.db
+GT_PROOF_MODE=1  GT_CONTAINERIZED=1  GT_SUBSTRATE_DIGEST=ghcr.io/hbali-stack/gt-substrate@sha256:3b2153b88380930d5c325ecfdd39590cf339fdf9c67ba3834860c06bc7c2fc6f
+GT inject staged: 122 Python files
+go: downloading github.com/smacker/go-tree-sitter v0.0.0-20240625050157-a31a98a7c0f6
+go: downloading github.com/mattn/go-sqlite3 v1.14.22
