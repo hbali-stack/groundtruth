@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #49 | 2026-07-23T03:14:19Z | task=bandit-structured-nosec-directives ===
+=== LIVE SNAPSHOT #50 | 2026-07-23T03:14:40Z | task=bandit-structured-nosec-directives ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_bandit-structured-nosec-directives.log:[DOCKERFILE SLIM] deepswe-bench/tasks/bandit-structured-nosec-directives/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh757d8ggvnfaszv8zcav3msy982ma7f (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_bandit-structured-nosec-directives.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,21 +9,21 @@
 /tmp/gha_step_bandit-structured-nosec-directives.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_bandit-structured-nosec-directives.log:[ENV-START] eval container UP on attempt 1 (~40s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 03:14:02 mem=9831/15989MB disk_used=91836/147719MB free=55867MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=387MB MemAvailable:=6153MB Cached:=4404MB AnonPages:=8961MB Mapped:=422MB Slab:=1055MB 
-[RESMON] 03:14:10 mem=9854/15989MB disk_used=91836/147719MB free=55867MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=452MB MemAvailable:=6130MB Cached:=4319MB AnonPages:=8978MB Mapped:=422MB Slab:=1053MB 
 [RESMON] 03:14:18 mem=9797/15989MB disk_used=91843/147719MB free=55860MB containers=2
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=474MB MemAvailable:=6180MB Cached:=4342MB AnonPages:=8937MB Mapped:=411MB Slab:=1058MB 
+[RESMON] 03:14:26 mem=9815/15989MB disk_used=91843/147719MB free=55860MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=458MB MemAvailable:=6164MB Cached:=4342MB AnonPages:=8945MB Mapped:=414MB Slab:=1058MB 
+[RESMON] 03:14:34 mem=9731/15989MB disk_used=91844/147719MB free=55860MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=543MB MemAvailable:=6250MB Cached:=4342MB AnonPages:=8876MB Mapped:=409MB Slab:=1058MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=c3c46a4ce3cfb7bc0dccf42ed394b22fb3cb0acd91deb262f5a5180116df1a7a _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=c3c46a4ce3cfb7bc0dccf42ed394b22fb3cb0acd91deb262f5a5180116df1a7a; graph_hash_after_lsp=c3c46a4ce3cfb7bc0dccf42ed394b22fb3cb0acd91deb262f5a5180116df1a7a; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=0; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:3b2153b88380930d5c325ecfdd39590cf339fdf9c67ba3834860c06bc7c2fc6f
 Successfully converted trajectory to ATIF format: jobs/2026-07-23__03-01-53/bandit-structured-nosec-directiv__SQCTRCA/agent/trajectory.json
 --- step tail (last 8) ---
-[RESMON] 03:14:10 mem=9854/15989MB disk_used=91836/147719MB free=55867MB containers=2
-[RESTOP] 4145MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 3901MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 352MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 246MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
-[MEMDIAG] dockerd(2761): VmRSS:=360732kB RssAnon:=304716kB RssFile:=56016kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=452MB MemAvailable:=6130MB Cached:=4319MB AnonPages:=8978MB Mapped:=422MB Slab:=1053MB 
-[RESMON] 03:14:18 mem=9797/15989MB disk_used=91843/147719MB free=55860MB containers=2
-[RESTOP] 4129MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 3867MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 351MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 256MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
+[RESMON] 03:14:26 mem=9815/15989MB disk_used=91843/147719MB free=55860MB containers=2
+[RESTOP] 4099MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 3805MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 351MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 256MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
 [MEMDIAG] dockerd(2761): VmRSS:=360152kB RssAnon:=304060kB RssFile:=56092kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=474MB MemAvailable:=6180MB Cached:=4342MB AnonPages:=8937MB Mapped:=411MB Slab:=1058MB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=458MB MemAvailable:=6164MB Cached:=4342MB AnonPages:=8945MB Mapped:=414MB Slab:=1058MB 
+[RESMON] 03:14:34 mem=9731/15989MB disk_used=91844/147719MB free=55860MB containers=2
+[RESTOP] 4163MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 3862MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 351MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 256MB:pier /tmp/gt-harness-venv/bin/python /tmp/gt-harness-venv/bin/pier run | 
+[MEMDIAG] dockerd(2761): VmRSS:=360156kB RssAnon:=304064kB RssFile:=56092kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=543MB MemAvailable:=6250MB Cached:=4342MB AnonPages:=8876MB Mapped:=409MB Slab:=1058MB 
