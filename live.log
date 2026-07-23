@@ -1,0 +1,20 @@
+=== LIVE SNAPSHOT #1 | 2026-07-23T02:59:26Z | task=actionlint-action-pinning-lint ===
+--- KEY EVENTS (full logs, non-RESMON) ---
+--- mem trend (last 6) ---
+--- pier tail (last 15, non-RESMON) ---
+[MEMLOG 02:56:56] used=1781MB total=15989MB swap_used=0MB
+[MEMLOG 02:57:06] used=1784MB total=15989MB swap_used=0MB
+[MEMLOG 02:57:16] used=1785MB total=15989MB swap_used=0MB
+[MEMLOG 02:57:26] used=1793MB total=15989MB swap_used=0MB
+[MEMLOG 02:57:36] used=1793MB total=15989MB swap_used=0MB
+[MEMLOG 02:57:46] used=1822MB total=15989MB swap_used=0MB
+[MEMLOG 02:57:56] used=2091MB total=15989MB swap_used=0MB
+[MEMLOG 02:58:06] used=2092MB total=15989MB swap_used=0MB
+[MEMLOG 02:58:16] used=2085MB total=15989MB swap_used=0MB
+[MEMLOG 02:58:26] used=2089MB total=15989MB swap_used=0MB
+[MEMLOG 02:58:36] used=2091MB total=15989MB swap_used=0MB
+[MEMLOG 02:58:46] used=2095MB total=15989MB swap_used=0MB
+[MEMLOG 02:58:56] used=2095MB total=15989MB swap_used=0MB
+[MEMLOG 02:59:06] used=2103MB total=15989MB swap_used=0MB
+[MEMLOG 02:59:16] used=2107MB total=15989MB swap_used=0MB
+--- step tail (last 8) ---
