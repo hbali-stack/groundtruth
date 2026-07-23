@@ -1,4 +1,4 @@
-=== LIVE SNAPSHOT #39 | 2026-07-23T03:10:48Z | task=bandit-structured-nosec-directives ===
+=== LIVE SNAPSHOT #40 | 2026-07-23T03:11:09Z | task=bandit-structured-nosec-directives ===
 --- KEY EVENTS (full logs, non-RESMON) ---
 /tmp/gha_step_bandit-structured-nosec-directives.log:[DOCKERFILE SLIM] deepswe-bench/tasks/bandit-structured-nosec-directives/environment/Dockerfile -> FROM public.ecr.aws/d3j8x8q7/swe-bench-202605:kh757d8ggvnfaszv8zcav3msy982ma7f (use pre-built local image; skip the from-scratch env rebuild that OOM-hung env-start 900s)
 /tmp/gha_step_bandit-structured-nosec-directives.log:[SLIM-VERIFY] rewritten Dockerfile is now:
@@ -9,20 +9,20 @@
 /tmp/gha_step_bandit-structured-nosec-directives.log:[ENV-START] attempt 1/3 — pier (bg) + container watcher (window=1800s)
 /tmp/gha_step_bandit-structured-nosec-directives.log:[ENV-START] eval container UP on attempt 1 (~40s) — agent running, awaiting completion
 --- mem trend (last 6) ---
-[RESMON] 03:10:31 mem=7769/15989MB disk_used=91836/147719MB free=55868MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=206MB MemAvailable:=8211MB Cached:=6591MB AnonPages:=6881MB Mapped:=422MB Slab:=1098MB 
-[RESMON] 03:10:40 mem=8061/15989MB disk_used=91836/147719MB free=55868MB containers=2
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=247MB MemAvailable:=7926MB Cached:=6272MB AnonPages:=7180MB Mapped:=422MB Slab:=1093MB 
 [RESMON] 03:10:48 mem=8354/15989MB disk_used=91836/147719MB free=55868MB containers=2
 [MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=170MB MemAvailable:=7634MB Cached:=6060MB AnonPages:=7469MB Mapped:=422MB Slab:=1092MB 
+[RESMON] 03:10:56 mem=8648/15989MB disk_used=91836/147719MB free=55868MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=195MB MemAvailable:=7339MB Cached:=5746MB AnonPages:=7760MB Mapped:=431MB Slab:=1088MB 
+[RESMON] 03:11:04 mem=8857/15989MB disk_used=91836/147719MB free=55868MB containers=2
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=172MB MemAvailable:=7114MB Cached:=5550MB AnonPages:=7986MB Mapped:=422MB Slab:=1084MB 
 --- pier tail (last 15, non-RESMON) ---
 [GT_META] graph_witness host_resolved_graph_db=/tmp/gt/graph.db hook_graph_db=/tmp/gt/graph.db hook_graph_hash=c3c46a4ce3cfb7bc0dccf42ed394b22fb3cb0acd91deb262f5a5180116df1a7a _gt_prebuilt_active=True | gt_artifacts=/tmp/gt; graph_db=/tmp/gt/graph.db; graph_hash=c3c46a4ce3cfb7bc0dccf42ed394b22fb3cb0acd91deb262f5a5180116df1a7a; graph_hash_after_lsp=c3c46a4ce3cfb7bc0dccf42ed394b22fb3cb0acd91deb262f5a5180116df1a7a; hook_graph_hash_matches_post_lsp=True; lsp_certificate=/tmp/gt/lsp_certificate.json; graph_certificate=/tmp/gt/graph_certificate.json; embedder_certificate=/tmp/gt/embedder_certificate.json; foundational_gate_report=/tmp/gt/foundational_gate_report.json; gt_prebuilt_active=true; runtime_strategy=unified_substrate; l6_fresh=0; substrate_digest=ghcr.io/hbali-stack/gt-substrate@sha256:3b2153b88380930d5c325ecfdd39590cf339fdf9c67ba3834860c06bc7c2fc6f
 --- step tail (last 8) ---
-[RESMON] 03:10:40 mem=8061/15989MB disk_used=91836/147719MB free=55868MB containers=2
-[RESTOP] 3460MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 2669MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 295MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 283MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 
-[MEMDIAG] dockerd(2761): VmRSS:=302304kB RssAnon:=245724kB RssFile:=56580kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=247MB MemAvailable:=7926MB Cached:=6272MB AnonPages:=7180MB Mapped:=422MB Slab:=1093MB 
-[RESMON] 03:10:48 mem=8354/15989MB disk_used=91836/147719MB free=55868MB containers=2
-[RESTOP] 3603MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 2815MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 295MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 283MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 
-[MEMDIAG] dockerd(2761): VmRSS:=302304kB RssAnon:=245724kB RssFile:=56580kB RssShmem:=0kB VmSwap:=0kB 
-[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=170MB MemAvailable:=7634MB Cached:=6060MB AnonPages:=7469MB Mapped:=422MB Slab:=1092MB 
+[RESMON] 03:10:56 mem=8648/15989MB disk_used=91836/147719MB free=55868MB containers=2
+[RESTOP] 3741MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 2953MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 299MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 283MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 
+[MEMDIAG] dockerd(2761): VmRSS:=306384kB RssAnon:=249804kB RssFile:=56580kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=195MB MemAvailable:=7339MB Cached:=5746MB AnonPages:=7760MB Mapped:=431MB Slab:=1088MB 
+[RESMON] 03:11:04 mem=8857/15989MB disk_used=91836/147719MB free=55868MB containers=2
+[RESTOP] 3865MB:python python -m bandit -f json /tmp/tmp4telgihc.py | 3066MB:python python -m bandit -f json /tmp/tmptcf_79eh.py | 299MB:dockerd /usr/bin/dockerd -H fd:// --containerd=/run/containerd/contain | 283MB:mini-swe-agent /root/.local/share/uv/tools/mini-swe-agent/bin/python / | 
+[MEMDIAG] dockerd(2761): VmRSS:=306388kB RssAnon:=249808kB RssFile:=56580kB RssShmem:=0kB VmSwap:=0kB 
+[MEMDIAG] meminfo: MemTotal:=15989MB MemFree:=172MB MemAvailable:=7114MB Cached:=5550MB AnonPages:=7986MB Mapped:=422MB Slab:=1084MB 
