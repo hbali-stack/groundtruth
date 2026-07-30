@@ -2516,10 +2516,14 @@ def _compute_ranked_localization_rows(
         res = _localize(state.issue_text, db, repo_root=state.repo_root)
     except Exception as exc:  # noqa: BLE001
         if audit is not None:
+            fault_detail = " ".join(str(exc).split())[:240]
             audit.note(
                 "localizer_fault",
                 category="dependency_failure",
-                detail={"fault_type": type(exc).__name__},
+                detail={
+                    "fault_type": type(exc).__name__,
+                    "fault_detail": fault_detail,
+                },
             )
         return []
     cands = list(getattr(res, "candidates", None) or [])

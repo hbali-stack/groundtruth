@@ -79,6 +79,35 @@ def test_append_ledger_line_standalone_is_durable_and_injects_timestamp(tmp_path
     assert "timestamp_ms" in rec and isinstance(rec["timestamp_ms"], int)
 
 
+def test_append_ledger_line_adds_neutral_terminal_envelope_defaults(tmp_path):
+    sink = str(tmp_path / "measurement.jsonl")
+    append_ledger_line(
+        {
+            "schema": "gt.measurement.v1",
+            "layer": "measurement",
+            "outcome": "measurement_only",
+        },
+        sink,
+    )
+    rec = json.loads(open(sink, encoding="utf-8").read().splitlines()[0])
+    assert {
+        key: rec[key]
+        for key in (
+            "event_type",
+            "file_path",
+            "reason",
+            "chars_delivered",
+            "iteration",
+        )
+    } == {
+        "event_type": "",
+        "file_path": "",
+        "reason": "",
+        "chars_delivered": 0,
+        "iteration": 0,
+    }
+
+
 def test_append_ledger_line_is_best_effort_never_raises():
     # a path that cannot be created (empty string) must NOT raise — telemetry must
     # never break the agent loop.

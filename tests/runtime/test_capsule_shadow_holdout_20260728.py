@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
+from artifact_deepswe import ledger_attestation
 from groundtruth.runtime import miniswe_provider_boundary as mpb
 from groundtruth.runtime.shadow_holdout import DELIVER, HOLDOUT
 
@@ -176,6 +177,9 @@ def test_assignment_row_is_written_on_the_DELIVER_arm_too(
     row = _row(tmp_path, "0.5", monkeypatch, "localization")
     assert row is not None
     assert row["schema"] == "gt.shadow_assignment.v1"
+    assert row["file_path"] == ""
+    assert row["reason"] == "pre_outcome_randomization"
+    assert row["iteration"] >= 0
     assert row["arm"] == DELIVER
     assert row["propensity"] == 0.5
 
@@ -191,3 +195,14 @@ def test_assignment_row_records_the_configured_rate_as_the_propensity(
     assert row["withheld_capsule_hash"] == "c" * 64
     assert row["chars_delivered"] == 0
     assert row["outcome"] == "measurement_only"
+
+
+def test_assignment_row_satisfies_terminal_ledger_contract(
+    tmp_path, monkeypatch
+) -> None:
+    row = _row(tmp_path, "0.2", monkeypatch, "localization")
+    assert row is not None
+    ledger = tmp_path / "receipts.jsonl"
+    proof = ledger_attestation.write_attestation(ledger, write_failures=0)
+    assert proof["row_count"] == 1
+    assert ledger_attestation.validate_attestation(ledger)

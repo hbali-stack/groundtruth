@@ -40,6 +40,18 @@ def append_ledger_line(entry: dict[str, Any], path: str) -> None:
     This is the canonical, standalone home of the semantics
     ``gt_mini_patch._ledger_line_direct`` provides; the mini seam adopts THIS in W2."""
     try:
+        # Every durable row shares the terminal-attestation envelope, including
+        # measurement and provider-boundary schemas that have no natural file
+        # or reason. Keep semantic identity fields (layer/outcome) mandatory,
+        # while filling only neutral envelope defaults.
+        entry = {
+            "event_type": "",
+            "file_path": "",
+            "reason": "",
+            "chars_delivered": 0,
+            "iteration": 0,
+            **entry,
+        }
         if "timestamp_ms" not in entry:
             try:
                 entry = {**entry, "timestamp_ms": int(time.time() * 1000)}

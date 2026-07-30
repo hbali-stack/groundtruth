@@ -1221,6 +1221,19 @@ jobs:
           HOST_GT_INJECT=/tmp/gt_inject/opt/gt
           mkdir -p "${HOST_GT_INJECT}"
           mkdir -p "${HOST_GT_INJECT}/groundtruth"
+          # The bind mount shadows the image's /opt/gt. Preserve the pinned
+          # substrate's model assets before overlaying the ref-synchronized
+          # Python seam, or proof-mode localization has code but no embedder.
+          _GT_SUBSTRATE_CID="$(docker create "$GT_SUBSTRATE_DIGEST")"
+          mkdir -p "${HOST_GT_INJECT}/models"
+          if ! docker cp \
+            "${_GT_SUBSTRATE_CID}:/opt/gt/models/." \
+            "${HOST_GT_INJECT}/models/"; then
+            docker rm -f "${_GT_SUBSTRATE_CID}" >/dev/null 2>&1 || true
+            echo "GT_MODEL_ASSET_STAGE_FAIL: pinned substrate models unavailable"
+            exit 1
+          fi
+          docker rm -f "${_GT_SUBSTRATE_CID}" >/dev/null
           cp artifact_deepswe/gt_mini_patch.py "${HOST_GT_INJECT}/"
           # Headless agent runner (B5 fix): the non-interactive core of run/mini.py. The bare
           # `mini-swe-agent` CLI is the INTERACTIVE mini app and never reaches agent.run() in a
@@ -1689,6 +1702,22 @@ jobs:
                   && echo "[GT] litellm dep OK in GT_PY: $_dep" \
                   || echo "[GT] WARN litellm dep MISSING in GT_PY: $_dep"
               done
+              # Reactive localization executes in GT_PY, not the substrate
+              # proof container. Its deterministic ONNX semantic leg is a
+              # proof-mode requirement, so install and verify the exact runtime
+              # dependencies before the first provider call.
+              for _dep in numpy onnxruntime tokenizers; do
+                if ! "$GT_PY" -c "import $_dep" >/dev/null 2>&1; then
+                  "$GT_PY" -m pip install --quiet "$_dep" >/dev/null 2>&1 \
+                    || uv pip install --python "$GT_PY" "$_dep" >/dev/null 2>&1 \
+                    || python -m pip install --quiet "$_dep" >/dev/null 2>&1 || true
+                fi
+                "$GT_PY" -c "import $_dep" >/dev/null 2>&1 \
+                  && echo "[GT] semantic dep OK in GT_PY: $_dep" \
+                  || { echo "GT_SEMANTIC_DEP_MISSING: $_dep"; exit 2; }
+              done
+              test -s /opt/gt/models/gte-modernbert-base/model.onnx \
+                || { echo "GT_SEMANTIC_MODEL_MISSING: gte-modernbert-base"; exit 2; }
 
               # Write mini-swe-agent config AND set env vars to skip interactive wizard
               mkdir -p /root/.config/mini-swe-agent

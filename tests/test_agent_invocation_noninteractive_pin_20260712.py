@@ -125,6 +125,15 @@ def test_runner_is_staged_into_opt_gt() -> None:
 def test_reactive_localizer_import_dependencies_are_staged() -> None:
     run = _trial_run()
     assert 'cp -r src/groundtruth/. "${HOST_GT_INJECT}/groundtruth/"' in run
+    assert '"${_GT_SUBSTRATE_CID}:/opt/gt/models/."' in run
+    assert "GT_MODEL_ASSET_STAGE_FAIL" in run
+    assert "for _dep in numpy onnxruntime tokenizers; do" in run
+    assert "GT_SEMANTIC_DEP_MISSING" in run
+    assert "GT_SEMANTIC_MODEL_MISSING" in run
+    ae_block = (
+        _ROOT / "artifact_deepswe" / "gt_integration" / "gt_ae_block.sh"
+    ).read_text(encoding="utf-8")
+    assert '--ae "GT_MODELS_ROOT=${GT_MODELS_ROOT:-/opt/gt/models}"' in ae_block
 
 
 def test_exact_staged_python_tree_imports_reactive_localizer(tmp_path: Path) -> None:

@@ -388,6 +388,9 @@ def test_delivery_handler_fires_once_with_the_delivered_compilation(
 
     delivery = [r for r in rows if r.get("schema") == "gt.canonical_delivery.v1"]
     assert len(delivery) == 1, "no canonical row -- the assertion below would be vacuous"
+    assert delivery[0]["file_path"] == ""
+    assert delivery[0]["reason"] == "provider_terminal_success"
+    assert delivery[0]["iteration"] >= 0
     assert len(seen) == 1
     assert seen[0].capsule_hash == plan.compilation.capsule_hash
     # The handler receives the identity the join needs, not just a hash.

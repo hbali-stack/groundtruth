@@ -103,6 +103,10 @@ if [ "${GT_CS_EDIT_TRIGGER:-0}" = "1" ] && [ "${GT_BOUNDARY_EXPIRE:-0}" = "1" ];
 fi
 
 GT_AE_ARGS=(
+  # The task bind mount shadows the substrate image's /opt/gt. Callers stage the
+  # pinned model assets back under this canonical path; forward it explicitly so
+  # embed.py never falls back to the unrelated repo-relative /opt/models path.
+  --ae "GT_MODELS_ROOT=${GT_MODELS_ROOT:-/opt/gt/models}"
   # ── Verify-axis structural edit-risk (gaps G03/G04) ──────────────────────────
   # The in-container CODE defaults this axis OFF (byte-identical legacy). This block's
   # JOB is to turn it ON via --ae (that is the G03/G04 fix — the axis was dark in-

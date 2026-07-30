@@ -317,12 +317,19 @@ def _record_shadow_assignment_row(
         from groundtruth.runtime.shadow_holdout import parse_rate
 
         rate = parse_rate(os.environ.get("GT_SS_SHADOW_RATE", "0"))
+        work_state = getattr(
+            getattr(boundary, "attempt_runtime", None), "work_state", None
+        )
+        iteration = max(0, int(getattr(work_state, "sequence", 0) or 0))
         row = {
             "schema": _SHADOW_ASSIGNMENT_SCHEMA,
             "layer": "measurement.shadow_assignment",
             "event_type": "shadow_assignment",
+            "file_path": "",
             "outcome": "measurement_only",
+            "reason": "pre_outcome_randomization",
             "chars_delivered": 0,
+            "iteration": iteration,
             "arm": str(arm),
             "propensity": rate,
             "task_id": str(task_id or ""),
@@ -945,7 +952,20 @@ class MiniSweProviderBoundary:
             "schema": "gt.canonical_delivery.v1",
             "layer": "canonical.provider_delivery",
             "event_type": "canonical_provider_delivery",
+            "file_path": "",
             "outcome": "delivered",
+            "reason": "provider_terminal_success",
+            "iteration": max(
+                0,
+                int(
+                    getattr(
+                        getattr(self.attempt_runtime, "work_state", None),
+                        "sequence",
+                        0,
+                    )
+                    or 0
+                ),
+            ),
             "delivery_attempt_id": delivery_attempt_id,
             "observation_id": compilation.observation_id,
             "model_call_id": compilation.model_call_id,
