@@ -126,7 +126,7 @@ def test_truth_bearing_steps_do_not_launder_failure_conclusions() -> None:
         "GT substrate proof (handoff §B-AFTER/§D/§G) — pre-agent, pinned, read-only repo",
         "Run-identity gate (gt_math R01-R04 — resolved identity + fail-closed integrity before spend)",
         "Run GT Pro trial",
-        "Verify GT wiring (trajectory-based liveness + delivery check)",
+        "Verify GT wiring (trajectory liveness + provider-bound delivery)",
     ):
         step = _trial_step(name)
         assert step.get("continue-on-error") is not True, (
@@ -159,7 +159,7 @@ def test_post_failure_diagnostics_recheck_identity_and_proof_before_any_spend() 
     for name in (
         "Run-identity gate (gt_math R01-R04 — resolved identity + fail-closed integrity before spend)",
         "Run GT Pro trial",
-        "Verify GT wiring (trajectory-based liveness + delivery check)",
+        "Verify GT wiring (trajectory liveness + provider-bound delivery)",
     ):
         assert _trial_step(name).get("if") == "${{ !cancelled() }}"
 

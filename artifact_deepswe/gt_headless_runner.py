@@ -281,21 +281,27 @@ def run(env: dict | None = None) -> int:
         try:
             seam_failures = int(gt_mini_patch.ledger_write_failures())
             failures = seam_failures
-            # A canonical attachment owns persistence in RuntimeJournal.  A
-            # stale legacy JSONL file at the historical default path is not
-            # part of this attempt and must never determine its outcome.
-            legacy_ledger = e.get("GT_RUNTIME_LEDGER") or "/tmp/gt_runtime_ledger.jsonl"
-            if not batch_attached and os.path.isfile(legacy_ledger):
-                attestation = ledger_attestation.write_attestation(
-                    legacy_ledger,
-                    write_failures=failures,
-                )
-                _bc(
-                    "runtime ledger terminal attestation "
-                    f"rows={attestation['row_count']} bytes={attestation['byte_count']} "
-                    f"sha256={attestation['sha256']}"
-                )
-                failures = int(attestation["write_failures"])
+            # The canonical attachment owns persistence in RuntimeJournal, but
+            # the runner owns terminal proof over this attempt's exact ledger.
+            # The former ``not batch_attached`` guard skipped attestation on
+            # every production canonical run.
+            ledger_path = str(e.get("GT_RUNTIME_LEDGER") or "").strip()
+            if not ledger_path:
+                if batch_attached:
+                    raise ValueError("GT_RUNTIME_LEDGER is required for canonical attachment")
+                ledger_path = "/tmp/gt_runtime_ledger.jsonl"
+            if not os.path.isfile(ledger_path):
+                raise OSError(f"configured runtime ledger absent: {ledger_path}")
+            attestation = ledger_attestation.write_attestation(
+                ledger_path,
+                write_failures=failures,
+            )
+            _bc(
+                "runtime ledger terminal attestation "
+                f"rows={attestation['row_count']} bytes={attestation['byte_count']} "
+                f"sha256={attestation['sha256']}"
+            )
+            failures = int(attestation["write_failures"])
             if failures != 0:
                 _bc(
                     "FATAL: runtime ledger writer reported "

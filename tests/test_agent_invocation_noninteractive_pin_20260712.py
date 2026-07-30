@@ -21,6 +21,10 @@ is launched, not a hope re-discovered only after a paid run returns empty.
 """
 from __future__ import annotations
 
+import os
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -116,6 +120,38 @@ def test_runner_is_staged_into_opt_gt() -> None:
         for step in job.get("steps", []) or []
     )
     assert staged, "gt_headless_runner.py must be cp'd into HOST_GT_INJECT (/opt/gt) before the run"
+
+
+def test_reactive_localizer_import_dependencies_are_staged() -> None:
+    run = _trial_run()
+    assert 'cp -r src/groundtruth/. "${HOST_GT_INJECT}/groundtruth/"' in run
+
+
+def test_exact_staged_python_tree_imports_reactive_localizer(tmp_path: Path) -> None:
+    staged = tmp_path / "opt" / "gt" / "groundtruth"
+    staged.mkdir(parents=True)
+    (staged / "__init__.py").touch()
+    source = _ROOT / "src" / "groundtruth"
+    shutil.copytree(source, staged, dirs_exist_ok=True)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(staged.parent)
+    probe = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import groundtruth.runtime.gateway as g; "
+                "assert g._localize is not None, 'graph localizer unavailable'"
+            ),
+        ],
+        env=env,
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert probe.returncode == 0, probe.stderr
 
 
 def test_runner_file_exists_and_forces_default_agent() -> None:

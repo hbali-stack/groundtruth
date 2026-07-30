@@ -1231,23 +1231,11 @@ jobs:
           cp artifact_deepswe/gt_oracle.py      "${HOST_GT_INJECT}/" 2>/dev/null || true
           cp artifact_deepswe/gt_oracle_sense.py "${HOST_GT_INJECT}/" 2>/dev/null || true
           cp artifact_deepswe/phase_policy.py   "${HOST_GT_INJECT}/" 2>/dev/null || true
-          for pkg in runtime delivery pretask; do
-            if [ -d "src/groundtruth/${pkg}" ]; then
-              mkdir -p "${HOST_GT_INJECT}/groundtruth/${pkg}"
-              # #46 fix (2026-07-11): STRUCTURE-PRESERVING copy. The old `cp .../${pkg}/*.py`
-              # glob was NON-recursive, so runtime/adapters/miniswe.py (the ONE Gateway delivery
-              # adapter) was never staged; in-container `import groundtruth.runtime.adapters.miniswe`
-              # failed -> _gt_gateway_deliver hit `except: return` -> the whole Gateway/Super-Mode
-              # stack went DARK regardless of the flags. cp -r stages the subpackage tree.
-              cp -r "src/groundtruth/${pkg}/." "${HOST_GT_INJECT}/groundtruth/${pkg}/" 2>/dev/null || true
-            fi
-          done
-          # #46 fix: trajectory/ (HypothesisLedger classifier dep) is a SIBLING of runtime, not
-          # under it, so the pkg loop never reached it -> GT_HYPOTHESIS died on import in-container.
-          if [ -d "src/groundtruth/trajectory" ]; then
-            mkdir -p "${HOST_GT_INJECT}/groundtruth/trajectory"
-            cp -r "src/groundtruth/trajectory/." "${HOST_GT_INJECT}/groundtruth/trajectory/" 2>/dev/null || true
-          fi
+          # Stage the complete GroundTruth Python package. A hand-maintained
+          # subpackage allowlist silently omitted graph_localizer dependencies
+          # (index.repo_scope -> index package imports -> lsp/utils), making the
+          # ranked-localization engine unavailable in paid tasks.
+          cp -r src/groundtruth/. "${HOST_GT_INJECT}/groundtruth/"
           # drop copied bytecode caches, then guarantee every staged dir is an importable package
           find "${HOST_GT_INJECT}/groundtruth" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
           touch "${HOST_GT_INJECT}/groundtruth/__init__.py"
@@ -1909,7 +1897,7 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-      - name: Verify GT wiring (trajectory-based liveness + delivery check)
+      - name: Verify GT wiring (trajectory liveness + provider-bound delivery)
         if: ${{ !cancelled() }}
         env:
           # Arm selector for the GT-on-only profile-proof gate below (same expression as the trial
@@ -1951,7 +1939,7 @@ jobs:
             AGENT_STEPS=$(grep "headless agent finished" trial_output.log 2>/dev/null | grep -oE "steps=[0-9]+" | grep -oE "[0-9]+" | tail -1 || true)
             AGENT_STEPS=${AGENT_STEPS:-0}
           fi
-          echo "GT wiring check (trajectory-based): gt_blocks=$GT_BLOCKS agent_steps=$AGENT_STEPS"
+          echo "GT wiring check: trajectory liveness gt_blocks=$GT_BLOCKS agent_steps=$AGENT_STEPS"
           if [ "$AGENT_STEPS" -eq 0 ]; then
             echo "AGENT_DID_NOT_RUN: 0 agent steps (no trajectory api_calls, no runner finish line)"
             exit 1
@@ -1999,48 +1987,16 @@ jobs:
               _gt_uncitable gt_batch_unproven "GT_BATCH_UNPROVEN: batch activation receipt is invalid or version-mismatched; task is not citable (METRICS/PROOF, job not failed)"
             }
           fi
-          # BRIEF-DELIVERY PROOF (W16 guard; ARM FIX 2026-07-20). The step-0 brief-delivery/leak check
-          # must ARM only when a REAL non-empty brief was produced — read the AUTHORITATIVE
-          # brief_result.json (schema gt.brief_result.v1 + non-empty brief_text), NOT brief.txt file
-          # size. DISCREPANCY NOTE: brief_result.json does NOT persist a `generated` boolean
-          # (runtime/brief_cache.get_or_generate adds it only to its in-memory return, never to the
-          # file), so schema + non-empty brief_text is the on-disk equivalent of "a real brief was
-          # generated" — the exact signal the completion gate uses. A DEGRADED run that writes an
-          # EMPTY brief.txt (or no real brief) does NOT arm this check and NEVER kills a task. When a
-          # genuine non-empty brief exists, its head bytes MUST appear in the agent's first user
-          # message (m1) — bytes-in-stream; an absent delivery is a real PRODUCT defect.
-          # 2026-07-29: a PRODUCT defect is fail-closed for CITABILITY, not for the JOB. This was
-          # the exact path that killed 4/5 task jobs on smoke run 30434343516 and destroyed the
-          # evidence needed to diagnose the dark step-0 channel. It now RECORDS uncitable.
+          # TASK-START DELIVERY PROOF. Canonical capsules are appended to the prepared provider
+          # request and intentionally do not mutate the trajectory. Prove exact capsule bytes,
+          # payload hash, structural coordinates, provider response identity, and obligations
+          # lineage from the canonical-delivery ledger row.
           if [ "${GT_BASELINE_FLAG:-0}" != "1" ]; then
-            _brief_rc=0
-            python3 - <<'BRIEFPY' || _brief_rc=$?
-          import json, sys
-          try:
-              d = json.load(open("/tmp/gt/brief_result.json", encoding="utf-8"))
-          except Exception:
-              d = None
-          brief_text = d.get("brief_text") if isinstance(d, dict) else None
-          armed = (
-              isinstance(d, dict)
-              and d.get("schema") == "gt.brief_result.v1"
-              and isinstance(brief_text, str)
-              and bool(brief_text.strip())
-          )
-          if not armed:
-              print("GT_BRIEF_CHECK_SKIPPED: no real non-empty brief generated (degraded/empty) - delivery check not armed; task not killed")
-              sys.exit(0)
-          probe = next((l.strip() for l in brief_text.strip().splitlines() if len(l.strip()) >= 20), "")
-          t = json.load(open("/tmp/gt_out/mini-swe-agent.trajectory.json", encoding="utf-8"))
-          m1 = str(t["messages"][1].get("content", ""))
-          if probe and probe not in m1:
-              print("GT_BRIEF_UNDELIVERED: generated brief bytes absent from the agent first message (m1) - the step-0 channel ran dark; task not citable as GT-on")
-              sys.exit(1)
-          print("GT_BRIEF_DELIVERED: brief bytes verified in m1")
-          BRIEFPY
-            if [ "$_brief_rc" != "0" ]; then
-              _gt_uncitable gt_brief_undelivered "GT_BRIEF_UNDELIVERED: generated brief bytes absent from the agent first message (m1); the step-0 channel ran dark — task not citable as GT-on (PRODUCT defect, job not failed)"
-            fi
+            PYTHONPATH="${{ github.workspace }}/scripts/swebench" \
+              python3 scripts/swebench/provider_delivery_gate.py \
+                /tmp/gt_out/gt_runtime_ledger.jsonl || {
+              _gt_uncitable gt_task_start_delivery_unproven "GT_TASK_START_DELIVERY_UNPROVEN: no structurally sealed, provider-bound obligations delivery exists; task is not citable as GT-on (PRODUCT defect, job not failed)"
+            }
           fi
           echo "agent ran ($AGENT_STEPS steps, $GT_BLOCKS GT blocks delivered)"
 

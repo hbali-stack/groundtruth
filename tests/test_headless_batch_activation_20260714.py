@@ -55,12 +55,13 @@ def _install_fake_runtime(
     patch = types.ModuleType("gt_mini_patch")
     patch._PATCHED_CLASSES = ["minisweagent.environments.local.LocalEnvironment"]
 
-    def install(target):
-        if install_result:
-            target._gt_batch_commit_installed = True
-        return install_result
+    class Attachment:
+        attached = install_result
+        attempt_runtime = object() if install_result else None
+        provider_boundary = object() if install_result else None
+        commitment_boundary = object() if install_result else None
 
-    patch.install_observation_batch_commit = install
+    patch.install_canonical_runtime = lambda **_kwargs: Attachment()
     patch.ledger_write_failures = lambda: write_failures
     monkeypatch.setitem(sys.modules, "gt_mini_patch", patch)
 
@@ -137,4 +138,4 @@ def test_workflow_pins_and_requires_batch_receipt():
     assert "GT_BATCH_UNPROVEN" in workflow
     assert "trial_results/gt_artifacts/gt_batch_activation.json" in workflow
     assert "GT_LEDGER_ATTESTATION_UNPROVEN" in workflow
-    assert "gt_runtime_ledger_attestation_${{ matrix.task }}.json" in workflow
+    assert 'gt_runtime_ledger_attestation_${GT_TASK_ID}.json' in workflow

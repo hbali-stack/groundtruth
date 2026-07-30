@@ -16,6 +16,7 @@ These tests deliberately exercise both sides:
 from __future__ import annotations
 
 import ast
+import json
 import sys
 import types
 from pathlib import Path
@@ -46,6 +47,23 @@ class _Agent:
     def run(self, task: str) -> dict[str, str]:
         self.calls.append("agent.run")
         self.captured["task"] = task
+        ledger = self.captured.get("ledger")
+        if ledger:
+            Path(ledger).write_text(
+                json.dumps(
+                    {
+                        "layer": "fixture",
+                        "event_type": "fixture",
+                        "file_path": "",
+                        "outcome": "eligible",
+                        "reason": "fixture",
+                        "chars_delivered": 0,
+                        "iteration": 0,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
         return {"exit_status": "Submitted"}
 
 
@@ -210,6 +228,7 @@ def test_active_profile_installs_one_canonical_attachment_before_run(
         calls=calls,
         captured=captured,
     )
+    captured["ledger"] = str(tmp_path / "runtime.jsonl")
     received: dict[str, Any] = {}
     patch = types.ModuleType("gt_mini_patch")
     patch._PATCHED_CLASSES = ["fixture.Environment"]
