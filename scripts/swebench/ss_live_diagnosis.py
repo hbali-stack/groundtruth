@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render an exact-128, diagnosis-only view of downloaded SS artifacts.
+"""Render an exact-129, diagnosis-only view of downloaded SS artifacts.
 
 This reader never promotes a feature from flags, file existence, layer names, or
 payload text. Delivery-family attribution requires typed feature lineage. A

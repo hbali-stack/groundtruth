@@ -56,6 +56,7 @@ __all__ = [
     "producer_matches",
     "required_event",
     "earliest_event_for",
+    "lifecycle_window_for",
     "required_renderer",
     "ack_expected",
     "is_reactive",
@@ -88,6 +89,12 @@ __all__ = [
     "EVENT_FIRST_VIEW_EDIT",
     "EVENT_FAILED_SEARCH",
     "EVENT_FAILURE_OBS",
+    "EVENT_EDIT_PROPOSED",
+    "EVENT_FILE_CREATE_PROPOSED",
+    "EVENT_TEST_PROPOSED",
+    "EVENT_COMPILE_PROPOSED",
+    "EVENT_VERIFICATION_HORIZON",
+    "EVENT_SUBMIT_PROPOSED",
 ]
 
 
@@ -106,6 +113,12 @@ EVENT_SUBMIT = "submit"                    # the submit interception boundary (�
 EVENT_FIRST_VIEW_EDIT = "first_view_edit"  # §1 "first view/edit" (companion prior boundary)
 EVENT_FAILED_SEARCH = "failed_search"      # §1 "failed_search/ADD" (missing-role boundary)
 EVENT_FAILURE_OBS = "failure_obs"          # §1 "failure/loop obs" (stuck/pivot boundary)
+EVENT_EDIT_PROPOSED = "edit_proposed"
+EVENT_FILE_CREATE_PROPOSED = "file_create_proposed"
+EVENT_TEST_PROPOSED = "test_proposed"
+EVENT_COMPILE_PROPOSED = "compile_proposed"
+EVENT_VERIFICATION_HORIZON = "verification_horizon"
+EVENT_SUBMIT_PROPOSED = "submit_proposed"
 
 EVENTS: frozenset[str] = frozenset(
     {
@@ -118,6 +131,12 @@ EVENTS: frozenset[str] = frozenset(
         EVENT_FIRST_VIEW_EDIT,
         EVENT_FAILED_SEARCH,
         EVENT_FAILURE_OBS,
+        EVENT_EDIT_PROPOSED,
+        EVENT_FILE_CREATE_PROPOSED,
+        EVENT_TEST_PROPOSED,
+        EVENT_COMPILE_PROPOSED,
+        EVENT_VERIFICATION_HORIZON,
+        EVENT_SUBMIT_PROPOSED,
     }
 )
 
@@ -405,6 +424,62 @@ _REGISTRATIONS: tuple[FactRegistration, ...] = (
 
 REGISTRY: dict[str, FactRegistration] = {r.fact_class: r for r in _REGISTRATIONS}
 
+# Three lifecycle points for each model-facing FACT: first useful, last
+# decision-shaping, and last corrective/assurance boundary.  Physical delivery
+# timing remains owned by the registration and evidence-type overrides.
+_LIFECYCLE_WINDOWS: dict[str, tuple[str, str, str]] = {
+    "obligations": (
+        EVENT_TASK_START,
+        EVENT_EDIT_PROPOSED,
+        EVENT_SUBMIT_PROPOSED,
+    ),
+    "localization": (
+        EVENT_TASK_START,
+        EVENT_EDIT_PROPOSED,
+        EVENT_EDIT_PROPOSED,
+    ),
+    "def_partition": (
+        EVENT_SEARCH_RESULT,
+        EVENT_EDIT_PROPOSED,
+        EVENT_EDIT_RESULT,
+    ),
+    "caller_contract": (
+        EVENT_SEARCH_RESULT,
+        EVENT_FILE_VIEW,
+        EVENT_EDIT_RESULT,
+    ),
+    "syntax_result": (
+        EVENT_EDIT_PROPOSED,
+        EVENT_EDIT_RESULT,
+        EVENT_SUBMIT_PROPOSED,
+    ),
+    "signature_delta": (
+        EVENT_EDIT_PROPOSED,
+        EVENT_EDIT_RESULT,
+        EVENT_SUBMIT_PROPOSED,
+    ),
+    "covering_red": (
+        EVENT_EDIT_RESULT,
+        EVENT_TEST_RESULT,
+        EVENT_SUBMIT_PROPOSED,
+    ),
+    "submit_refusal": (
+        EVENT_SUBMIT_PROPOSED,
+        EVENT_SUBMIT_PROPOSED,
+        EVENT_SUBMIT_PROPOSED,
+    ),
+    "newfile_precedent": (
+        EVENT_FAILED_SEARCH,
+        EVENT_FILE_CREATE_PROPOSED,
+        EVENT_EDIT_RESULT,
+    ),
+    "recovery": (
+        EVENT_FAILURE_OBS,
+        EVENT_TEST_RESULT,
+        EVENT_SUBMIT_PROPOSED,
+    ),
+}
+
 
 # --------------------------------------------------------------------------- #
 # EVIDENCE-TYPE ALIASES (Graph-F2, bounce 2026-07-10) — the delivery-kernel's own
@@ -559,6 +634,20 @@ def _self_check() -> None:
             raise ValueError(
                 f"fact_registry: {key} internal support cannot expect delivery ack"
             )
+    delivery_keys = {
+        key
+        for key, reg in REGISTRY.items()
+        if reg.fact_role == FACT_ROLE_DELIVERY
+    }
+    if set(_LIFECYCLE_WINDOWS) != delivery_keys:
+        raise ValueError(
+            "fact_registry: lifecycle windows drifted from delivery FACTs"
+        )
+    for key, window in _LIFECYCLE_WINDOWS.items():
+        if len(window) != 3 or any(event not in EVENTS for event in window):
+            raise ValueError(
+                f"fact_registry: {key} lifecycle window is malformed: {window!r}"
+            )
     # Graph-F2: the evidence-type alias map is part of the vocabulary contract — a bad
     # alias must fail LOUD at import, never silently mis-route (or silence) a shipped fact.
     for src, dst in _EVIDENCE_TYPE_ALIASES.items():
@@ -628,6 +717,22 @@ def all_fact_classes() -> tuple[str, ...]:
     — no set-iteration order leaks in). The canonical 11-row FACT inventory; consult
     :func:`fact_role_for` before applying a model-delivery proof contract."""
     return tuple(sorted(REGISTRY))
+
+
+def lifecycle_window_for(
+    fact_class: str,
+) -> tuple[str, str, str] | None:
+    """Return the registry-owned lifecycle window for a delivery FACT.
+
+    Internal support rows and unknown identities have no model-facing window.
+    Fine evidence types resolve through the same canonical registry mapping as
+    delivery timing.
+    """
+
+    canonical = _canonical_fact_class(fact_class)
+    if canonical is None:
+        return None
+    return _LIFECYCLE_WINDOWS.get(canonical)
 
 
 def evidence_grain_for(fact_class: str) -> tuple[str, ...]:

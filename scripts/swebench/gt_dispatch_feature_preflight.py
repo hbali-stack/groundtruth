@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed static dispatch audit for the exact 128-feature inventory.
+"""Fail-closed static dispatch audit for the exact 129-feature inventory.
 
 The manifest is derived from source-declared authority tables in this checkout.
 It proves only that static producer/control, collector, relationship, and

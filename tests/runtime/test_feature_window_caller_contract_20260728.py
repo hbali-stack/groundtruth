@@ -7,8 +7,8 @@ decision, so the window's own behaviour is asserted here and only here.
 
 Two things must hold and are easy to get wrong:
   1. A passed window routes to HELD (recoverable), NEVER to the terminal EXPIRED.
-  2. The other sixteen DIRECT contracts declare no window and therefore keep the exact
-     former constant.
+  2. Every DIRECT contract has a registry-owned lifecycle window; CAP contracts inherit
+     the window of the FACT whose bytes they own.
 """
 
 from __future__ import annotations
@@ -22,14 +22,23 @@ from groundtruth.runtime import reasoning_runtime as rr
 ALL_17 = sorted(rr._FACT_DECISION_CONTRACTS) + sorted(rr._CAP_FACT_BINDING)
 
 
-def test_only_caller_contract_declares_a_window() -> None:
-    """The None branch is the byte-identity guarantee for the other sixteen."""
+def test_every_direct_contract_declares_a_registry_owned_window() -> None:
     windowed = {
         feature_id
         for feature_id in ALL_17
         if rr.feature_contract_for(feature_id).window is not None
     }
-    assert windowed == {"caller_contract"}
+    assert windowed == set(ALL_17)
+
+    for fact_class in rr._FACT_DECISION_CONTRACTS:
+        assert rr.feature_contract_for(fact_class).window == rr.FeatureWindow(
+            *fact_registry.lifecycle_window_for(fact_class)
+        )
+    for cap_id, fact_class in rr._CAP_FACT_BINDING.items():
+        assert (
+            rr.feature_contract_for(cap_id).window
+            == rr.feature_contract_for(fact_class).window
+        )
 
 
 def test_the_window_is_the_registrys_own_three_points() -> None:
@@ -58,14 +67,36 @@ def test_boundary_decision_table_matches_the_live_reducer_chain() -> None:
         _open_decision_at,
     )
 
-    assert set(rr._BOUNDARY_DECISION) == set(BOUNDARY_OUTCOME), (
-        "the window boundary table and the live boundary inventory disagree"
+    assert set(BOUNDARY_OUTCOME) <= set(rr._BOUNDARY_DECISION), (
+        "the legacy reducer boundaries disappeared from the lifecycle table"
     )
     for boundary in sorted(BOUNDARY_OUTCOME):
         assert rr._BOUNDARY_DECISION[boundary] is _open_decision_at(boundary).context, (
             f"table says {boundary} opens {rr._BOUNDARY_DECISION[boundary]}, "
             f"live chain opens {_open_decision_at(boundary).context}"
         )
+
+    # Proposal and horizon boundaries are host-side lifecycle observations. They occur
+    # before the corresponding result event and therefore deliberately have no legacy
+    # SemanticEvent fixture in BOUNDARY_OUTCOME.
+    assert {
+        boundary: rr._BOUNDARY_DECISION[boundary]
+        for boundary in (
+            "edit_proposed",
+            "file_create_proposed",
+            "test_proposed",
+            "compile_proposed",
+            "verification_horizon",
+            "submit_proposed",
+        )
+    } == {
+        "edit_proposed": rr.DecisionContext.PATCH_CONSTRUCTION,
+        "file_create_proposed": rr.DecisionContext.PATCH_CONSTRUCTION,
+        "test_proposed": rr.DecisionContext.PATCH_PROPAGATION,
+        "compile_proposed": rr.DecisionContext.PATCH_PROPAGATION,
+        "verification_horizon": rr.DecisionContext.PATCH_PROPAGATION,
+        "submit_proposed": rr.DecisionContext.COMPLETION,
+    }
 
 
 @pytest.mark.parametrize(

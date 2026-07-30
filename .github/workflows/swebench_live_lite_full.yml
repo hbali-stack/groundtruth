@@ -214,7 +214,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Generate exact-128 static feature authority manifest
+      - name: Generate exact-129 static feature authority manifest
         id: feature_preflight
         if: ${{ inputs.baseline != true }}
         continue-on-error: true
@@ -238,11 +238,11 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.feature_preflight.outcome }}" != "success" ]; then
-            # DEMOTED to WARN (2026-07-20 taxonomy). GT's OWN exact-128 feature-authority inventory
+            # DEMOTED to WARN (2026-07-20 taxonomy). GT's OWN exact-129 feature-authority inventory
             # completeness is a GT-QUALITY property, NOT a substrate/arm-validity property, so it must
             # NOT block the whole paid matrix. The (partial) manifest is already uploaded by the
             # 'Persist static feature authority manifest' step (if: always()); annotate + PROCEED.
-            echo "GT_STATIC_FEATURE_PREFLIGHT_FAILED: exact-128 authority manifest is incomplete" >&2
+            echo "GT_STATIC_FEATURE_PREFLIGHT_FAILED: exact-129 authority manifest is incomplete" >&2
             echo "::warning::GT_STATIC_FEATURE_PREFLIGHT_FAILED — GT-internal inventory completeness is not a validity gate; partial manifest uploaded, proceeding with the paid matrix"
           fi
 
@@ -2841,7 +2841,7 @@ jobs:
           path: /tmp/all
           pattern: ll-full-*
 
-      - name: Build canonical PERF and exact-128 diagnosis
+      - name: Build canonical PERF and exact-129 diagnosis
         env:
           GT_EXPECTED_MATRIX: ${{ needs.prepare.outputs.matrix }}
           GT_EXPECTED_TOTAL: ${{ needs.prepare.outputs.total }}
@@ -2939,7 +2939,7 @@ jobs:
 
           # Deep-metric identity and task-artifact identity are separate seams.
           # The canonical v2 producer checked the former; check the latter before
-          # recomputing the exact 128-row feature inventory.
+          # recomputing the exact 129-row feature inventory.
           python3 - <<'PY' || GT_FEATURE_POPULATION_RC=$?
           import glob
           import hashlib

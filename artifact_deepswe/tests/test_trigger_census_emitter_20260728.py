@@ -44,7 +44,15 @@ from groundtruth.runtime.evidence_envelope import (  # noqa: E402
 def census(monkeypatch):
     """Capture rows with the census ON and an observation identity published."""
     rows: list[dict] = []
-    monkeypatch.setattr(g, "_ledger_line_direct", lambda e: rows.append(e) or True)
+    monkeypatch.setattr(
+        g,
+        "_ledger_line_direct",
+        lambda e: (
+            rows.append(e)
+            if e.get("layer") == "feature.trigger_opportunity"
+            else None
+        ) or True,
+    )
     monkeypatch.setattr(g, "_inseam_metrics_on", lambda: True)
     monkeypatch.setattr(g, "_emitted_trigger_ids", set())
     monkeypatch.setattr(g, "_action_count", 4)
@@ -112,6 +120,7 @@ def test_no_observation_identity_means_no_row(census, monkeypatch):
     """A row nothing can join is worse than no row: it inflates the denominator while
     being unattributable to any producer outcome."""
     g._delivery_observation_context.set(None)
+    g._legacy_observation_context.set(None)
     g._record_trigger_opportunities(("edit_result",))
     assert census == []
 
@@ -131,7 +140,15 @@ def test_a_new_observation_re_arms_the_census(monkeypatch):
     """ANTI-REGRESSION on the dedup set. If it were not cleared per observation,
     observation 2 would silently emit nothing and read as dark."""
     rows: list[dict] = []
-    monkeypatch.setattr(g, "_ledger_line_direct", lambda e: rows.append(e) or True)
+    monkeypatch.setattr(
+        g,
+        "_ledger_line_direct",
+        lambda e: (
+            rows.append(e)
+            if e.get("layer") == "feature.trigger_opportunity"
+            else None
+        ) or True,
+    )
     monkeypatch.setattr(g, "_inseam_metrics_on", lambda: True)
     binding = build_observation_binding(
         batch_start_iteration=0, parent_policy_sha256="a" * 64, parent_policy_chars=0,

@@ -148,3 +148,86 @@ def test_enumeration_is_deterministic_and_registration_backed():
     assert [s.evidence_type for s in first] == sorted(s.evidence_type for s in first)
     for spec in first:
         assert registration_for(spec.evidence_type) is not None
+
+
+def test_lifecycle_census_covers_all_17_direct_features() -> None:
+    from groundtruth.runtime.fact_registry import EVENTS
+
+    rows = [
+        spec
+        for event in sorted(EVENTS)
+        for spec in t.lifecycle_opportunities_for_event(event)
+    ]
+    assert len({spec.feature_id for spec in rows}) == 17
+    assert len({spec.feature_id for spec in rows if spec.byte_owner}) == 7
+    assert len({spec.feature_id for spec in rows if not spec.byte_owner}) == 10
+
+
+@pytest.mark.parametrize(
+    ("boundary", "expected"),
+    (
+        (
+            "edit_proposed",
+            {
+                "obligations",
+                "localization",
+                "def_partition",
+                "syntax_result",
+                "signature_delta",
+                "GT_EDIT_CHECK",
+                "GT_PATCH_DELTA",
+                "GT_LOC_RESLOT",
+            },
+        ),
+        (
+            "file_create_proposed",
+            {"newfile_precedent", "GT_CHANGE_SURFACE"},
+        ),
+        (
+            "submit_proposed",
+            {
+                "obligations",
+                "syntax_result",
+                "signature_delta",
+                "covering_red",
+                "submit_refusal",
+                "recovery",
+                "GT_EDIT_CHECK",
+                "GT_PATCH_DELTA",
+                "GT_SS_SUBMIT_RED",
+                "GT_CERT_DELIVERY",
+                "GT_HYPOTHESIS",
+            },
+        ),
+    ),
+)
+def test_lifecycle_boundaries_name_exact_direct_features(boundary, expected):
+    assert {
+        spec.feature_id
+        for spec in t.lifecycle_opportunities_for_event(boundary)
+    } == expected
+
+
+def test_repeated_window_boundary_is_one_fire_with_all_roles() -> None:
+    refusal = next(
+        spec
+        for spec in t.lifecycle_opportunities_for_event("submit_proposed")
+        if spec.feature_id == "submit_refusal"
+    )
+    assert refusal.window_roles == ("earliest", "deliver_by", "corrective")
+
+
+def test_lifecycle_fire_id_is_feature_and_boundary_specific() -> None:
+    observation_id = "observation-1"
+    first = t.lifecycle_opportunity_id(
+        observation_id, "edit_proposed", "syntax_result"
+    )
+    assert first == t.lifecycle_opportunity_id(
+        observation_id, "edit_proposed", "syntax_result"
+    )
+    assert first != t.lifecycle_opportunity_id(
+        observation_id, "edit_proposed", "signature_delta"
+    )
+    assert first != t.lifecycle_opportunity_id(
+        observation_id, "submit_proposed", "syntax_result"
+    )

@@ -56,9 +56,11 @@ from groundtruth.runtime.fact_registry import (
     all_fact_classes,
     evidence_grain_for,
     is_reactive,
+    lifecycle_window_for,
     registration_for,
     required_event,
 )
+from groundtruth.runtime.feature_lineage import CAP_BYTE_OWNER_MECHANISMS
 
 #: Boundaries no observation can carry. See the module docstring for why each.
 _UNOBSERVABLE_BOUNDARIES: dict[str, str] = {
@@ -91,6 +93,24 @@ class TriggerSpec:
     unobservable_reason: str
 
 
+@dataclass(frozen=True)
+class LifecycleOpportunitySpec:
+    """One DIRECT feature evaluated at a lifecycle boundary.
+
+    This is deliberately distinct from :class:`TriggerSpec`. A physical producer trigger
+    answers "could this producer compute a fact from this observation?" A lifecycle
+    opportunity answers "was this feature eligible to shape, correct, or assure the
+    decision now being proposed?" Collapsing the two recreates the old attribution bug:
+    proposal-time silence looks identical to a trigger that never occurred.
+    """
+
+    feature_id: str
+    fact_class: str
+    boundary: str
+    window_roles: tuple[str, ...]
+    byte_owner: bool
+
+
 def trigger_opportunity_id(observation_id: str, evidence_type: str) -> str:
     """Framed identity for one trigger evaluation inside one observation.
 
@@ -105,6 +125,82 @@ def trigger_opportunity_id(observation_id: str, evidence_type: str) -> str:
         + hashlib.sha256(observation_id.encode("utf-8")).digest()
         + hashlib.sha256(evidence_type.encode("utf-8")).digest()
     ).hexdigest()
+
+
+def lifecycle_opportunity_id(
+    observation_id: str,
+    boundary: str,
+    feature_id: str,
+) -> str:
+    """Stable, framed identity for one lifecycle evaluation of one DIRECT feature."""
+    if not observation_id or not boundary or not feature_id:
+        raise ValueError(
+            "observation_id, boundary, and feature_id must all be non-empty"
+        )
+    return hashlib.sha256(
+        b"gt.lifecycle_opportunity.v1\x00"
+        + hashlib.sha256(observation_id.encode("utf-8")).digest()
+        + hashlib.sha256(boundary.encode("utf-8")).digest()
+        + hashlib.sha256(feature_id.encode("utf-8")).digest()
+    ).hexdigest()
+
+
+def _cap_fact_bindings() -> dict[str, str]:
+    bindings: dict[str, str] = {}
+    for feature_id, mechanism in CAP_BYTE_OWNER_MECHANISMS.items():
+        facts = {
+            binding.fact_class
+            for binding in mechanism.bindings
+            if binding.fact_class is not None
+        }
+        if len(facts) != 1:
+            raise AssertionError(
+                "lifecycle opportunity requires one bound FACT per byte owner: "
+                f"{feature_id} has {sorted(facts)}"
+            )
+        bindings[feature_id] = next(iter(facts))
+    return bindings
+
+
+def lifecycle_opportunities_for_event(
+    event: str,
+) -> tuple[LifecycleOpportunitySpec, ...]:
+    """All 17 DIRECT features whose declared window touches ``event``.
+
+    Repeated boundaries are not collapsed semantically. For example
+    ``submit_refusal`` has all three window points at ``submit_proposed``; its one
+    opportunity row therefore carries all three roles. This keeps the census total
+    without triple-counting the same feature evaluation.
+    """
+    if event not in EVENTS:
+        return ()
+    facts = {
+        fact_class: fact_class
+        for fact_class in all_fact_classes()
+        if lifecycle_window_for(fact_class) is not None
+    }
+    features = dict(facts)
+    features.update(_cap_fact_bindings())
+    role_names = ("earliest", "deliver_by", "corrective")
+    rows = []
+    for feature_id, fact_class in sorted(features.items()):
+        window = lifecycle_window_for(fact_class)
+        roles = tuple(
+            role
+            for role, boundary in zip(role_names, window, strict=True)
+            if boundary == event
+        )
+        if roles:
+            rows.append(
+                LifecycleOpportunitySpec(
+                    feature_id=feature_id,
+                    fact_class=fact_class,
+                    boundary=event,
+                    window_roles=roles,
+                    byte_owner=feature_id in CAP_BYTE_OWNER_MECHANISMS,
+                )
+            )
+    return tuple(rows)
 
 
 def _spec(evidence_type: str) -> TriggerSpec | None:
@@ -181,14 +277,32 @@ def _self_check() -> None:
                 f"or record it in _UNOBSERVABLE_BOUNDARIES with a reason."
             )
 
+    lifecycle_features = {
+        spec.feature_id
+        for event in EVENTS
+        for spec in lifecycle_opportunities_for_event(event)
+    }
+    expected_lifecycle_features = {
+        fact_class
+        for fact_class in all_fact_classes()
+        if lifecycle_window_for(fact_class) is not None
+    } | set(CAP_BYTE_OWNER_MECHANISMS)
+    if lifecycle_features != expected_lifecycle_features:
+        raise AssertionError(
+            "trigger_opportunity: lifecycle census does not cover the DIRECT universe"
+        )
+
 
 _self_check()
 
 
 __all__ = [
     "DERIVABLE_BOUNDARIES",
+    "LifecycleOpportunitySpec",
     "TriggerSpec",
     "all_triggers",
+    "lifecycle_opportunities_for_event",
+    "lifecycle_opportunity_id",
     "observable_triggers",
     "trigger_opportunity_id",
     "triggers_for_event",

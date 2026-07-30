@@ -215,6 +215,8 @@ class FeatureRow:
     # tests/swebench/test_verdict_funnel_splits_trigger_absent_20260727.py keep their meaning.
     verdict_detail: str = ""
     delivered: int = 0
+    opportunities: int = 0
+    terminal_dispositions: int = 0
     delivered_chars: int = 0
     tasks_fired: set[str] = field(default_factory=set)
     attribution: str = "none"
@@ -345,7 +347,67 @@ def cap_owners_in_row(row: dict[str, Any], lane_owners: dict[str, str],
             fid = entry.get("feature_id")
             if isinstance(fid, str) and fid in cap_ids:
                 owners.add(fid)
+    # Canonical provider deliveries carry ownership inside each physical
+    # evidence-lineage entry. Re-check owner->FACT authorization here; a row merely
+    # naming an owner is not enough to mint attribution.
+    try:
+        from groundtruth.runtime.feature_lineage import CAP_BYTE_OWNER_MECHANISMS
+
+        for entry in (
+            row.get("evidence_lineage") or ()
+            if _canonical_row_has_seal(row)
+            else ()
+        ):
+            if not isinstance(entry, dict):
+                continue
+            fact_class = entry.get("fact_class")
+            claimed = entry.get("cap_owners")
+            if not isinstance(fact_class, str) or not isinstance(claimed, list):
+                continue
+            for owner in claimed:
+                if not isinstance(owner, str) or owner not in cap_ids:
+                    continue
+                mechanism = CAP_BYTE_OWNER_MECHANISMS.get(owner)
+                authorized_facts = {
+                    binding.fact_class
+                    for binding in mechanism.bindings
+                    if binding.fact_class is not None
+                } if mechanism is not None else set()
+                if fact_class in authorized_facts:
+                    owners.add(owner)
+    except Exception:
+        pass
     return owners
+
+
+def _canonical_row_has_seal(row: dict[str, Any]) -> bool:
+    seal = row.get("content_sha256_16")
+    return (
+        str(row.get("layer") or "") == "canonical.provider_delivery"
+        and str(row.get("outcome") or "") == "delivered"
+        and isinstance(seal, str)
+        and len(seal) == 16
+        and all(char in "0123456789abcdef" for char in seal.lower())
+    )
+
+
+def canonical_fact_classes_in_row(
+    row: dict[str, Any],
+    delivery_facts: frozenset[str],
+) -> tuple[str, ...]:
+    """Registered FACTs physically carried by one canonical provider delivery."""
+    if not _canonical_row_has_seal(row):
+        return ()
+    lineage = row.get("evidence_lineage")
+    if not isinstance(lineage, list):
+        return ()
+    return tuple(sorted({
+        str(entry.get("fact_class"))
+        for entry in lineage
+        if isinstance(entry, dict)
+        and isinstance(entry.get("fact_class"), str)
+        and entry.get("fact_class") in delivery_facts
+    }))
 
 
 def classify_reason(row: dict[str, Any]) -> tuple[str, str]:
@@ -424,6 +486,10 @@ def evaluate(root: Path) -> dict[str, Any]:
     #: whether any producer then spoke. This is the denominator that separates
     #: "trigger never happened" from "producer abstained".
     trigger_opportunities: Counter = Counter()
+    lifecycle_opportunities: Counter = Counter()
+    lifecycle_fire_features: dict[str, str] = {}
+    lifecycle_disposition_ids: set[str] = set()
+    invalid_lifecycle_rows: Counter = Counter()
     unresolved_gate: Counter = Counter()
     cap_direct: dict[str, dict[str, Any]] = {
         cap.feature_id: {"delivered": 0, "tasks": set(), "how": set(),
@@ -456,6 +522,13 @@ def evaluate(root: Path) -> dict[str, Any]:
             if any(isinstance(e, dict) and e.get("feature_id") == owner
                    for e in row.get("feature_ids") or ()):
                 how.append("feature_ids")
+            if any(
+                isinstance(e, dict)
+                and e.get("fact_class")
+                and owner in (e.get("cap_owners") or ())
+                for e in row.get("evidence_lineage") or ()
+            ):
+                how.append("evidence_lineage.cap_owners")
             if is_delivery:
                 cap_direct[owner]["delivered"] += 1
                 cap_direct[owner]["tasks"].add(task_id)
@@ -470,6 +543,85 @@ def evaluate(root: Path) -> dict[str, Any]:
             _census_fact = str(row.get("fact_class") or "").strip()
             if _census_fact:
                 trigger_opportunities[_census_fact] += 1
+            continue
+        if row.get("layer") == "feature.lifecycle_opportunity":
+            feature_id = str(row.get("feature_id") or "").strip()
+            observation_id = str(row.get("observation_id") or "").strip()
+            boundary = str(
+                row.get("lifecycle_boundary")
+                or row.get("required_event")
+                or ""
+            ).strip()
+            fire_id = str(
+                row.get("feature_fire_id")
+                or row.get("lifecycle_opportunity_id")
+                or ""
+            ).strip()
+            try:
+                from groundtruth.runtime.trigger_opportunity import (
+                    lifecycle_opportunity_id,
+                )
+
+                expected_fire_id = lifecycle_opportunity_id(
+                    observation_id,
+                    boundary,
+                    feature_id,
+                )
+            except (TypeError, ValueError):
+                expected_fire_id = ""
+            if (
+                feature_id not in {feature.feature_id for feature in features}
+                or not expected_fire_id
+                or fire_id != expected_fire_id
+            ):
+                invalid_lifecycle_rows["invalid_opportunity_identity"] += 1
+                continue
+            lifecycle_opportunities[feature_id] += 1
+            lifecycle_fire_features[fire_id] = feature_id
+            continue
+        if row.get("schema") == "gt.feature_fire_disposition.v1":
+            fire_ids = row.get("feature_fire_ids")
+            if not isinstance(fire_ids, list):
+                invalid_lifecycle_rows["invalid_disposition_ids"] += 1
+                continue
+            lifecycle_disposition_ids.update(
+                str(fire_id)
+                for fire_id in fire_ids
+                if isinstance(fire_id, str) and fire_id
+            )
+            continue
+
+        # A canonical capsule is one physical row that can carry several independently
+        # typed FACT records. Its constant layer cannot identify any one of them, so
+        # credit the validated nested lineage rather than dropping the entire capsule as
+        # "lineage-attributed but uncounted".
+        canonical_facts = canonical_fact_classes_in_row(row, delivery_facts)
+        if is_delivery and canonical_facts:
+            for canonical_fact in canonical_facts:
+                target = facts[canonical_fact]
+                target.delivered += 1
+                target.delivered_chars += chars
+                target.tasks_fired.add(task_id)
+                target.seen_event_types[event_type] += 1
+                contracted = row.get("contracted_boundary") or row.get(
+                    "gt_audit_contracted_boundary"
+                )
+                if isinstance(contracted, str) and contracted:
+                    boundary_stamped += 1
+                    seen = observed_event(row, events)
+                    if seen is None:
+                        on_time_hits[
+                            (canonical_fact, "no_event_vocab_observation")
+                        ] += 1
+                    elif seen == contracted:
+                        on_time_hits[(canonical_fact, "on_time")] += 1
+                    else:
+                        on_time_hits[
+                            (canonical_fact, f"off_boundary:{seen}")
+                        ] += 1
+            lineage_attributed_delivered[
+                f"{row.get('layer')}|{event_type}"
+            ] += 1
             continue
 
         fact_class, how = attribute_row(row, _LAYER_TO_FACT_CLASS,
@@ -536,10 +688,33 @@ def evaluate(root: Path) -> dict[str, Any]:
 
     # ---- FACT verdicts -------------------------------------------------------
     for fact in facts.values():
-        _decide(fact, on_time_hits, boundary_stamped, trigger_opportunities)
+        fact.opportunities = (
+            lifecycle_opportunities.get(fact.feature_id, 0)
+            or trigger_opportunities.get(fact.bound_fact, 0)
+        )
+        fact.terminal_dispositions = sum(
+            1
+            for fire_id, feature_id in lifecycle_fire_features.items()
+            if feature_id == fact.feature_id
+            and fire_id in lifecycle_disposition_ids
+        )
+        _decide(
+            fact,
+            on_time_hits,
+            boundary_stamped,
+            trigger_opportunities,
+            lifecycle_opportunities,
+        )
 
     # ---- CAP verdicts --------------------------------------------------------
     for cap in caps:
+        cap.opportunities = lifecycle_opportunities.get(cap.feature_id, 0)
+        cap.terminal_dispositions = sum(
+            1
+            for fire_id, feature_id in lifecycle_fire_features.items()
+            if feature_id == cap.feature_id
+            and fire_id in lifecycle_disposition_ids
+        )
         direct = cap_direct[cap.feature_id]
         bound = facts[cap.bound_fact]
         if direct["delivered"] > 0:
@@ -567,6 +742,11 @@ def evaluate(root: Path) -> dict[str, Any]:
         cap.reason_classes = Counter(bound.reason_classes)
         cap.reason_detail = Counter(bound.reason_detail)
         cap.attribution = f"bound-FACT {cap.bound_fact} (no byte-owner lineage row)"
+        if lifecycle_opportunities.get(cap.feature_id):
+            cap.attribution += (
+                f"; lifecycle evaluated "
+                f"{lifecycle_opportunities[cap.feature_id]}x"
+            )
         if bound.verdict == _VERDICT_FIRED:
             cap.evidence = (
                 f"bytes reached the model as {cap.bound_fact} "
@@ -587,11 +767,27 @@ def evaluate(root: Path) -> dict[str, Any]:
         "unresolved_gate": unresolved_gate,
         "boundary_stamped": boundary_stamped,
         "on_time_hits": on_time_hits,
+        "trigger_opportunities": trigger_opportunities,
+        "lifecycle_opportunities": lifecycle_opportunities,
+        "lifecycle_integrity": {
+            "opportunity_ids": len(lifecycle_fire_features),
+            "terminal_ids": len(
+                set(lifecycle_fire_features) & lifecycle_disposition_ids
+            ),
+            "unterminated_ids": sorted(
+                set(lifecycle_fire_features) - lifecycle_disposition_ids
+            ),
+            "orphan_terminal_ids": sorted(
+                lifecycle_disposition_ids - set(lifecycle_fire_features)
+            ),
+            "invalid_rows": dict(invalid_lifecycle_rows),
+        },
     }
 
 
 def _decide(fact: FeatureRow, on_time_hits: Counter, boundary_stamped: int,
-            trigger_opportunities: Counter | None = None) -> None:
+            trigger_opportunities: Counter | None = None,
+            lifecycle_opportunities: Counter | None = None) -> None:
     classes = fact.reason_classes
     if fact.delivered > 0:
         fact.verdict_detail = "delivered"
@@ -653,11 +849,18 @@ def _decide(fact: FeatureRow, on_time_hits: Counter, boundary_stamped: int,
             # for this fact class converts blindness into a MEASURED negative -- which is
             # the whole reason the denominator exists. Without this the census was
             # WRITE-ONLY: rows emitted and nothing reading them.
-            _opps = (trigger_opportunities or Counter()).get(fact.bound_fact, 0)
+            _lifecycle_opps = (
+                lifecycle_opportunities or Counter()
+            ).get(fact.feature_id, 0)
+            _physical_opps = (
+                trigger_opportunities or Counter()
+            ).get(fact.bound_fact, 0)
+            _opps = _lifecycle_opps or _physical_opps
             if _opps:
                 fact.evidence = (
                     f"NO producer row, but the trigger boundary OCCURRED {_opps}x "
-                    f"(trigger census) -- the producer had an opportunity and abstained"
+                    f"({'lifecycle' if _lifecycle_opps else 'physical trigger'} "
+                    "census) -- the producer had an opportunity and abstained"
                 )
                 fact.verdict_detail = f"abstained_after_{_opps}_opportunities"
             else:
@@ -737,11 +940,21 @@ def render_text(result: dict[str, Any]) -> str:
         f"tasks: {len(tasks)}  ledger rows: {result['total_rows']}  "
         f"rows carrying contracted_boundary: {result['boundary_stamped']}"
     )
+    lifecycle_integrity = result["lifecycle_integrity"]
+    out.append(
+        "lifecycle fires: "
+        f"{lifecycle_integrity['terminal_ids']}/"
+        f"{lifecycle_integrity['opportunity_ids']} terminal; "
+        f"{len(lifecycle_integrity['unterminated_ids'])} unterminated; "
+        f"{len(lifecycle_integrity['orphan_terminal_ids'])} orphan terminals; "
+        f"{sum(lifecycle_integrity['invalid_rows'].values())} invalid rows"
+    )
     out.append("")
 
     header = (
         f"{'FEATURE':<20} {'KIND':<4} {'CONTRACTED':<14} {'VERDICT(why)':<48} "
-        f"{'DELIV':>6} {'TASK':>5}  {'BOUNDARIES SEEN (ledger event_type)':<34} "
+        f"{'OPP':>5} {'TERM':>5} {'DELIV':>6} {'TASK':>5}  "
+        f"{'BOUNDARIES SEEN (ledger event_type)':<34} "
         f"ON-TIME"
     )
     out.append(header)
@@ -759,7 +972,8 @@ def render_text(result: dict[str, Any]) -> str:
             cell = cell[:47] + "~"
         out.append(
             f"{f.feature_id + gate:<20} {f.kind:<4} {f.contracted_boundary:<14} "
-            f"{cell:<48} {str(f.delivered) + mark:>6} "
+            f"{cell:<48} {f.opportunities:>5} {f.terminal_dispositions:>5} "
+            f"{str(f.delivered) + mark:>6} "
             f"{len(f.tasks_fired):>2}/{len(tasks):<2}  {seen:<34} {f.on_time}"
         )
     out.append("")

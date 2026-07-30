@@ -85,7 +85,10 @@ def test_commitment_plan_observer_writes_a_durable_row() -> None:
     source = _SEAM.read_text(encoding="utf-8")
     anchor = source.find("def _observe_commitment_plan(")
     assert anchor != -1
-    window = source[anchor: anchor + 4000]
+    # Lifecycle fire-id construction now sits immediately before the row. Keep this
+    # structural pin wide enough to cover the complete observer rather than coupling it
+    # to the former, shorter implementation.
+    window = source[anchor: anchor + 7000]
     assert 'kind="commitment_boundary.plan"' in window, (
         "the plan observer writes no ledger row — the withhold loop is invisible"
     )

@@ -643,7 +643,7 @@ def test_collect_preserves_brief_result_for_downloaded_recomputation() -> None:
 
 
 def test_summarize_builds_canonical_v2_and_exact_128_diagnosis_once() -> None:
-    step = _step_named("Build canonical PERF and exact-128 diagnosis")
+    step = _step_named("Build canonical PERF and exact-129 diagnosis")
     env = step.get("env") or {}
     assert env.get("GT_EXPECTED_MATRIX") == "${{ needs.prepare.outputs.matrix }}"
     assert env.get("GT_EXPECTED_TOTAL") == "${{ needs.prepare.outputs.total }}"

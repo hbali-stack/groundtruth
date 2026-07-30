@@ -4342,6 +4342,12 @@ _BOUNDARY_DECISION: Mapping[str, DecisionContext] = MappingProxyType(
         "test_result": DecisionContext.PATCH_PROPAGATION,
         "failure_obs": DecisionContext.PATCH_PROPAGATION,
         "submit": DecisionContext.COMPLETION,
+        "edit_proposed": DecisionContext.PATCH_CONSTRUCTION,
+        "file_create_proposed": DecisionContext.PATCH_CONSTRUCTION,
+        "test_proposed": DecisionContext.PATCH_PROPAGATION,
+        "compile_proposed": DecisionContext.PATCH_PROPAGATION,
+        "verification_horizon": DecisionContext.PATCH_PROPAGATION,
+        "submit_proposed": DecisionContext.COMPLETION,
     }
 )
 
@@ -4859,28 +4865,22 @@ def _build_feature_contracts() -> Mapping[str, FeatureContract]:
     from groundtruth.runtime import fact_registry
     from groundtruth.runtime import feature_lineage
 
-    # DECLARED WINDOWS. Exactly one contract opts in today; every other contract keeps
-    # ``window=None`` and therefore the historical unconditional-OPEN release, which is
-    # what makes this change byte-identical for the other sixteen DIRECT features.
-    #
-    # ``caller_contract`` is the opt-in because its three-point window ALREADY exists in
-    # the registry, merely shattered across three rows, and because it binds no CAP byte
-    # owner (it is absent from _CAP_FACT_BINDING.values()), so the blast radius is this
-    # one contract row:
-    #   earliest    <- ``caller_contract_search`` boundary override (search_result): the
-    #                  PRE-EDIT mirror, the first moment a caller contract is answerable.
-    #   deliver_by  <- the canonical registration (file_view): the last boundary at which
-    #                  the contract can still SHAPE the edit.
-    #   corrective  <- ``caller_break`` boundary override (edit_result): the same facts one
-    #                  boundary later, as a CORRECTION to an edit already made.
-    # Every value is read from the live registry; none is written down here.
-    feature_windows: dict[str, FeatureWindow] = {
-        "caller_contract": FeatureWindow(
-            earliest_event=fact_registry.earliest_event_for("caller_contract_search"),
-            deliver_by=fact_registry.required_event("caller_contract"),
-            corrective_boundary=fact_registry.required_event("caller_break"),
+    # Every model-facing FACT owns a registry-defined lifecycle window.  The
+    # physical delivery boundary remains the registration's authority; this
+    # window controls when already-produced evidence may shape a proposal,
+    # correct a committed action, or assure completion.
+    feature_windows: dict[str, FeatureWindow] = {}
+    for feature_id in sorted(_FACT_DECISION_CONTRACTS):
+        declared = fact_registry.lifecycle_window_for(feature_id)
+        if declared is None:
+            raise ValueError(
+                f"canonical feature {feature_id!r} has no lifecycle window"
+            )
+        feature_windows[feature_id] = FeatureWindow(
+            earliest_event=declared[0],
+            deliver_by=declared[1],
+            corrective_boundary=declared[2],
         )
-    }
 
     rows: dict[str, FeatureContract] = {}
     delivery_facts = {
@@ -4944,6 +4944,7 @@ def _build_feature_contracts() -> Mapping[str, FeatureContract]:
             revision_dependencies=fact.revision_dependencies,
             fallback_policy=replace(fact.fallback_policy, feature_id=owner),
             commitment_boundary=fact.commitment_boundary,
+            window=fact.window,
         )
     return MappingProxyType(rows)
 

@@ -4127,10 +4127,16 @@ _FINE_EVENT_TO_COARSE_ORDINAL: dict[str, int] = {
     "search_result": 1,     # EVENT_SEARCH_RESULT
     "failed_search": 1,     # EVENT_FAILED_SEARCH (an empty search is still a search)
     "file_view": 2,         # EVENT_FILE_VIEW
+    "edit_proposed": 3,     # host sees the edit before execution
+    "file_create_proposed": 3,
     "first_view_edit": 3,   # EVENT_FIRST_VIEW_EDIT (realized on the edit event)
     "edit_result": 3,       # EVENT_EDIT_RESULT
+    "test_proposed": 4,     # host sees validation intent before execution
+    "compile_proposed": 4,
+    "verification_horizon": 4,
     "test_result": 4,       # EVENT_TEST_RESULT
     "failure_obs": 4,       # EVENT_FAILURE_OBS (a trace/error rides a test/command obs)
+    "submit_proposed": 5,   # host sees completion intent before execution
     "submit": 5,            # EVENT_SUBMIT
 }
 

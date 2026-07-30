@@ -443,7 +443,7 @@ _REQUIRED_WRITER_CHANGES = (
     "ss_replay_oracle: add execution_id, run_id, seam_sha256, and source_hashes",
     "fixture proof: add a canonical producer for RED, mutation apply/RED/restore, byte-off, and LIPI",
     "trajectory and runtime ledger: persist run_id, task_id, and seam_sha256",
-    "gt_feature_metrics: persist run_id/seam_sha256 and publishable exact-128 typed integrity",
+    "gt_feature_metrics: persist run_id/seam_sha256 and publishable exact-129 typed integrity",
     "gt_run_metrics.v2: persist seam_sha256 and all 58 formula/applicability records",
     "live audit: persist causal fair-probe evidence; smoke summary booleans are not proof inputs",
 )

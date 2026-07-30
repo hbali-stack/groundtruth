@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import pytest
+
 from groundtruth.runtime.commitment_control import (
     BatchPhase,
     CommitmentControlContext,
+    CommitmentDecision,
     CommitmentEvidence,
     CommitmentIntent,
 )
@@ -20,7 +23,12 @@ from groundtruth.runtime.reasoning_runtime import (
 )
 
 
-def _intent(action_id: str, operation: ActionOperation) -> CommitmentIntent:
+def _intent(
+    action_id: str,
+    operation: ActionOperation,
+    *,
+    subject: str | None = None,
+) -> CommitmentIntent:
     return CommitmentIntent(
         CanonicalAction(
             action_id=action_id,
@@ -28,7 +36,8 @@ def _intent(action_id: str, operation: ActionOperation) -> CommitmentIntent:
             tool_family="structured",
             tool_name="mini",
             structured_operation=operation.value,
-            subject=action_id,
+            subject=subject or action_id,
+            targets=((subject,) if subject else ()),
         ),
         sandboxed=operation is ActionOperation.EDIT,
     )
@@ -44,20 +53,30 @@ class Agent:
         return [{"output": action["id"]} for action in actions]
 
 
-def _context(intents, *, evidence=(), phase=BatchPhase.BEFORE_BATCH):
+def _context(
+    intents,
+    *,
+    evidence=(),
+    phase=BatchPhase.BEFORE_BATCH,
+    proposing_model_call_id="model-1",
+    repository_revision="rev-a",
+    consumed_interruption_keys=(),
+):
     return CommitmentControlContext(
         intents=tuple(intents),
         phase=phase,
         active_decision_id="PATCH_CONSTRUCTION",
-        proposing_model_call_id="model-1",
+        proposing_model_call_id=proposing_model_call_id,
         evidence=tuple(evidence),
         failure_state=FailurePolicyState.initial(attempt_id="attempt-1"),
         epistemic_prefix_may_change_decision=True,
         certificate_requirements_met=True,
+        repository_revision=repository_revision,
+        consumed_interruption_keys=tuple(consumed_interruption_keys),
     )
 
 
-def test_pause_executes_only_original_epistemic_prefix() -> None:
+def test_mixed_batch_preserves_the_complete_native_batch() -> None:
     agent = Agent()
     intents = (
         _intent("search", ActionOperation.SEARCH),
@@ -83,9 +102,13 @@ def test_pause_executes_only_original_epistemic_prefix() -> None:
     result = agent.execute_actions(message)
 
     assert agent.executed == [
-        ({"id": "search"}, {"id": "read"}),
+        ({"id": "search"}, {"id": "read"}, {"id": "edit"}),
     ]
-    assert result == [{"output": "search"}, {"output": "read"}]
+    assert result == [
+        {"output": "search"},
+        {"output": "read"},
+        {"output": "edit"},
+    ]
     assert [item["id"] for item in message["extra"]["actions"]] == [
         "search",
         "read",
@@ -242,7 +265,86 @@ def test_fresh_inference_answers_every_deferred_tool_call() -> None:
     assert result[0]["extra"]["exception_info"] == "action was not executed"
 
 
-def test_pause_answers_the_deferred_tail_tool_calls() -> None:
+@pytest.mark.parametrize(
+    ("operation", "subject"),
+    (
+        (ActionOperation.EDIT, "src/a.py"),
+        (ActionOperation.SUBMIT, "src/a.py"),
+    ),
+)
+def test_reissued_commitment_executes_after_one_representable_interruption(
+    operation,
+    subject,
+) -> None:
+    """Trajectory-shaped regression for smoke7's repeated-withhold loop.
+
+    The first native tool call is held and answered, so the provider transcript
+    remains valid. The observer consumes that logical interruption only after
+    the hold is representable. A fresh model response may use new host action
+    and tool-call ids, but an equivalent commitment at the same repository
+    revision must then execute natively.
+    """
+    agent = ToolCallAgent()
+    consumed: set[str] = set()
+
+    def context_builder(message):
+        action = message["extra"]["actions"][0]
+        action_id = str(action["id"])
+        intent = _intent(action_id, operation, subject=subject)
+        return _context(
+            (intent,),
+            evidence=(_qualifying((action_id,)),),
+            phase=BatchPhase.AFTER_EPISTEMIC_PREFIX,
+            proposing_model_call_id=message["extra"]["response"]["id"],
+            consumed_interruption_keys=tuple(sorted(consumed)),
+        )
+
+    observed = []
+
+    def observe(_context, plan, _actions):
+        observed.append(plan)
+        if (
+            plan.decision is CommitmentDecision.FRESH_INFERENCE
+            and plan.interruption_key
+        ):
+            consumed.add(plan.interruption_key)
+
+    boundary = MiniSweCommitmentBoundary(
+        agent=agent,
+        context_builder=context_builder,
+        plan_observer=observe,
+    )
+
+    first = _tool_call_message(
+        agent,
+        [{"id": "host-action-1", "tool_call_id": "call-1"}],
+    )
+    first["extra"]["response"]["id"] = "response-1"
+    first_result = agent.execute_actions(first)
+
+    second = _tool_call_message(
+        agent,
+        [{"id": "host-action-2", "tool_call_id": "call-2"}],
+    )
+    second["extra"]["response"]["id"] = "response-2"
+    second_result = agent.execute_actions(second)
+
+    assert agent.executed == [
+        ({"id": "host-action-2", "tool_call_id": "call-2"},),
+    ]
+    assert _unanswered_tool_calls(agent) == []
+    assert first_result[0]["extra"]["exception_info"] == "action was not executed"
+    assert second_result[0]["content"] == "ran:call-2"
+    assert [plan.decision for plan in observed] == [
+        CommitmentDecision.FRESH_INFERENCE,
+        CommitmentDecision.ALLOW,
+    ]
+    assert observed[0].interruption_key
+    assert observed[1].interruption_key == observed[0].interruption_key
+    assert observed[1].reason_code == "INTERRUPTION_ALREADY_CONSUMED"
+
+
+def test_mixed_tool_call_batch_executes_without_synthetic_hold() -> None:
     agent = ToolCallAgent()
     intents = (
         _intent("search", ActionOperation.SEARCH),
@@ -260,11 +362,16 @@ def test_pause_answers_the_deferred_tail_tool_calls() -> None:
 
     agent.execute_actions(message)
 
-    assert agent.executed == [({"id": "search", "tool_call_id": "call-1"},)]
+    assert agent.executed == [
+        (
+            {"id": "search", "tool_call_id": "call-1"},
+            {"id": "edit", "tool_call_id": "call-2"},
+        )
+    ]
     assert _unanswered_tool_calls(agent) == []
     answers = [item for item in agent.messages if item.get("role") == "tool"]
     assert [item["tool_call_id"] for item in answers] == ["call-1", "call-2"]
-    assert answers[1]["extra"]["exception_info"] == "action was not executed"
+    assert answers[1]["content"] == "ran:call-2"
 
 
 def test_unanswerable_host_executes_natively_instead_of_stranding_tool_calls(

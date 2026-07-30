@@ -1,4 +1,4 @@
-"""Pins the exact-128 static authority preflight before any paid matrix."""
+"""Pins the exact-129 static authority preflight before any paid matrix."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -17,7 +17,7 @@ def _steps() -> list[dict]:
 def test_static_feature_preflight_is_persisted_then_enforced_before_matrix() -> None:
     steps = _steps()
     names = [step.get("name") for step in steps]
-    generate_name = "Generate exact-128 static feature authority manifest"
+    generate_name = "Generate exact-129 static feature authority manifest"
     upload_name = "Persist static feature authority manifest"
     enforce_name = "Enforce static feature authority preflight before paid matrix"
     matrix_name = "Build Live Lite task matrix (swebench_live_lite.jsonl-driven)"

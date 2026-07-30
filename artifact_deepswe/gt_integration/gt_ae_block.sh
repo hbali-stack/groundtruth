@@ -303,6 +303,10 @@ GT_AE_ARGS=(
   #    in test_ae_forward_profile2_completeness_20260712; GT_SS_SHADOW_RATE is a knob (not a member). ──
   --ae "GT_SS_SHADOW=${GT_SS_SHADOW:-0}"
   --ae "GT_SS_SHADOW_RATE=${GT_SS_SHADOW_RATE:-0}"
+  # Stable task identity for deterministic per-task attribution and holdout
+  # assignment. The workflow already sets both aliases; pier drops host env.
+  --ae "GT_INSTANCE_ID=${GT_INSTANCE_ID:-}"
+  --ae "GT_MATRIX_TASK=${GT_MATRIX_TASK:-}"
   #    GT_SS_SHADOW_SEED: the frozen eval seed folded into the per-task holdout draw (default ""
   #    -> the task id alone seeds it; deterministic either way). Forwarded so an E10 eval can pin
   #    a seed in-container (read by gt_mini_patch._ss_shadow_task_id); R1 AE-parity fail-closed. ──

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download and rebuild the canonical run-level PERF + exact-128 diagnosis bundle.
+# Download and rebuild the canonical run-level PERF + exact-129 diagnosis bundle.
 # The per-task ll-full artifacts are the immutable live population; this script
 # aggregates them locally without launching either a GT-off or a paid run.
 #
@@ -101,7 +101,7 @@ python "$GT/scripts/swebench/gt_run_metrics.py" "$POP" \
   --expected-tasks-file "$EXPECTED_TASKS" \
   --output "$RUN_METRICS"
 
-echo "[4/5] exact-128 feature metrics -> $MET"
+echo "[4/5] exact-129 feature metrics -> $MET"
 python "$GT/scripts/swebench/gt_feature_metrics.py" "$POP" \
   --profile 2 \
   --run-id "$RUN_ID" \

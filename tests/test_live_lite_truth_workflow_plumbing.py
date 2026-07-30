@@ -38,7 +38,7 @@ def _task_truth_module():
 
 
 def test_summarize_exposes_repo_python_modules() -> None:
-    env = _step("summarize", "Build canonical PERF and exact-128 diagnosis").get("env") or {}
+    env = _step("summarize", "Build canonical PERF and exact-129 diagnosis").get("env") or {}
     assert env.get("PYTHONPATH") == (
         "${{ github.workspace }}/src:"
         "${{ github.workspace }}/scripts/swebench:"
@@ -156,7 +156,7 @@ def test_metrics_gate_requires_final_parsed_task_truth() -> None:
 
 
 def test_summarize_requires_completion_receipt_for_every_expected_task() -> None:
-    step = _step("summarize", "Build canonical PERF and exact-128 diagnosis")
+    step = _step("summarize", "Build canonical PERF and exact-129 diagnosis")
     run = step["run"]
 
     assert step["env"]["GT_TRIAL_RESULT"] == "${{ needs.trial.result }}"
@@ -171,7 +171,7 @@ def test_summarize_requires_completion_receipt_for_every_expected_task() -> None
 
 def test_completion_receipt_binds_every_live_verdict_input() -> None:
     run = _step("trial", "Collect results")["run"]
-    summarize = _step("summarize", "Build canonical PERF and exact-128 diagnosis")["run"]
+    summarize = _step("summarize", "Build canonical PERF and exact-129 diagnosis")["run"]
     receipt_writer = run[run.index("artifact_paths = {"):run.index("document = {")]
     receipt_reader = summarize[
         summarize.index("expected_hashes = {"):
