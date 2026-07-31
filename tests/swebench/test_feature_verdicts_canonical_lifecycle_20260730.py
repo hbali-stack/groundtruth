@@ -141,40 +141,70 @@ def test_normalized_delivery_requires_exact_fire_candidate_join(
     )
     delivery = _strict_canonical_row()
     delivery["observation_id"] = observation_id
+    delivery["evidence_lineage"][0]["cap_owners"] = []
+    delivery["semantic_receipts"][0]["cap_owners"] = []
+    delivery["semantic_receipts"][0]["authorized_cap_owners"] = []
+    opportunity = {
+        "schema": "gt.lifecycle_opportunity.v1",
+        "layer": "feature.lifecycle_opportunity",
+        "outcome": "evaluated",
+        "feature_id": "localization",
+        "fact_class": "localization",
+        "lifecycle_boundary": "task_start",
+        "observation_id": observation_id,
+        "feature_fire_id": fire_id,
+    }
+    disposition = {
+        "schema": "gt.feature_fire_disposition.v1",
+        "layer": "canonical_runtime.produce_funnel",
+        "outcome": "suppressed_internal_only",
+        "feature_fire_ids": [fire_id],
+        "feature_dispositions": [
+            {
+                "feature_fire_id": fire_id,
+                "feature_id": "localization",
+                "fact_class": "localization",
+                "lifecycle_boundary": "task_start",
+                "disposition": "produced",
+                "produced_candidate_ids": ["different-candidate"],
+                "available_candidate_ids": ["different-candidate"],
+            }
+        ],
+    }
     result = _evaluate(
         tmp_path,
-        {
-            "schema": "gt.lifecycle_opportunity.v1",
-            "layer": "feature.lifecycle_opportunity",
-            "outcome": "evaluated",
-            "feature_id": "localization",
-            "fact_class": "localization",
-            "lifecycle_boundary": "task_start",
-            "observation_id": observation_id,
-            "feature_fire_id": fire_id,
-        },
-        {
-            "schema": "gt.feature_fire_disposition.v1",
-            "layer": "canonical_runtime.produce_funnel",
-            "outcome": "suppressed_internal_only",
-            "feature_fire_ids": [fire_id],
-            "feature_dispositions": [
-                {
-                    "feature_fire_id": fire_id,
-                    "feature_id": "localization",
-                    "fact_class": "localization",
-                    "lifecycle_boundary": "task_start",
-                    "disposition": "produced",
-                    "produced_candidate_ids": ["different-candidate"],
-                    "available_candidate_ids": ["different-candidate"],
-                }
-            ],
-        },
+        opportunity,
+        disposition,
         delivery,
     )
     feature = _features(result)["localization"]
     assert feature.verdict == verdicts._VERDICT_FIRED
-    assert feature.normalized_terminal_states == {"DELIVERY_FAILURE": 1}
+    assert feature.normalized_terminal_states == {"SUPPRESSED": 1}
+    assert result["delivery_fire_join_integrity"] == {
+        "canonical_feature_instances": 1,
+        "exact_fire_candidate_joins": 0,
+        "unjoined_feature_instances": 1,
+        "exact_joins_by_feature": {},
+        "unjoined_by_feature": {"localization": 1},
+    }
+
+    disposition["feature_dispositions"][0][
+        "produced_candidate_ids"
+    ] = ["GT-E-localization"]
+    disposition["feature_dispositions"][0][
+        "available_candidate_ids"
+    ] = ["GT-E-localization"]
+    joined = _evaluate(tmp_path, opportunity, disposition, delivery)
+    assert _features(joined)["localization"].normalized_terminal_states == {
+        "DELIVERED": 1
+    }
+    assert joined["delivery_fire_join_integrity"] == {
+        "canonical_feature_instances": 1,
+        "exact_fire_candidate_joins": 1,
+        "unjoined_feature_instances": 0,
+        "exact_joins_by_feature": {"localization": 1},
+        "unjoined_by_feature": {},
+    }
 
 
 def test_canonical_nested_lineage_credits_fact_and_authorized_cap(tmp_path) -> None:

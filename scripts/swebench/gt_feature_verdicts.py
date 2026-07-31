@@ -616,6 +616,9 @@ def evaluate(root: Path) -> dict[str, Any]:
     lifecycle_dispositions: dict[str, str] = {}
     delivered_fire_ids: set[str] = set()
     delivered_candidates: dict[tuple[str, str], set[str]] = defaultdict(set)
+    canonical_delivery_feature_instances: list[
+        tuple[str, str, frozenset[str]]
+    ] = []
     legacy_generic_disposition_ids: set[str] = set()
     invalid_lifecycle_rows: Counter = Counter()
     semantic_receipt_integrity: Counter = Counter()
@@ -832,31 +835,57 @@ def evaluate(root: Path) -> dict[str, Any]:
                 target.delivered_chars += chars
                 target.tasks_fired.add(task_id)
                 target.seen_event_types[event_type] += 1
-                delivered_candidates[
-                    (canonical_fact, delivery_observation_id)
-                ].update(
-                    str(entry.get("candidate_id") or "")
-                    for entry in row.get("evidence_lineage") or ()
-                    if (
-                        isinstance(entry, dict)
-                        and entry.get("fact_class") == canonical_fact
-                        and entry.get("candidate_id")
-                    )
-                )
-                for entry in row.get("evidence_lineage") or ():
+                delivery_evidence_ids = row.get("evidence_ids") or ()
+                for index, entry in enumerate(
+                    row.get("evidence_lineage") or ()
+                ):
                     if (
                         not isinstance(entry, dict)
                         or entry.get("fact_class") != canonical_fact
                     ):
                         continue
                     candidate_id = str(entry.get("candidate_id") or "")
-                    if not candidate_id:
+                    evidence_id = (
+                        str(delivery_evidence_ids[index])
+                        if (
+                            isinstance(delivery_evidence_ids, list)
+                            and index < len(delivery_evidence_ids)
+                            and isinstance(
+                                delivery_evidence_ids[index],
+                                str,
+                            )
+                        )
+                        else ""
+                    )
+                    sealed_identities = {
+                        identity
+                        for identity in (candidate_id, evidence_id)
+                        if identity
+                    }
+                    if not sealed_identities:
                         continue
+                    delivered_candidates[
+                        (canonical_fact, delivery_observation_id)
+                    ].update(sealed_identities)
+                    canonical_delivery_feature_instances.append(
+                        (
+                            canonical_fact,
+                            delivery_observation_id,
+                            frozenset(sealed_identities),
+                        )
+                    )
                     for owner in entry.get("cap_owners") or ():
                         if owner in row_cap_owners:
                             delivered_candidates[
                                 (str(owner), delivery_observation_id)
-                            ].add(candidate_id)
+                            ].update(sealed_identities)
+                            canonical_delivery_feature_instances.append(
+                                (
+                                    str(owner),
+                                    delivery_observation_id,
+                                    frozenset(sealed_identities),
+                                )
+                            )
                 # A canonical capsule's event_type is intentionally the constant
                 # provider-delivery vocabulary. Its timing authority is the shared
                 # canonical observation id: a matching lifecycle row proves this
@@ -974,8 +1003,12 @@ def evaluate(root: Path) -> dict[str, Any]:
         "permitted": "APPLIED_QUIET",
         "deferred": "SUPPRESSED",
         "withheld": "SUPPRESSED",
-        "produced": "DELIVERY_FAILURE",
-        "available": "DELIVERY_FAILURE",
+        # Produced/available evidence entered the one-dose arbiter but was not
+        # selected into this provider request. That is arbitration, not a
+        # provider failure. Once a candidate is STAGED, absence of exact
+        # provider-terminal proof is a delivery failure.
+        "produced": "SUPPRESSED",
+        "available": "SUPPRESSED",
         "staged": "DELIVERY_FAILURE",
         "blocked": "DELIVERY_FAILURE",
         "delivered": "DELIVERY_FAILURE",
@@ -988,6 +1021,27 @@ def evaluate(root: Path) -> dict[str, Any]:
                 lifecycle_dispositions.get(fire_id, ""),
                 "FAULT",
             )
+    joined_delivery_by_feature: Counter = Counter()
+    unjoined_delivery_by_feature: Counter = Counter()
+    for feature_id, observation_id, identities in (
+        canonical_delivery_feature_instances
+    ):
+        joined = any(
+            lifecycle_fire_features[fire_id] == feature_id
+            and lifecycle_fire_observations.get(fire_id) == observation_id
+            and bool(
+                identities.intersection(
+                    lifecycle_fire_candidates.get(fire_id, set())
+                )
+            )
+            for fire_id in lifecycle_fire_features
+        )
+        (
+            joined_delivery_by_feature
+            if joined
+            else unjoined_delivery_by_feature
+        )[feature_id] += 1
+    joined_delivery_instances = sum(joined_delivery_by_feature.values())
 
     # ---- FACT verdicts -------------------------------------------------------
     for fact in facts.values():
@@ -1145,6 +1199,18 @@ def evaluate(root: Path) -> dict[str, Any]:
             ),
         },
         "semantic_receipt_integrity": dict(semantic_receipt_integrity),
+        "delivery_fire_join_integrity": {
+            "canonical_feature_instances": len(
+                canonical_delivery_feature_instances
+            ),
+            "exact_fire_candidate_joins": joined_delivery_instances,
+            "unjoined_feature_instances": (
+                len(canonical_delivery_feature_instances)
+                - joined_delivery_instances
+            ),
+            "exact_joins_by_feature": dict(joined_delivery_by_feature),
+            "unjoined_by_feature": dict(unjoined_delivery_by_feature),
+        },
     }
 
 
@@ -1375,6 +1441,13 @@ def render_text(result: dict[str, Any]) -> str:
             else "none"
         )
     )
+    delivery_join = result["delivery_fire_join_integrity"]
+    out.append(
+        "delivery -> feature-fire candidate joins: "
+        f"{delivery_join['exact_fire_candidate_joins']}/"
+        f"{delivery_join['canonical_feature_instances']} exact; "
+        f"{delivery_join['unjoined_feature_instances']} unjoined"
+    )
     out.append("")
 
     header = (
@@ -1555,6 +1628,9 @@ def render_json(result: dict[str, Any]) -> str:
         "lifecycle_integrity": result["lifecycle_integrity"],
         "semantic_receipt_integrity": result[
             "semantic_receipt_integrity"
+        ],
+        "delivery_fire_join_integrity": result[
+            "delivery_fire_join_integrity"
         ],
     }
     return json.dumps(payload, indent=2, sort_keys=False)
