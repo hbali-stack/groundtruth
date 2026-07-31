@@ -288,8 +288,14 @@ class TestRendering:
 # Test: Dose caps
 # ---------------------------------------------------------------------------
 class TestDoseCaps:
-    def test_advisory_fires_once(self, gmp):
+    def test_advisory_fires_once(self, gmp, monkeypatch):
         """Advisory should fire at most once per task."""
+        monkeypatch.setenv("GT_CERT_DIR", "__gt_test_no_obligation_artifacts__")
+        monkeypatch.setenv(
+            "GT_ANCHORS_PATH", "__gt_test_no_obligation_artifacts__/anchors.json",
+        )
+        gmp._oblig_syms_cache = None
+        gmp._obligations_v2_cache = None
         gmp._horizon_advisory_fired = False
         gmp._horizon_gate_fire_count = 0
         gmp._GT_BASELINE = False  # enable for this test
@@ -298,6 +304,7 @@ class TestDoseCaps:
         gmp._oracle_edited_rels.add("src/foo.py")
         gmp._oracle_edited_tokens.clear()
         gmp._oracle_edited_tokens.add("some_func")
+        gmp._oracle_edited_tokens_by_file = {"src/foo.py": {"some_func"}}
         gmp._oracle_tested_tokens.clear()
 
         # First call should produce a candidate
@@ -323,6 +330,7 @@ class TestDoseCaps:
         gmp._oracle_edited_rels.add("src/foo.py")
         gmp._oracle_edited_tokens.clear()
         gmp._oracle_edited_tokens.add("bar_func")
+        gmp._oracle_edited_tokens_by_file = {"src/foo.py": {"bar_func"}}
         gmp._oracle_tested_tokens.clear()
 
         # Should fire 3 times

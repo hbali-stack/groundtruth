@@ -45,6 +45,7 @@ _RUNNER = textwrap.dedent(r"""
     spec = importlib.util.spec_from_file_location("gmp", patch)
     m = importlib.util.module_from_spec(spec); sys.modules["gmp"]=m; spec.loader.exec_module(m)
     m._GT_BASELINE = False
+    os.environ["GT_CONTRACT_NATIVE"] = "0"
     print("SCOPE_MONO=" + repr(m._query_scope("json-schema/x.ts")), flush=True)
     m._contract_seen.discard("json-schema/x.ts")
     print("CONTRACT_MONO=" + repr(m._graph_contract_block("json-schema/x.ts")), flush=True)

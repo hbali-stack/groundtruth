@@ -337,7 +337,7 @@ class TestPatchA_ConfidenceFilter:
                 {"id": 2, "name": "verified_caller", "file_path": "src/verified.py"},
             ],
             edges=[
-                {"src": 2, "tgt": 1, "conf": 0.9, "method": "name_match", "line": 10,
+                {"src": 2, "tgt": 1, "conf": 0.9, "method": "import", "line": 10,
                  "source_file": "src/verified.py"},
             ],
             tmp_path=tmp_path,

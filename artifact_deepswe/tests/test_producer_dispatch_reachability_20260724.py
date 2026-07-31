@@ -72,7 +72,14 @@ def test_each_agent_action_reaches_its_own_producer(reached):
     """The dispatch table: every action kind must reach the producer that answers it.
     An empty set here means a whole capability is DARK for that action."""
     assert "_produce_covering" in reached(
-        gw.ToolEvent(kind=gw.KIND_TEST, command="pytest -q", action_index=3)), \
+        gw.ToolEvent(
+            kind=gw.KIND_TEST,
+            command="pytest -q",
+            action_index=3,
+            semantic_events=("test_result",),
+            test_outcome="pass",
+            semantics_authoritative=True,
+        )), \
         "a test run does not reach covering_red"
     assert "_produce_ranked_localization" in reached(
         gw.ToolEvent(kind=gw.KIND_SEARCH, command="grep -rn foo", output="", action_index=4)), \

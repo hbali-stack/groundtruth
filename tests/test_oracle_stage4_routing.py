@@ -315,8 +315,11 @@ def test_live_gate_function_relevance_dedup_budget(patch_mod, tmp_path, monkeypa
     assert patch_mod._oracle_gate_blocks([(1, "l3b.evidence", w_junk, False)]) == ""
     # anchored witness passes.
     assert patch_mod._oracle_gate_blocks([(1, "l3b.evidence", w_anch, False)]) == w_anch
-    # dedup: same content again -> suppressed.
-    assert patch_mod._oracle_gate_blocks([(1, "l3b.evidence", w_anch, False)]) == ""
+    # Gate selection is side-effect free: dedup is stamped only at the real
+    # delivery commit, so merely selecting a candidate cannot consume it.
+    assert patch_mod._oracle_gate_blocks(
+        [(1, "l3b.evidence", w_anch, False)]
+    ) == w_anch
     # budget: contract (sev 3, edit-bound) outranks a fresh witness.
     w2 = _mk_witness("capture_snapshot", "other/f.py")
     out = patch_mod._oracle_gate_blocks([

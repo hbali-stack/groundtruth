@@ -618,9 +618,92 @@ def _record_trigger_opportunities(
                         {str(e) for e in (observed_events or ()) if e}
                     ),
                 })
-        return tuple(emitted_lifecycle_ids)
     except Exception:  # noqa: BLE001 -- instrumentation never breaks the agent loop
         return ()
+    return tuple(emitted_lifecycle_ids)
+
+
+def _feature_fire_dispositions(
+    *,
+    observation_id: str,
+    observed_events,
+    feature_fire_ids,
+    produced_records=(),
+    available_records=(),
+) -> list[dict[str, Any]]:
+    """Resolve each lifecycle opportunity independently.
+
+    A single observation can evaluate several DIRECT features while producing
+    only one FACT.  The old row-level ``disposition="produced"`` credited every
+    id whenever any envelope existed.  These entries bind each fire id to the
+    exact FACT/CAP lineage that did (or did not) exist.
+    """
+    try:
+        from groundtruth.runtime.trigger_opportunity import (
+            lifecycle_opportunities_for_event,
+            lifecycle_opportunity_id,
+        )
+    except ImportError:
+        return []
+    allowed = {str(item) for item in (feature_fire_ids or ()) if item}
+    produced = tuple(produced_records or ())
+    available = tuple(available_records or ())
+
+    def _matches(record, spec) -> bool:
+        if str(getattr(record, "feature_id", "") or "") != spec.fact_class:
+            return False
+        if spec.byte_owner:
+            return spec.feature_id in tuple(
+                getattr(record, "owner_feature_ids", ()) or ()
+            )
+        return True
+
+    def _candidate_ids(records, spec) -> list[str]:
+        return sorted(
+            {
+                str(
+                    getattr(record, "candidate_id", "")
+                    or getattr(record, "evidence_id", "")
+                )
+                for record in records
+                if _matches(record, spec)
+                and (
+                    getattr(record, "candidate_id", "")
+                    or getattr(record, "evidence_id", "")
+                )
+            }
+        )
+
+    rows: list[dict[str, Any]] = []
+    for boundary in sorted({str(e) for e in (observed_events or ()) if e}):
+        for spec in lifecycle_opportunities_for_event(boundary):
+            fire_id = lifecycle_opportunity_id(
+                observation_id,
+                boundary,
+                spec.feature_id,
+            )
+            if fire_id not in allowed:
+                continue
+            produced_ids = _candidate_ids(produced, spec)
+            available_ids = _candidate_ids(available, spec)
+            rows.append(
+                {
+                    "feature_fire_id": fire_id,
+                    "feature_id": spec.feature_id,
+                    "fact_class": spec.fact_class,
+                    "lifecycle_boundary": boundary,
+                    "disposition": (
+                        "produced"
+                        if produced_ids
+                        else "available"
+                        if available_ids
+                        else "abstained"
+                    ),
+                    "produced_candidate_ids": produced_ids,
+                    "available_candidate_ids": available_ids,
+                }
+            )
+    return sorted(rows, key=lambda row: row["feature_fire_id"])
 
 
 def _proposal_lifecycle_event(operation) -> str:
@@ -2466,10 +2549,14 @@ def _classify(cmd: str) -> tuple[str | None, str | None]:
     stream offline — sed, heredoc cat, multi-line sed, python/node open-write, redirects."""
     if not cmd:
         return None, None
-    et = _edit_target(cmd)
+    # The live harness prefixes commands with ``cd $(...) &&``. Search
+    # classification already removes that inert prefix, but primary view/edit
+    # classification did not, starving every downstream lifecycle consumer.
+    classified_cmd = _strip_leading_cd_prefix(cmd)
+    et = _edit_target(classified_cmd)
     if et:
         return "post_edit", et
-    vt = _view_target(cmd)
+    vt = _view_target(classified_cmd)
     if vt:
         return "post_view", vt
     return None, None
@@ -5219,7 +5306,7 @@ def _class_honest_negative(con, sym: str, idx: int, root: str) -> str:
         return ""
     if _change_surface_dominates():
         # CLASS-4 DOMINANCE: the gateway has a confident, non-leaky change_surface answer for
-        # this issue; abstain so the conditional exclusion admits the rich _produce_change_surface
+        # this request; abstain so the conditional exclusion admits the rich _produce_change_surface
         # blast-radius (strictly dominates this thin absence note). change_surface abstains ->
         # this note still delivers (no coverage lost).
         return ""
@@ -11565,6 +11652,14 @@ def _ledger_judge_pending(cmd: str) -> None:
         return
     pending = _pending_delivery
     _pending_delivery = []
+    # Compatibility with pre-multi-delivery state and older persisted/test
+    # fixtures: one legacy ``(kind, turn)`` tuple represents one pending item.
+    if (
+        isinstance(pending, tuple)
+        and len(pending) in (2, 3)
+        and (not pending or not isinstance(pending[0], (tuple, list)))
+    ):
+        pending = [pending + ("",) if len(pending) == 2 else pending]
     acted = _ledger_cmd_acted(cmd)
     related_on = _d7_relatedness_on()
     # per-kind: the set of targets it was delivered against last turn (S-1 relatedness).
@@ -25093,6 +25188,7 @@ class CanonicalRuntimeAttachment:
             )
 
             _feature_fire_ids = []
+            _feature_dispositions = []
             for _intent in context.intents:
                 _proposal_event = _proposal_lifecycle_event(
                     _intent.action.operation
@@ -25106,13 +25202,25 @@ class CanonicalRuntimeAttachment:
                 for _spec in lifecycle_opportunities_for_event(
                     _proposal_event
                 ):
-                    _feature_fire_ids.append(
-                        lifecycle_opportunity_id(
-                            _proposal_observation_id,
-                            _proposal_event,
-                            _spec.feature_id,
-                        )
+                    _fire_id = lifecycle_opportunity_id(
+                        _proposal_observation_id,
+                        _proposal_event,
+                        _spec.feature_id,
                     )
+                    _feature_fire_ids.append(_fire_id)
+                    _feature_dispositions.append({
+                        "feature_fire_id": _fire_id,
+                        "feature_id": _spec.feature_id,
+                        "fact_class": _spec.fact_class,
+                        "lifecycle_boundary": _proposal_event,
+                        "disposition": (
+                            "permitted"
+                            if _intent.action.action_id in execute_ids
+                            else "deferred"
+                        ),
+                        "produced_candidate_ids": [],
+                        "available_candidate_ids": [],
+                    })
             _runtime_ledger_record(
                 kind="commitment_boundary.plan",
                 # a plan that withholds anything is a real intervention; a pure
@@ -25121,6 +25229,7 @@ class CanonicalRuntimeAttachment:
                 reason=f"{_decision}:{getattr(plan, 'reason_code', '')}",
                 chars=0,
                 extra={
+                    "schema": "gt.feature_fire_disposition.v1",
                     "decision": _decision,
                     "reason_code": str(getattr(plan, "reason_code", "") or ""),
                     "executed_actions": len(plan.execute_now or ()),
@@ -25134,6 +25243,13 @@ class CanonicalRuntimeAttachment:
                         for intent in (plan.deferred or ())
                     ],
                     "feature_fire_ids": sorted(set(_feature_fire_ids)),
+                    "feature_dispositions": sorted(
+                        _feature_dispositions,
+                        key=lambda item: item["feature_fire_id"],
+                    ),
+                    "disposition": (
+                        "deferred" if _deferred_n else "permitted"
+                    ),
                     "qualifying_evidence_ids": list(
                         getattr(plan, "qualifying_evidence_ids", ()) or ()
                     ),
@@ -25574,35 +25690,37 @@ class CanonicalRuntimeAttachment:
             )
             for record in records:
                 self.attempt_runtime.ingest_evidence(record)
+            census_events = set(event.semantic_events or ())
+            if operation in {
+                ActionOperation.EDIT,
+                ActionOperation.SIGNATURE_CHANGE,
+                ActionOperation.FILE_CREATE,
+                ActionOperation.FILE_DELETE,
+                ActionOperation.FILE_RENAME,
+            }:
+                census_events.add("edit_result")
+            elif operation is ActionOperation.TEST:
+                census_events.add("test_result")
+            elif operation in {
+                ActionOperation.VIEW_SOURCE,
+                ActionOperation.VIEW_SYMBOL,
+            }:
+                census_events.add("file_view")
+            elif operation is ActionOperation.SUBMIT:
+                census_events.add("submit")
+            # The opportunity must exist before its terminal disposition.  The
+            # previous funnel reconstructed proposal ids here, then emitted the
+            # actual result opportunities below it; all result ids were therefore
+            # unterminated in the saved live ledger.
+            _result_feature_fire_ids = _record_trigger_opportunities(
+                tuple(census_events),
+                observation_id=canonical.observation_id,
+            )
             # F1b (2026-07-29): the produce->ingest funnel per observation. On smoke
             # 30503578103 the store never exceeded 4 items and nothing recorded
             # whether producers abstained or the freshness filter ate their output.
             # One row per observation answers exactly where the funnel narrows.
             try:
-                from groundtruth.runtime.trigger_opportunity import (
-                    lifecycle_opportunities_for_event,
-                    lifecycle_opportunity_id,
-                )
-
-                _proposal_event = _proposal_lifecycle_event(operation)
-                _proposal_observation_id = (
-                    f"{proposal.model_turn_id}:proposal:"
-                    f"{proposal.action_id}"
-                )
-                _result_feature_fire_ids = (
-                    [
-                        lifecycle_opportunity_id(
-                            _proposal_observation_id,
-                            _proposal_event,
-                            spec.feature_id,
-                        )
-                        for spec in lifecycle_opportunities_for_event(
-                            _proposal_event
-                        )
-                    ]
-                    if _proposal_event
-                    else []
-                )
                 _runtime_ledger_record(
                     kind="canonical_runtime.produce_funnel",
                     outcome="observed",
@@ -25625,6 +25743,15 @@ class CanonicalRuntimeAttachment:
                         "schema": "gt.feature_fire_disposition.v1",
                         "feature_fire_ids": sorted(
                             set(_result_feature_fire_ids)
+                        ),
+                        "feature_dispositions": _feature_fire_dispositions(
+                            observation_id=canonical.observation_id,
+                            observed_events=census_events,
+                            feature_fire_ids=_result_feature_fire_ids,
+                            produced_records=records,
+                            available_records=tuple(
+                                self.attempt_runtime._evidence.values()
+                            ),
                         ),
                         "action_id": proposal.action_id,
                         "proposal_event_hash": proposal.content_hash,
@@ -25652,28 +25779,6 @@ class CanonicalRuntimeAttachment:
                 )
             except Exception:
                 pass
-            census_events = set(event.semantic_events or ())
-            if operation in {
-                ActionOperation.EDIT,
-                ActionOperation.SIGNATURE_CHANGE,
-                ActionOperation.FILE_CREATE,
-                ActionOperation.FILE_DELETE,
-                ActionOperation.FILE_RENAME,
-            }:
-                census_events.add("edit_result")
-            elif operation is ActionOperation.TEST:
-                census_events.add("test_result")
-            elif operation in {
-                ActionOperation.VIEW_SOURCE,
-                ActionOperation.VIEW_SYMBOL,
-            }:
-                census_events.add("file_view")
-            elif operation is ActionOperation.SUBMIT:
-                census_events.add("submit")
-            _record_trigger_opportunities(
-                tuple(census_events),
-                observation_id=canonical.observation_id,
-            )
             all_records = tuple(
                 self.attempt_runtime._evidence.values()
             )
@@ -26831,8 +26936,15 @@ def _deliver_by_is_task_start(item) -> bool:
 
 def _stage_initial_canonical_evidence(attachment, records, task_text: str) -> None:
     """Stage one task-start decision capsule; hold other contexts."""
+    # Share the exact identity used by compilation and provider delivery.  The
+    # former task-text hash left two individually valid proof chains that could
+    # never be joined to prove step-0 timing.
+    _attempt_runtime = getattr(attachment, "attempt_runtime", None)
+    _attempt_id = str(getattr(_attempt_runtime, "attempt_id", "") or "")
     _step0_observation_id = (
-        "task:"
+        f"{_attempt_id}:task"
+        if _attempt_id
+        else "task:"
         + hashlib.sha256(
             str(task_text).encode("utf-8", "surrogatepass")
         ).hexdigest()
@@ -26885,6 +26997,11 @@ def _stage_initial_canonical_evidence(attachment, records, task_text: str) -> No
                 extra={
                     "schema": "gt.feature_fire_disposition.v1",
                     "feature_fire_ids": _step0_feature_fire_ids,
+                    "feature_dispositions": _feature_fire_dispositions(
+                        observation_id=_step0_observation_id,
+                        observed_events=("task_start",),
+                        feature_fire_ids=_step0_feature_fire_ids,
+                    ),
                     "disposition": "abstained:no_brief_records",
                     "produced_candidate_ids": [],
                 },
@@ -26985,7 +27102,7 @@ def _stage_initial_canonical_evidence(attachment, records, task_text: str) -> No
             # Use the same derivation the per-observation path uses so the two cannot drift.
             available_substrates=CanonicalRuntimeAttachment._available_substrates(records),
             native_observation=task_text,
-            observation_id=f"{attachment.attempt_runtime.attempt_id}:task",
+            observation_id=_step0_observation_id,
             source_model_call_id=f"{attachment.attempt_runtime.attempt_id}:host",
             model_call_id=f"{attachment.attempt_runtime.attempt_id}:model:1",
         )
@@ -26998,6 +27115,13 @@ def _stage_initial_canonical_evidence(attachment, records, task_text: str) -> No
         _step0_extra = {
             "schema": "gt.feature_fire_disposition.v1",
             "feature_fire_ids": _step0_feature_fire_ids,
+            "feature_dispositions": _feature_fire_dispositions(
+                observation_id=_step0_observation_id,
+                observed_events=("task_start",),
+                feature_fire_ids=_step0_feature_fire_ids,
+                produced_records=chosen,
+                available_records=records,
+            ),
             "disposition": (
                 "staged" if plan.delivery_attempt_id else "withheld"
             ),

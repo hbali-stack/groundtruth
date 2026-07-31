@@ -25,6 +25,7 @@ import pytest
 
 from groundtruth.memory.enrich.embed import (
     aggregate_symbol_cosines,
+    model_identity,
     passage_hash,
     read_agg_params,
     symbol_passage,
@@ -102,6 +103,21 @@ def test_passage_hash_is_content_addressed():
     assert h1 == h2          # deterministic on identical content
     assert h1 != h3          # different passage -> different key
     assert h1 != h4          # version bump invalidates
+
+
+def test_sentence_transformer_identity_uses_runtime_vector_width():
+    """The shared cache identity must use the model's real output width."""
+
+    class FakeSentenceTransformer:
+        model_name_or_path = "example/code-search-384"
+
+        def get_sentence_embedding_dimension(self):
+            return 384
+
+    assert model_identity(FakeSentenceTransformer()) == (
+        "example/code-search-384",
+        384,
+    )
 
 
 # ---------------------------------------------------------------------------

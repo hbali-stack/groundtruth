@@ -403,6 +403,11 @@ _PRODUCT_PACKAGE_MODULES: dict[str, tuple[str, ...]] = {
         # shipped above.
         "brief_attestation.py",
         "trigger_opportunity.py",
+        # Lifecycle attribution and bounded pre-submit execution are imported by
+        # the live mini seam and gateway. Ship them with their already-allowlisted
+        # dependencies so the task container runs the measured product path.
+        "producer_audit.py",
+        "presubmit_verification.py",
     ),
     # SM-3: trajectory.classifier — hypothesis_ledger's FailureKind/is_env_failure
     # dep. Stdlib-only (enum/os/re/dataclasses), no groundtruth.* import -> closes

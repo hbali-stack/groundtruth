@@ -648,9 +648,13 @@ def test_bug8_yaml_honest_and_explains_all_tags():
     assert "they are verified cross-file facts" not in template, (
         "BUG8: blanket 'verified cross-file facts' overclaim still present"
     )
-    for tag in ("<gt-contract>", "<gt-scope>", "<gt-cochange>", "<gt-nudge>"):
-        assert tag in template, f"BUG8: missing one-line explanation for {tag}"
-    assert "(unverified)" in template, (
+    for explanation in (
+        "Behavioral contracts",
+        "Files graph-connected",
+        "historically change together",
+    ):
+        assert explanation in template
+    assert "marked unverified" in template, (
         "BUG8: template must tell the agent unverified hints are labeled"
     )
 

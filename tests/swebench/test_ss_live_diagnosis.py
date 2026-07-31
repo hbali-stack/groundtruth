@@ -420,6 +420,8 @@ def test_wrong_late_sealed_and_acknowledged_buckets() -> None:
 
 
 def test_diagnosis_emits_exact_inventory_and_perf_statuses(tmp_path: Path) -> None:
+    if not (ROOT / ".claude" / "reports" / "SS_SCOREBOARD.json").is_file():
+        pytest.skip("external SS scoreboard is not present in this Git worktree")
     inv = inventory.canonical_feature_inventory()
     task = "repo__task-1"
     task_dir = tmp_path / task

@@ -162,8 +162,9 @@ def test_arbiter_delivery_leak_zero(tmp_path, monkeypatch):
 # --------------------------------------------------------------------------- #
 # (6) INTERNAL retiree — cochange has NO native form; the Gateway delivers nothing for it.
 # --------------------------------------------------------------------------- #
-def test_cochange_is_internal_no_native_form():
-    assert "l3.cochange" in g._GATEWAY_RETIRED_INTERNAL
+def test_cochange_without_replacement_is_not_retired():
+    assert "l3.cochange" not in g._GATEWAY_RETIRED_INTERNAL
+    assert "l3.cochange" not in g._GATEWAY_RETIRED_LANE_A
     assert render_cochange_native("a/x.py", 3) == ""
 
 
@@ -184,9 +185,9 @@ def test_residual_classes_are_not_retired():
         os.environ.pop("GT_GATEWAY", None)
 
 
-def test_only_the_three_declared_classes_may_retire():
+def test_only_replacement_backed_classes_may_retire():
     assert g._GATEWAY_RETIRED_LANE_A == frozenset(
-        {"l3.cochange", "l3.contract", "l3b.evidence"})
+        {"l3.contract", "l3b.evidence"})
 
 
 # --------------------------------------------------------------------------- #

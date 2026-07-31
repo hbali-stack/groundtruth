@@ -208,7 +208,9 @@ def test_gateway_provenance_collapses_same_call_clean_key_before_pool(monkeypatc
         arbitration_inputs = []
         monkeypatch.setattr(
             ad, "arbitrate",
-            lambda envs: arbitration_inputs.append(list(envs)) or real_arbitrate(envs))
+            lambda envs, recently_delivered=frozenset(), observed_event=None:
+            arbitration_inputs.append(list(envs))
+            or real_arbitrate(envs, recently_delivered, observed_event))
         out = {"output": "base", "returncode": 0}
         pool = [] if pooled else None
         g._gt_gateway_deliver(

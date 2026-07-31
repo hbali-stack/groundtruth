@@ -11,6 +11,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 for _p in (ROOT / "scripts" / "swebench",):
     if str(_p) not in sys.path:
@@ -21,6 +23,10 @@ import blind_ext_selector as sel  # noqa: E402
 DATASET = ROOT / "benchmarks" / "data" / "swebench_live_lite.jsonl"
 LOCKED30 = ROOT / ".claude" / "reports" / "mixture_bag_30_20260712.txt"
 FROZEN = ROOT / "benchmarks" / "data" / "blind_ext_selection_vfinal_20260718.json"
+pytestmark = pytest.mark.skipif(
+    not all(path.is_file() for path in (DATASET, LOCKED30, FROZEN)),
+    reason="frozen blind-selection inputs are external to this Git worktree",
+)
 
 
 def _bytes():

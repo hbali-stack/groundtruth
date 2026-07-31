@@ -152,10 +152,15 @@ def test_localize_surfaces_importer_as_top_via_witness(tmp_path):
     assert order.index("beets/importer.py") == 0
 
 
-def test_localize_confident_gate_fires_on_verified_witness(tmp_path):
+def test_localize_flat_verified_ranking_is_delivered_without_false_confidence(tmp_path):
     _repo, db = _make_beets_db(tmp_path)
     res = localize(_BEETS_ISSUE, db)
-    assert res.confident, f"expected confident, gate_reason={res.gate_reason}"
+    # A witness proves the graph relation, not that a flat candidate ranking has
+    # one uniquely correct edit target.  Preserve the evidence while suppressing
+    # the overconfident directive.
+    assert res.candidates[0].has_verified_witness
+    assert res.confident is False
+    assert res.gate_reason.startswith("score_separation_fail(")
     assert res.confidence > 0.0
 
 
@@ -277,7 +282,7 @@ def test_tier_unverified_witness_is_warning_not_verified():
 
 def test_generate_v1r_brief_surfaces_importer_top_with_witness(tmp_path):
     """End-to-end through the LIVE brief path: the rendered <gt-task-brief>
-    contains importer.py as the top/highest-confidence candidate WITH its witness.
+    contains importer.py as the top fact-backed candidate WITH its witness.
 
     This is the plumbing proof the task demands: 'Delivered' = appears in the
     rendered brief output, not just computed internally.

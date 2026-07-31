@@ -491,6 +491,18 @@ def _extract_edited_file(tool_calls_json: str, full_cmd: str) -> str | None:
                 r"\.(?:py|go|ts|tsx|js|jsx|rs|java|kt|rb|c|cc|cpp|h|hpp)$", tgt, re.I
             ):
                 return _norm_path(tgt)
+        # Reuse the shared shell classifier's Python-write extraction.  It
+        # already recognizes open(..., "w") / write_text() and returns the
+        # literal source paths.  A single discovered path is attributable; a
+        # multi-file command remains path-unknown rather than guessing.
+        if _classify_shell_cmd is not None:
+            try:
+                kind, files, _is_test = _classify_shell_cmd(text)
+            except Exception:
+                pass
+            else:
+                if kind == "EDIT" and len(files) == 1:
+                    return _norm_path(next(iter(files)))
     return None
 
 
@@ -1264,6 +1276,28 @@ def _reconcile_authoritative_edits(
         if key in authoritative_seen:
             continue
         authoritative_seen.add(key)
+        # Runtime and command extraction can spell the same repository path
+        # differently (for example ``./pkg/mod.py`` versus ``pkg/mod.py``).
+        # Confirm the existing action by semantic path identity; otherwise one
+        # physical edit becomes two synthetic attempts and two correctness keys.
+        equivalent = next(
+            (
+                event
+                for event in assistants
+                if int(event.get("step") or 0) == int(home["step"])
+                and event.get("is_edit")
+                and event.get("edited_file")
+                and _path_match(str(event["edited_file"]), file_path)
+            ),
+            None,
+        )
+        if equivalent is not None:
+            # Preserve the authoritative ledger spelling on the reconciled
+            # timeline while retaining one physical edit.
+            equivalent["edited_file"] = file_path
+            equivalent["runtime_post_edit_confirmed"] = True
+            seen.add(key)
+            continue
         if key in seen:
             home["runtime_post_edit_confirmed"] = True
             continue

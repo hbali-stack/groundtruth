@@ -85,7 +85,8 @@ def test_flag_on_all_phantom_is_empty_kills_false_claim(monkeypatch, tmp_path):
     # end-to-end: the advisory falls back to the GENERIC (non-graph-linked) reminder.
     body = render_verify_emission("advisory", 10, 100, {"src/impl.py"}, covering_tests=covering)
     assert "a graph-linked covering test" not in body          # false assurance KILLED
-    assert "the relevant tests cover them" in body             # honest generic reminder
+    assert "the relevant test suite or narrowest related target" in body
+    assert "cover them" not in body                            # no ungrounded coverage claim
 
 
 def test_flag_off_all_phantom_still_makes_the_false_claim(monkeypatch, tmp_path):

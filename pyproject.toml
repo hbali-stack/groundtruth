@@ -92,6 +92,7 @@ python_version = "3.11"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+pythonpath = ["src"]
 norecursedirs = ["tests/fixtures", "tests/layers/fixtures", "tests/_archive_swe_agent"]
 markers = [
     "behavioral: trajectory-level behavioral acceptance tests",

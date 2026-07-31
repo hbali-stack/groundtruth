@@ -456,8 +456,12 @@ def _get_file_embeddings(
             if h in vec_by_hash or h in seen_miss:
                 continue
             cached = _SYMVEC_CACHE.get(h)
-            if cached is not None:
-                vec_by_hash[h] = np.asarray(cached, dtype=np.float32)
+            cached_vec = (
+                np.asarray(cached, dtype=np.float32).reshape(-1)
+                if cached is not None else None
+            )
+            if cached_vec is not None and cached_vec.size == dim:
+                vec_by_hash[h] = cached_vec
             elif len(miss_passages) < _budget:
                 seen_miss.add(h)
                 miss_hashes.append(h)

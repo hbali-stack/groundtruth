@@ -76,6 +76,7 @@ def gmp():
 
 
 def _reset(gmp, monkeypatch):
+    monkeypatch.setenv("GT_CERT_DIR", "__gt_test_no_v2_artifacts__")
     for name, val in [
         ("_GT_BASELINE", False), ("_ORACLE_ROUTE", True), ("_marker_sent", True),
         ("_action_count", 0), ("_source_edit_count", 0), ("_cmd_history", []),
@@ -252,6 +253,11 @@ class TestLiveEscalation:
         monkeypatch.setattr(gmp, "_oracle_edited_tokens", {"edited_sym"}, raising=False)
         monkeypatch.setattr(gmp, "_oracle_edited_tokens_by_file",
                             {"src/x.py": {"edited_sym"}}, raising=False)
+        # This test isolates the escalation composite. Hybrid obligation edit
+        # credit (covered separately) requires three independent fact signals.
+        monkeypatch.setattr(
+            gmp, "edit_coverage_ratio", lambda *_a, **_kw: 0.5,
+        )
         got = gmp._verification_horizon_candidate()
         assert got is not None
         sev, kind, _b, _e = got

@@ -32,12 +32,24 @@ _PY_WRITE = re.compile(r"""open\([^)]*,\s*['"][wa]|\.write(?:lines)?\(|write_tex
 
 
 def _strip_cd(cmd: str) -> str:
-    return re.sub(r"^\s*cd\s+\S+\s*&&\s*", "", cmd.strip())
+    # The mini-SWE execution wrapper prefixes actions with
+    # ``cd $(cat /tmp/gt_root.txt) && ...``.  ``\S+`` stops at the space inside
+    # that command substitution and leaves ``cd`` as the apparent verb, hiding
+    # Python writes from the edit classifier.  Strip through the first command
+    # separator instead; the non-greedy target also handles quoted directories.
+    return re.sub(r"^\s*cd\s+.*?\s*&&\s*", "", cmd.strip(), count=1, flags=re.S)
 
 
 def _cd_dir(cmd: str):
-    m = re.match(r"^\s*cd\s+(\S+)\s*&&", cmd)
-    return m.group(1) if m else None
+    m = re.match(r"^\s*cd\s+(.*?)\s*&&", cmd, re.S)
+    if not m:
+        return None
+    target = m.group(1).strip()
+    # A dynamic root cannot be resolved offline.  Keeping paths relative is
+    # both honest and sufficient for suffix-tolerant gold matching.
+    if target.startswith("$("):
+        return None
+    return target.strip("'\"")
 
 
 def _resolve(f: str, cd: str | None) -> str:

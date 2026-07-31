@@ -165,6 +165,50 @@ def test_no_gold_edit_at_all_is_not_applicable_not_failed(tmp_path: Path) -> Non
     assert _metric_state_for(result, "first_edit_correctness") == "not_applicable"
 
 
+def test_dynamic_cd_python_write_is_a_measured_gold_edit(tmp_path: Path) -> None:
+    """The live mini-SWE shape uses a dynamic repo-root prefix before Python.
+
+    The command mutates exactly one gold file, so both the shared shell classifier
+    and the performance timeline must preserve the edit path.  Before the fix,
+    ``_strip_cd`` stopped at the space inside ``$(cat /tmp/gt_root.txt)`` and
+    classified the command as NAV; localization then trusted the submitted patch
+    while edit-quality saw no edit, producing an internally contradictory record.
+    """
+    command = """cd $(cat /tmp/gt_root.txt) && python3 -c "
+with open('pkg/mod.py', 'r') as f:
+    content = f.read()
+with open('pkg/mod.py', 'w') as f:
+    f.write(content.replace('old', 'new'))
+"
+"""
+    messages = [
+        {"role": "user", "content": "issue"},
+        _assistant(command, 2.0),
+        {"role": "tool", "content": "done"},
+    ]
+    tp = _write_trajectory(
+        tmp_path,
+        messages,
+        "diff --git a/pkg/mod.py b/pkg/mod.py\n-old\n+new\n",
+    )
+    result = performance.compute_performance_metrics(
+        tp,
+        str(tmp_path),
+        gold_files=["pkg/mod.py"],
+        consumption_ledger={
+            "schema": "gt.consumption_ledger.v2",
+            "runtime_ledger_path": "",
+            "entries": [],
+        },
+    )
+
+    assert result["localization"]["_gold_edited_count"] == 1
+    assert result["edit_quality"]["edit_attempts_per_gold"] == 1.0
+    assert result["edit_quality"]["first_edit_correctness"] == {"pkg/mod.py": True}
+    assert _metric_state_for(result, "edit_attempts_per_gold") == "measured"
+    assert _metric_state_for(result, "first_edit_correctness") == "measured"
+
+
 def test_clean_command_edit_gold_unchanged_regression(tmp_path: Path) -> None:
     """Regression: an edits-present trajectory whose gold path is spelled cleanly
     ('pkg/mod.py', no './' prefix) is unaffected — exact and _path_match agree, so

@@ -223,6 +223,8 @@ class _CountingModel:
     cache-missing passages to the embedder in ONE call, so the max batch == the
     number of fresh passages encoded. Returns deterministic unit vectors (dim 8)."""
 
+    dim = 8
+
     def __init__(self) -> None:
         self.max_batch = 0
         self.total = 0

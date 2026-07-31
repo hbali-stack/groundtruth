@@ -1281,11 +1281,24 @@ def _path_prior_scores(all_files: list[str], issue_text: str) -> dict[str, float
     _norm_paths = {fp: fp.replace("\\", "/").lstrip("./").lstrip("/").lower() for fp in all_files}
     _N_files = max(2, len(all_files))
     _logN = _math_path.log2(_N_files)
+
+    def _term_matches_path(term: str, file_path: str) -> bool:
+        """Use the same bidirectional relation for IDF and score eligibility."""
+        norm = _norm_paths[file_path]
+        basename = os.path.basename(norm).rsplit(".", 1)[0]
+        if term in norm or basename in term:
+            return True
+        return any(
+            term in part or part in term
+            for part in Path(norm).parts[:-1]
+            if len(part) >= 3
+        )
+
     _idf: dict[str, float] = {}
     for iw in _issue_words:
         df = 0
         for fp in all_files:
-            if iw in _norm_paths[fp]:
+            if _term_matches_path(iw, fp):
                 df += 1
         # df==0 -> term matches nothing -> irrelevant (idf unused). df>=1.
         _idf[iw] = (_math_path.log2(_N_files / max(1, df)) / _logN) if df > 0 else 0.0

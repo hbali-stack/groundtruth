@@ -2914,9 +2914,12 @@ def _l1_signal_counts(
             fts5 += 1
 
         _reach = float(comps.get("reach", 0.0) or 0.0)
-        _witnessed = bool(getattr(entry, "witness", "")) or getattr(
-            entry, "localizer_confidence", 0.0
-        ) > 0.0 or float(comps.get("witness", 0.0) or 0.0) > 0.0
+        # Structural attribution requires a deterministic edge.  Rendered
+        # same-name DEFINES text and its scalar localizer confidence are lexical
+        # relevance, not graph traversal proof.
+        _witnessed = bool(getattr(entry, "witness_verified", False)) or bool(
+            rec.get("witness_verified", False)
+        )
         if _reach > 0.0 or _witnessed:
             struct += 1
 
@@ -5594,6 +5597,12 @@ def _apply_evidence_rrf(
         _rrf = _rrf_evidence_scores([rec for _, rec, _ in _supported])
         _supported.sort(
             key=lambda item: (
+                # A deterministic graph fact is the terminal hard-negative
+                # discriminator.  RRF still orders within the verified and
+                # unverified groups, but a collection of weak independent
+                # signals must never demote a fact-backed candidate below a
+                # witness-less lexical/semantic hub.
+                0 if item[1].get("witness_verified", False) else 1,
                 -_rrf.get(id(item[1]), 0.0),
                 -_class_count(item[1]),
                 -item[2],
@@ -6043,7 +6052,19 @@ def generate_v1r_brief(
                     continue
             _loc = localize(issue_text, graph_db, top_k=8, issue_anchors=_anchors_obj,
                            repo_root=repo_root)
-        except Exception:
+        except Exception as exc:
+            # Correct-or-quiet applies to delivery, not observability.  A broken
+            # localizer seam must remain attributable in the run artifacts instead
+            # of looking indistinguishable from an honest no-anchor abstention.
+            try:
+                import sys as _sys_l1
+                print(
+                    f"[GT L1] localizer unavailable: {type(exc).__name__}: {exc}",
+                    file=_sys_l1.stderr,
+                    flush=True,
+                )
+            except Exception:
+                pass
             _loc = None
     if _loc and _loc.candidates:
         _existing = {str(r.get("path", "")) for r in top_records}
@@ -6056,7 +6077,10 @@ def generate_v1r_brief(
             _witness_by_file[cf] = (
                 cand.render_witness() if _relevance == "VERIFIED" else ""
             )
-            _witness_verified_by_file[cf] = _relevance == "VERIFIED"
+            # Relevance and graph validity are independent facts. A candidate can
+            # be issue-VERIFIED because it defines an exact issue symbol while
+            # still lacking a deterministic cross-symbol edge.
+            _witness_verified_by_file[cf] = bool(cand.edge_verified)
             _resolution_methods_by_file[cf] = frozenset(
                 str(getattr(witness, "resolution_method", "") or "").strip().lower()
                 for witness in cand.witnesses

@@ -107,6 +107,16 @@ GT_AE_ARGS=(
   # pinned model assets back under this canonical path; forward it explicitly so
   # embed.py never falls back to the unrelated repo-relative /opt/models path.
   --ae "GT_MODELS_ROOT=${GT_MODELS_ROOT:-/opt/gt/models}"
+  # Fail-closed proof requirements must cross the SAME pier boundary as the
+  # model path. pier drops ambient host env; without these forwards the pretask
+  # index and runtime localizer can select different embedder identities.
+  --ae "GT_REQUIRE_FULL_STACK=${GT_REQUIRE_FULL_STACK:-0}"
+  --ae "GT_REQUIRE_FULL_POTENTIAL=${GT_REQUIRE_FULL_POTENTIAL:-0}"
+  --ae "GT_REQUIRE_FTS5=${GT_REQUIRE_FTS5:-0}"
+  --ae "GT_FORCE_ONNX_EMBEDDER=${GT_FORCE_ONNX_EMBEDDER:-0}"
+  --ae "GT_REQUIRE_EMBEDDER=${GT_REQUIRE_EMBEDDER:-0}"
+  --ae "GT_REQUIRE_LSP=${GT_REQUIRE_LSP:-0}"
+  --ae "GT_FORBID_PREBUILT_GRAPH=${GT_FORBID_PREBUILT_GRAPH:-0}"
   # ── Verify-axis structural edit-risk (gaps G03/G04) ──────────────────────────
   # The in-container CODE defaults this axis OFF (byte-identical legacy). This block's
   # JOB is to turn it ON via --ae (that is the G03/G04 fix — the axis was dark in-

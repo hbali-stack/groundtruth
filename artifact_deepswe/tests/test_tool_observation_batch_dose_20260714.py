@@ -39,6 +39,10 @@ class _Agent:
 
 
 def _wire_fake_candidates(monkeypatch):
+    # This file exercises attempt-scoped arbitration.  A monolithic suite can
+    # otherwise inherit edited-file/verification state from an earlier module,
+    # causing an unrelated verification advisory to outrank the fake candidate.
+    g._reset_oracle_state()
     monkeypatch.setattr(g, "_GT_BASELINE", False)
     monkeypatch.setattr(g, "_ORACLE_ROUTE", True)
     monkeypatch.setattr(g, "_global_arbiter_on", lambda: True)

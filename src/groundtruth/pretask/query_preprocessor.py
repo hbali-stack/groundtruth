@@ -16,7 +16,7 @@ from groundtruth.pretask.anchors import (
     _extract_raw_identifiers,
     _looks_like_natural_word,
 )
-from groundtruth.pretask.traces import parse_stack_traces
+from groundtruth.pretask.traces import parse_stack_trace_hints
 from groundtruth.pretask.v2_types import (
     HighSignalToken,
     QueryObject,
@@ -90,9 +90,10 @@ def preprocess(issue_text: str) -> QueryObject:
     tokens = _TokenAccumulator()
     seen_in_traces_or_backtick: set[str] = set()
 
-    # 1. Stack traces. Use "." as repo_root so the relative-path fallback in
-    # traces._is_in_repo accepts repo-relative paths like "src/foo.py".
-    frames = parse_stack_traces(issue_text, repo_root=".")
+    # 1. Stack traces. Track A runs before a target repository is bound, so use
+    # syntax-only hints rather than laundering the current process CWD into a
+    # repository-membership decision.
+    frames = parse_stack_trace_hints(issue_text)
     for frame in frames:
         if frame.file:
             file_hints.append(frame.file)

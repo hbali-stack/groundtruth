@@ -34,6 +34,11 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GT_QUERY_PY = REPO_ROOT / "tools" / "sweagent" / "gt_query" / "lib" / "gt_query.py"
 
+pytestmark = pytest.mark.skipif(
+    not GT_QUERY_PY.is_file(),
+    reason="external SWE-agent gt_query bundle is not present in this checkout",
+)
+
 
 # ── Synthetic graph.db builder ───────────────────────────────────────────────
 SCHEMA = """

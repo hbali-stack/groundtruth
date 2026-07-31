@@ -19,12 +19,11 @@ _SPEC.loader.exec_module(_MOD)
 
 def test_go_workspace_metadata_probe_success(monkeypatch, tmp_path):
     def _run(cmd, cwd=None, env=None, capture_output=None, text=None, timeout=None):
-        # d8fe8b37: probe uses `go list -e` + a probe-only env override (-mod=mod + live
-        # GOPROXY) so an incomplete offline cache can still resolve the transitive set.
+        # Sealed proof uses the dependency store without network fallback.
         assert cmd == ["go", "list", "-e", "./..."]
         assert cwd == str(tmp_path)
         assert env is not None and env.get("GOFLAGS") == "-mod=mod"
-        assert env.get("GOPROXY") == "https://proxy.golang.org,direct"
+        assert env.get("GOPROXY") == "off"
         return subprocess.CompletedProcess(cmd, 0, stdout="repo/pkg\nrepo/pkg/sub\n", stderr="")
 
     monkeypatch.setattr(_MOD.subprocess, "run", _run)

@@ -11,6 +11,10 @@ from scripts.swebench import ss_proof_manifest as manifest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCOREBOARD = ROOT / ".claude" / "reports" / "SS_SCOREBOARD.json"
+pytestmark = pytest.mark.skipif(
+    not SCOREBOARD.is_file(),
+    reason="external SS scoreboard is not present in this Git worktree",
+)
 TASKS_29 = [f"task-{index:02d}" for index in range(29)]
 BASE_CONTEXT = {
     "run_id": "run-1", "task_id": "task-00", "seam_sha256": "a" * 64,

@@ -66,7 +66,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterator
@@ -488,7 +488,10 @@ def evaluate(root: Path) -> dict[str, Any]:
     trigger_opportunities: Counter = Counter()
     lifecycle_opportunities: Counter = Counter()
     lifecycle_fire_features: dict[str, str] = {}
+    lifecycle_boundaries: dict[tuple[str, str], set[str]] = defaultdict(set)
     lifecycle_disposition_ids: set[str] = set()
+    lifecycle_dispositions: dict[str, str] = {}
+    legacy_generic_disposition_ids: set[str] = set()
     invalid_lifecycle_rows: Counter = Counter()
     unresolved_gate: Counter = Counter()
     cap_direct: dict[str, dict[str, Any]] = {
@@ -578,17 +581,71 @@ def evaluate(root: Path) -> dict[str, Any]:
                 continue
             lifecycle_opportunities[feature_id] += 1
             lifecycle_fire_features[fire_id] = feature_id
+            lifecycle_boundaries[(observation_id, feature_id)].add(boundary)
             continue
         if row.get("schema") == "gt.feature_fire_disposition.v1":
             fire_ids = row.get("feature_fire_ids")
             if not isinstance(fire_ids, list):
                 invalid_lifecycle_rows["invalid_disposition_ids"] += 1
                 continue
-            lifecycle_disposition_ids.update(
+            normalized_ids = {
                 str(fire_id)
                 for fire_id in fire_ids
                 if isinstance(fire_id, str) and fire_id
-            )
+            }
+            per_feature = row.get("feature_dispositions")
+            if isinstance(per_feature, list):
+                seen_here: set[str] = set()
+                for item in per_feature:
+                    if not isinstance(item, dict):
+                        invalid_lifecycle_rows[
+                            "invalid_feature_disposition"
+                        ] += 1
+                        continue
+                    fire_id = str(item.get("feature_fire_id") or "")
+                    disposition = str(item.get("disposition") or "")
+                    if (
+                        not fire_id
+                        or fire_id not in normalized_ids
+                        or fire_id in seen_here
+                        or disposition not in {
+                            "abstained",
+                            "available",
+                            "produced",
+                            "permitted",
+                            "deferred",
+                            "staged",
+                            "withheld",
+                            "blocked",
+                            "delivered",
+                        }
+                    ):
+                        invalid_lifecycle_rows[
+                            "invalid_feature_disposition"
+                        ] += 1
+                        continue
+                    seen_here.add(fire_id)
+                    prior = lifecycle_dispositions.get(fire_id)
+                    if prior is not None and prior != disposition:
+                        invalid_lifecycle_rows[
+                            "conflicting_feature_disposition"
+                        ] += 1
+                        continue
+                    lifecycle_dispositions[fire_id] = disposition
+                missing = normalized_ids - seen_here
+                if missing:
+                    invalid_lifecycle_rows[
+                        "missing_feature_disposition"
+                    ] += len(missing)
+            else:
+                # Backward-compatible reader for older saved artifacts.  The
+                # row-level disposition proves termination but cannot support a
+                # per-feature trigger verdict.  In particular, one old
+                # ``produced`` row can cover several fire ids even when only one
+                # FACT produced bytes.  Preserve denominator integrity without
+                # resurrecting that false cross-feature credit.
+                legacy_generic_disposition_ids.update(normalized_ids)
+            lifecycle_disposition_ids.update(normalized_ids)
             continue
 
         # A canonical capsule is one physical row that can carry several independently
@@ -597,12 +654,24 @@ def evaluate(root: Path) -> dict[str, Any]:
         # "lineage-attributed but uncounted".
         canonical_facts = canonical_fact_classes_in_row(row, delivery_facts)
         if is_delivery and canonical_facts:
+            delivery_observation_id = str(
+                row.get("observation_id") or ""
+            ).strip()
             for canonical_fact in canonical_facts:
                 target = facts[canonical_fact]
                 target.delivered += 1
                 target.delivered_chars += chars
                 target.tasks_fired.add(task_id)
                 target.seen_event_types[event_type] += 1
+                # A canonical capsule's event_type is intentionally the constant
+                # provider-delivery vocabulary. Its timing authority is the shared
+                # canonical observation id: a matching lifecycle row proves this
+                # feature was released inside one of its registered windows.
+                if lifecycle_boundaries.get(
+                    (delivery_observation_id, canonical_fact)
+                ):
+                    boundary_stamped += 1
+                    on_time_hits[(canonical_fact, "on_time")] += 1
                 contracted = row.get("contracted_boundary") or row.get(
                     "gt_audit_contracted_boundary"
                 )
@@ -704,6 +773,12 @@ def evaluate(root: Path) -> dict[str, Any]:
             boundary_stamped,
             trigger_opportunities,
             lifecycle_opportunities,
+            Counter(
+                lifecycle_dispositions.get(fire_id, "")
+                for fire_id, feature_id in lifecycle_fire_features.items()
+                if feature_id == fact.feature_id
+                and fire_id in lifecycle_dispositions
+            ),
         )
 
     # ---- CAP verdicts --------------------------------------------------------
@@ -717,6 +792,12 @@ def evaluate(root: Path) -> dict[str, Any]:
         )
         direct = cap_direct[cap.feature_id]
         bound = facts[cap.bound_fact]
+        cap_dispositions = Counter(
+            lifecycle_dispositions.get(fire_id, "")
+            for fire_id, feature_id in lifecycle_fire_features.items()
+            if feature_id == cap.feature_id
+            and fire_id in lifecycle_dispositions
+        )
         if direct["delivered"] > 0:
             cap.verdict = _VERDICT_FIRED
             cap.delivered = direct["delivered"]
@@ -727,6 +808,34 @@ def evaluate(root: Path) -> dict[str, Any]:
             cap.verdict_detail = "delivered"
             cap.on_time = bound.on_time
             cap.evidence = ""
+            continue
+        if cap_dispositions:
+            cap.attribution = "per-feature CAP lifecycle disposition"
+            if cap_dispositions.get("deferred") or cap_dispositions.get("withheld"):
+                cap.verdict = _VERDICT_ARBITRATED
+                cap.verdict_detail = "lifecycle_arbitrated"
+                cap.evidence = "CAP opportunity was explicitly deferred/withheld"
+            elif any(
+                cap_dispositions.get(name)
+                for name in ("produced", "available", "staged", "blocked")
+            ):
+                cap.verdict = _VERDICT_FAILURE
+                cap.verdict_detail = "cap_evidence_without_delivery"
+                cap.evidence = (
+                    "CAP-owned evidence existed, but no provider-bound delivery "
+                    "row named this byte owner"
+                )
+            elif set(cap_dispositions) <= {"abstained", "permitted", ""}:
+                cap.verdict = _VERDICT_ABSENT
+                cap.verdict_detail = "correct_quiet"
+                cap.evidence = (
+                    "correct-quiet: CAP lifecycle evaluated and its authorized "
+                    "byte-owner computation abstained"
+                )
+            else:
+                cap.verdict = _VERDICT_UNINSTRUMENTED
+                cap.verdict_detail = "unknown_terminal_disposition"
+                cap.evidence = "CAP lifecycle termination was not classifiable"
             continue
         # No row names this CAP.  Fall back to its bound FACT, and SAY SO.  Every
         # inherited cell is marked '^' in the table so a bound-FACT count is never
@@ -780,6 +889,9 @@ def evaluate(root: Path) -> dict[str, Any]:
             "orphan_terminal_ids": sorted(
                 lifecycle_disposition_ids - set(lifecycle_fire_features)
             ),
+            "legacy_generic_terminal_ids": sorted(
+                legacy_generic_disposition_ids
+            ),
             "invalid_rows": dict(invalid_lifecycle_rows),
         },
     }
@@ -787,7 +899,8 @@ def evaluate(root: Path) -> dict[str, Any]:
 
 def _decide(fact: FeatureRow, on_time_hits: Counter, boundary_stamped: int,
             trigger_opportunities: Counter | None = None,
-            lifecycle_opportunities: Counter | None = None) -> None:
+            lifecycle_opportunities: Counter | None = None,
+            lifecycle_dispositions: Counter | None = None) -> None:
     classes = fact.reason_classes
     if fact.delivered > 0:
         fact.verdict_detail = "delivered"
@@ -857,12 +970,47 @@ def _decide(fact: FeatureRow, on_time_hits: Counter, boundary_stamped: int,
             ).get(fact.bound_fact, 0)
             _opps = _lifecycle_opps or _physical_opps
             if _opps:
-                fact.evidence = (
-                    f"NO producer row, but the trigger boundary OCCURRED {_opps}x "
-                    f"({'lifecycle' if _lifecycle_opps else 'physical trigger'} "
-                    "census) -- the producer had an opportunity and abstained"
-                )
-                fact.verdict_detail = f"abstained_after_{_opps}_opportunities"
+                dispositions = lifecycle_dispositions or Counter()
+                if dispositions.get("deferred") or dispositions.get("withheld"):
+                    fact.verdict = _VERDICT_ARBITRATED
+                    fact.attribution = "per-feature lifecycle disposition"
+                    fact.evidence = (
+                        f"evidence/window evaluated {_opps}x and commitment "
+                        "control deferred or withheld it"
+                    )
+                    fact.verdict_detail = "lifecycle_arbitrated"
+                elif any(
+                    dispositions.get(name)
+                    for name in ("produced", "available", "staged", "blocked")
+                ):
+                    fact.verdict = _VERDICT_FAILURE
+                    fact.attribution = "per-feature lifecycle disposition"
+                    fact.evidence = (
+                        "per-feature evidence existed at a lifecycle window but "
+                        "no provider-bound delivery row carried it"
+                    )
+                    fact.verdict_detail = "evidence_without_delivery"
+                elif (
+                    sum(dispositions.values()) >= _lifecycle_opps
+                    and set(dispositions) <= {"abstained", "permitted", ""}
+                ):
+                    fact.verdict = _VERDICT_ABSENT
+                    fact.attribution = "per-feature lifecycle disposition"
+                    fact.evidence = (
+                        f"correct-quiet: {_opps} lifecycle window(s) evaluated; "
+                        "the feature-specific producer abstained and no action "
+                        "was blocked"
+                    )
+                    fact.verdict_detail = "correct_quiet"
+                else:
+                    fact.evidence = (
+                        f"NO producer row, but the trigger boundary OCCURRED {_opps}x "
+                        f"({'lifecycle' if _lifecycle_opps else 'physical trigger'} "
+                        "census) -- terminal per-feature cause is incomplete"
+                    )
+                    fact.verdict_detail = (
+                        f"abstained_after_{_opps}_opportunities"
+                    )
             else:
                 fact.evidence = (
                     "no ledger row for this feature's producer layer(s), and no trigger "
@@ -947,6 +1095,8 @@ def render_text(result: dict[str, Any]) -> str:
         f"{lifecycle_integrity['opportunity_ids']} terminal; "
         f"{len(lifecycle_integrity['unterminated_ids'])} unterminated; "
         f"{len(lifecycle_integrity['orphan_terminal_ids'])} orphan terminals; "
+        f"{len(lifecycle_integrity['legacy_generic_terminal_ids'])} "
+        "legacy-generic terminals; "
         f"{sum(lifecycle_integrity['invalid_rows'].values())} invalid rows"
     )
     out.append("")

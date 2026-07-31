@@ -171,6 +171,9 @@ def _write_anchors(tmp_path: Path, obligations: list[dict]) -> str:
 
 
 def _reset(patch_mod, monkeypatch):
+    # This suite exercises the legacy V1 obligation checklist. Do not let a
+    # canonical V2 artifact left by another local/live run select the V2 branch.
+    monkeypatch.setenv("GT_CERT_DIR", "__gt_test_no_v2_artifacts__")
     for name, val in [
         ("_GT_BASELINE", False), ("_ORACLE_ROUTE", True), ("_marker_sent", True),
         ("_action_count", 0), ("_source_edit_count", 0), ("_cmd_history", []),

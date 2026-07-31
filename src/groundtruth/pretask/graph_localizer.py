@@ -2593,8 +2593,12 @@ def _semantic_score_by_file(
                 continue
             seen_hashes.add(h)
             cached = _PASSAGE_VEC_CACHE.get(h)
-            if cached is not None:
-                vec_by_hash[h] = np.asarray(cached, dtype=np.float32)
+            cached_vec = (
+                np.asarray(cached, dtype=np.float32).reshape(-1)
+                if cached is not None else None
+            )
+            if cached_vec is not None and cached_vec.size == dim:
+                vec_by_hash[h] = cached_vec
             elif len(to_encode) < budget:
                 to_encode.append(p)
                 to_encode_hashes.append(h)
@@ -2634,7 +2638,7 @@ def _semantic_score_by_file(
         _names = file_symnames.get(f, []) if _want_sym else []
         for _i, p in enumerate(file_passages[f]):
             v = vec_by_hash.get(hash_of[p])
-            if v is None:
+            if v is None or v.shape != q.shape:
                 continue  # over-budget passage — score the file on what IS available
             c = float(np.dot(q, v))
             if np.isfinite(c):

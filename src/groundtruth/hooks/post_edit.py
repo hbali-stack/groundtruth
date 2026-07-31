@@ -207,6 +207,28 @@ def _legacy_confidence_filter_clause(*, alias: str = "e", min_conf: float = 0.6)
     return f"COALESCE({alias}.confidence, 0.5) >= {min_conf}"
 
 
+def _resolution_only_edge_filter_clause(
+    *, alias: str = "e", min_conf: float = 0.6, has_confidence: bool = True,
+) -> str:
+    """Fail closed for transitional schemas that know edge provenance.
+
+    Some indexes have ``resolution_method`` but predate ``trust_tier`` and
+    ``candidate_count``. Falling all the way back to a numeric threshold launders
+    a high-confidence ``name_match`` into a caller fact even though the database
+    already tells us it is only a name guess.
+    """
+    strong_methods = ", ".join(
+        f"'{method}'" for method in sorted(_STRONG_RESOLUTION_METHODS)
+    )
+    method_gate = f"{alias}.resolution_method IN ({strong_methods})"
+    if not has_confidence:
+        return method_gate
+    return (
+        f"({method_gate} AND "
+        f"COALESCE({alias}.confidence, 0.5) >= {min_conf})"
+    )
+
+
 def _edge_filter_for_db(db_path: str, *, alias: str = "e", min_conf: float = 0.6) -> str:
     """Pick the right filter clause based on what the graph.db supports.
 
@@ -221,6 +243,12 @@ def _edge_filter_for_db(db_path: str, *, alias: str = "e", min_conf: float = 0.6
         conn.close()
         if "trust_tier" in cols and "candidate_count" in cols and "resolution_method" in cols:
             return _categorical_edge_filter_clause(alias=alias)
+        if "resolution_method" in cols:
+            return _resolution_only_edge_filter_clause(
+                alias=alias,
+                min_conf=min_conf,
+                has_confidence="confidence" in cols,
+            )
     except Exception:
         pass
     return _legacy_confidence_filter_clause(alias=alias, min_conf=min_conf)

@@ -664,9 +664,21 @@ def model_identity(model: object) -> tuple[str, int]:
     foreign-model vectors are never reused."""
     name = getattr(model, "model_name", None)
     if not name:
+        name = getattr(model, "model_name_or_path", None)
+    if not name:
         inner = getattr(model, "_m", None)
         name = getattr(inner, "model_name", None)
     dim = getattr(model, "dim", None)
+    if dim is None:
+        # sentence-transformers does not expose ``dim``. Falling back to the
+        # configured ONNX width gave a 384-d vector the same cache identity as a
+        # 768-d vector, making later dot products fail only after a warm cache.
+        get_dim = getattr(model, "get_sentence_embedding_dimension", None)
+        if callable(get_dim):
+            try:
+                dim = get_dim()
+            except Exception:
+                dim = None
     if dim is None:
         inner = getattr(model, "_m", None)
         dim = getattr(inner, "dim", None)

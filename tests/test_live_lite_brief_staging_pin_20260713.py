@@ -81,10 +81,8 @@ def test_forwarded_brief_path_equals_mount_target_plus_basename():
 
 
 def test_runner_reads_forwarded_env_key():
-    """Close the loop: the runner must actually read GT_BRIEF_FILE (the var the workflow forwards)
-    and default to the mount path. Reads the runner source directly."""
+    """The runner delegates the brief file to the canonical runtime attachment."""
     src = _RUNNER.read_text(encoding="utf-8")
-    assert "GT_BRIEF_FILE" in src, "runner no longer reads GT_BRIEF_FILE"
-    assert '"/gt_artifacts/brief.txt"' in src, "runner default brief path is not the /gt_artifacts mount"
-    # the reader must be gated so the baseline arm never consumes the brief (byte-identical control)
-    assert "GT_BASELINE" in src, "runner must gate the brief prepend on the baseline arm"
+    assert "install_canonical_runtime" in src
+    assert "env=e" in src
+    assert "GT_BASELINE" in src

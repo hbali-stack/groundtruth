@@ -54,6 +54,29 @@ def test_cd_dollar_quoted_isolated_when_flag_on(monkeypatch):
     assert gmp._search_pattern(_CD_DOLLAR_Q) == "default_cppstd"
 
 
+def test_live_dynamic_root_prefix_reaches_primary_view_edit_classifier(monkeypatch):
+    """The exact live harness prefix must not hide canonical VIEW/EDIT actions."""
+    monkeypatch.setenv("GT_SS_ELIGIBILITY", "1")
+    view = (
+        "cd $(cat /tmp/gt_root.txt) && "
+        "cat src/groundtruth/runtime/fact_registry.py"
+    )
+    edit = (
+        "cd $(cat /tmp/gt_root.txt) && python3 -c "
+        "\"s=open('src/groundtruth/runtime/fact_registry.py').read();"
+        "open('src/groundtruth/runtime/fact_registry.py','w').write("
+        "s.replace('old','new'))\""
+    )
+    assert gmp._classify(view) == (
+        "post_view",
+        "src/groundtruth/runtime/fact_registry.py",
+    )
+    assert gmp._classify(edit) == (
+        "post_edit",
+        "src/groundtruth/runtime/fact_registry.py",
+    )
+
+
 # ── byte-identical OFF: the cd-$() prefix is NOT stripped when the flag is unset ─
 def test_cd_dollar_not_isolated_when_flag_off(monkeypatch):
     # MUTATION 2 (make the widened strip unconditional / ignore the flag): RED-flips.

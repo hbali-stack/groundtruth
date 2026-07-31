@@ -88,6 +88,7 @@ def _run_driver(body: str, env_events_name: str = "events.jsonl", *, tmp: Path,
 
         spec = importlib.util.spec_from_file_location("gmp_oracle", {str(GMP)!r})
         m = importlib.util.module_from_spec(spec)
+        sys.modules["gmp_oracle"] = m
         spec.loader.exec_module(m)   # MUST NOT raise
 
         # The stub MUST be the live class (in-container shape) for this to be a

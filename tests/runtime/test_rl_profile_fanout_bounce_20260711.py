@@ -71,6 +71,11 @@ def _source_block(extra_env: dict) -> dict:
         [bash, "-c", script], cwd=str(_REPO), env=env,
         capture_output=True, text=True,
     )
+    if (
+        proc.returncode != 0
+        and "execvpe(/bin/bash) failed: No such file or directory" in proc.stderr
+    ):
+        pytest.skip("Windows WSL bash launcher is present but no distribution is installed")
     assert proc.returncode == 0, f"block sourcing failed: {proc.stderr}"
     tail = proc.stdout.split(_SENTINEL, 1)[1]
     out: dict[str, str] = {}

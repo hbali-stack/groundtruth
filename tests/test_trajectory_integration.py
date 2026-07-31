@@ -19,11 +19,15 @@ from groundtruth.trajectory.governor import L5Governor
 @pytest.fixture(autouse=True)
 def _clean_state_files() -> None:
     """Remove stale L5 state files from /tmp before each test."""
-    for f in glob.glob("/tmp/gt_l5_state_test-*.json"):
-        try:
-            os.remove(f)
-        except OSError:
-            pass
+    for pattern in (
+        "/tmp/gt_l5_state_test-*.json",
+        "/tmp/gt_l5_state_*ttd*.json",
+    ):
+        for f in glob.glob(pattern):
+            try:
+                os.remove(f)
+            except OSError:
+                pass
 
 
 def _make_cmd_action(command: str) -> MagicMock:
@@ -289,8 +293,10 @@ class TestTTDFrozenArtifact:
     Hypothesis Falsified MUST fire with the parsed assertion.
     """
 
-    def test_frozen_cfnlint3862_hypothesis_falsified_fires(self):
-        gov = L5Governor(instance_id="cfn-lint-3862-ttd", max_iter=100)
+    def test_frozen_cfnlint3862_hypothesis_falsified_fires(self, tmp_path):
+        gov = L5Governor(
+            instance_id=f"cfn-lint-3862-ttd-{tmp_path.name}", max_iter=100,
+        )
 
         # Replay: agent edits source at iter 22 (real iter from trajectory)
         edit_action = _make_edit_action(_FROZEN_CFNLINT_3862_EDIT_PATH)
@@ -328,9 +334,11 @@ class TestTTDFrozenArtifact:
         assert rec.parser_name == "pytest"
         assert rec.signature_hash
 
-    def test_frozen_cfnlint3862_late_repair_no_restart(self):
+    def test_frozen_cfnlint3862_late_repair_no_restart(self, tmp_path):
         """At iter 75, the same frozen failure must say 'do not restart'."""
-        gov = L5Governor(instance_id="cfn-lint-3862-late-ttd", max_iter=100)
+        gov = L5Governor(
+            instance_id=f"cfn-lint-3862-late-ttd-{tmp_path.name}", max_iter=100,
+        )
 
         gov.after_interaction(
             _make_edit_action(_FROZEN_CFNLINT_3862_EDIT_PATH), _make_obs("ok"),

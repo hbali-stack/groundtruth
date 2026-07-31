@@ -5,11 +5,19 @@ import re
 from collections import Counter
 from pathlib import Path
 
+import pytest
+
 from groundtruth.runtime.fact_registry import all_fact_classes
 from groundtruth.runtime.rl_profile import PROFILE_MEMBERS
 
 
 ROOT = Path(__file__).resolve().parents[1]
+_SCOREBOARD = ROOT / ".claude/reports/SS_SCOREBOARD.json"
+
+pytestmark = pytest.mark.skipif(
+    not _SCOREBOARD.is_file(),
+    reason="private SS scoreboard is not published in this checkout",
+)
 
 
 def _mandatory_perf_names() -> list[str]:
@@ -33,7 +41,7 @@ def _mandatory_perf_names() -> list[str]:
 
 def test_scoreboard_inventory_is_exact_executable_128_universe() -> None:
     scoreboard = json.loads(
-        (ROOT / ".claude/reports/SS_SCOREBOARD.json").read_text(encoding="utf-8")
+        _SCOREBOARD.read_text(encoding="utf-8")
     )
     inventory = scoreboard["feature_inventory"]
 
@@ -64,7 +72,7 @@ def test_scoreboard_inventory_is_exact_executable_128_universe() -> None:
 
 def test_no_inventory_row_can_start_ss_live() -> None:
     scoreboard = json.loads(
-        (ROOT / ".claude/reports/SS_SCOREBOARD.json").read_text(encoding="utf-8")
+        _SCOREBOARD.read_text(encoding="utf-8")
     )
 
     assert scoreboard["status_now"]["ss_live"] == 0

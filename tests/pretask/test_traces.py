@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from groundtruth.pretask.traces import parse_stack_traces
+from groundtruth.pretask.traces import parse_stack_trace_hints, parse_stack_traces
 
 
 PYTHON_TRACE = '''Traceback (most recent call last):
@@ -19,8 +19,12 @@ OSError: [Errno 9] Bad file descriptor
 def test_traces_python(tmp_path) -> None:
     """Python traceback frames are extracted with line + func."""
     repo = tmp_path  # any prefix works since paths are relative
+    for relative in ("patroni/postmaster.py", "patroni/watchdog.py"):
+        path = repo / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("", encoding="utf-8")
     frames = parse_stack_traces(PYTHON_TRACE, str(repo))
-    # Both frames are in-repo (relative paths, no stdlib markers).
+    # Both frames name files proven to exist under the repository.
     assert len(frames) == 2
     # Deepest first → activate at line 142 should come first.
     assert frames[0].func == "activate"
@@ -31,6 +35,9 @@ def test_traces_python(tmp_path) -> None:
 
 def test_traces_in_repo_filter(tmp_path) -> None:
     """Frames pointing at site-packages / stdlib are dropped."""
+    handler = tmp_path / "myrepo" / "handlers.py"
+    handler.parent.mkdir(parents=True)
+    handler.write_text("", encoding="utf-8")
     text = (
         'Traceback (most recent call last):\n'
         '  File "/usr/lib/python3.11/threading.py", line 980, in run\n'
@@ -46,6 +53,9 @@ def test_traces_in_repo_filter(tmp_path) -> None:
 
 def test_traces_javascript(tmp_path) -> None:
     """V8-style ``at fn (path:line:col)`` frames parse."""
+    source = tmp_path / "src" / "foo.ts"
+    source.parent.mkdir(parents=True)
+    source.write_text("", encoding="utf-8")
     text = (
         "TypeError: Cannot read property 'x' of undefined\n"
         "    at Foo.bar (src/foo.ts:42:15)\n"
@@ -60,6 +70,9 @@ def test_traces_javascript(tmp_path) -> None:
 
 def test_traces_javascript_order_and_vendor_filter(tmp_path) -> None:
     """V8 frames keep deepest-at-top order and drop dependency/runtime paths."""
+    source = tmp_path / "src" / "App.tsx"
+    source.parent.mkdir(parents=True)
+    source.write_text("", encoding="utf-8")
     text = (
         "TypeError: Cannot read property 'x' of undefined\n"
         "    at handleClick (src/App.tsx:42:10)\n"
@@ -82,3 +95,10 @@ def test_traces_empty_inputs(tmp_path) -> None:
     """Empty text or empty repo_root → []."""
     assert parse_stack_traces("", str(tmp_path)) == []
     assert parse_stack_traces(PYTHON_TRACE, "") == []
+
+
+def test_syntax_hints_keep_repo_lib_directory() -> None:
+    frames = parse_stack_trace_hints(
+        'File "src/lib/parser.py", line 17, in parse_config'
+    )
+    assert [frame.file for frame in frames] == ["src/lib/parser.py"]

@@ -14,8 +14,6 @@ import importlib.util
 import os
 import sys
 from pathlib import Path
-from unittest.mock import patch
-
 import pytest
 
 _ROOT = Path(__file__).resolve().parents[1]
@@ -144,6 +142,7 @@ class TestRearmOnChange:
         result1 = gmp._oracle_gate_blocks(cands)
         assert result1 == block
 
-        # Same block again (simulating a re-arm with identical content)
+        # Selection alone does not stamp delivery; the real append/commit owns
+        # the dedup mutation so an arbitration probe cannot destroy a candidate.
         result2 = gmp._oracle_gate_blocks(cands)
-        assert result2 == ""  # suppressed by delivered hash
+        assert result2 == block

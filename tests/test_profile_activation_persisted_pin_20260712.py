@@ -64,9 +64,13 @@ def _docker_block(run: str) -> str:
     marker = "bash -c "
     i = run.index(marker) + len(marker)  # index of the opening quote
     assert run[i] == _APOS, "the docker invocation must open with a single-quoted bash -c argument"
-    tail = run.index("2>&1 | tee trial_output.log", i)
+    tail = run.index("2>&1 | tee -a trial_output.log", i)
     close = run.rindex(_APOS, i, tail)
     return run[i:close + 1]
+
+
+def _profile_trial_run() -> str:
+    return _step_run_containing('eval "${_GT_PROFILE_EXPORTS}"')
 
 
 # ── 1. PERSIST: the trial/fan-out step writes the durable activation record ──────────────────
@@ -75,7 +79,7 @@ def _docker_block(run: str) -> str:
 def test_trial_step_writes_profile_activation_json() -> None:
     # The fan-out step (identified by _GT_PROFILE_EXPORTS, unique to the trial docker block) must
     # PERSIST gt_profile_activation.json in a real CODE line -- not merely mention it in a comment.
-    run = _step_run_containing("_GT_PROFILE_EXPORTS")
+    run = _profile_trial_run()
     code = _code_lines(run)
     assert any("gt_profile_activation.json" in ln for ln in code), (
         "the trial/fan-out step must WRITE gt_profile_activation.json in a code line (found only in "
@@ -109,7 +113,7 @@ def test_profile_preflight_failure_aborts_before_agent_spend() -> None:
     ``|| true``; both a non-zero resolver and an empty export set must exit before the seam is
     installed or the paid agent command can run.
     """
-    run = _step_run_containing("_GT_PROFILE_EXPORTS")
+    run = _profile_trial_run()
     code = "\n".join(_code_lines(run))
     resolver_line = next(
         ln for ln in _code_lines(run)
@@ -233,16 +237,14 @@ def test_liveness_profile_gate_exits_nonzero_like_agent_did_not_run() -> None:
     assert "tee -a trial_output.log" in absent_window, (
         "the absent relabel marker must be tee'd to the trial log so the outcome classifiers read it"
     )
-    # KEEP the anti-cheat hard-fail (do NOT weaken it): a receipt PRESENT but MISLABELLING the arm
-    # still exits 1, guarded to run only when a receipt is PRESENT (GT_PROFILE_ABSENT != 1).
+    # Present-but-invalid proof is retained as an explicit uncitable attribution
+    # without destroying the task artifacts needed for diagnosis.
     assert '[ "${GT_PROFILE_ABSENT:-0}" != "1" ]' in run, (
         "the present-but-mislabel anti-cheat path must be guarded to run only when a receipt is PRESENT"
     )
     mislabel = run.index("GT_BATCH_UNPROVEN: batch activation receipt is invalid")
-    assert "exit 1" in run[mislabel: mislabel + 200], (
-        "a PRESENT-but-mislabelled batch activation receipt is a validity/anti-cheat breach that MUST "
-        "still exit 1 -- the anti-cheat gate is not weakened"
-    )
+    assert "_gt_uncitable gt_batch_unproven" in run[mislabel - 80: mislabel]
+    assert "exit 1" not in run[mislabel: mislabel + 200]
 
 
 # ── 3. THE TRAP: the single-quoted docker bash -c block must stay quote-balanced ──────────────
@@ -259,7 +261,7 @@ def test_docker_block_single_quote_is_balanced() -> None:
     # (the single-apostrophe break, which is the actual trap). It does NOT catch a *pair* of stray
     # apostrophes that happen to re-balance -- an accepted blind spot for a cheap static guard. It is
     # paired with the yaml.safe_load structural parse (test_workflow_yaml_parses) below.
-    run = _step_run_containing("_GT_PROFILE_EXPORTS")
+    run = _profile_trial_run()
     block = _docker_block(run)
     assert block.count(_APOS) % 2 == 0, (
         "the docker `bash -c '` block has an ODD number of apostrophes -- a stray single quote was "

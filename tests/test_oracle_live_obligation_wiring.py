@@ -97,6 +97,8 @@ def _write_anchors(tmp_path: Path, obligations: list[dict]) -> str:
 def _reset_live_state(patch_mod, monkeypatch, *, route: bool = True) -> None:
     """Fresh per-task live state (the per-process state a new mini-swe-agent
     process would start with)."""
+    monkeypatch.setenv("GT_CERT_DIR", "__gt_test_no_v2_artifacts__")
+    monkeypatch.setattr(patch_mod, "_obligations_v2_cache", None, raising=False)
     monkeypatch.setattr(patch_mod, "_GT_BASELINE", False, raising=False)
     monkeypatch.setattr(patch_mod, "_ORACLE_ROUTE", route, raising=False)
     monkeypatch.setattr(patch_mod, "_marker_sent", True, raising=False)

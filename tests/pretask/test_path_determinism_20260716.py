@@ -32,6 +32,7 @@ input (no repo/task names in the logic).
 from __future__ import annotations
 
 import json
+import math
 import os
 import subprocess
 import sys
@@ -56,9 +57,9 @@ _FILES = [
 _ISSUE = "the net netloc parser loc parse handling is broken"
 _TARGET = "pkg/netlocparser/core.py"
 
-# Post-fix expected: directory pass takes max over matching words; 'netloc' is the
-# highest-idf directory match (df==1 -> idf==1.0), so score == 0.4 * 1.0 == 0.4.
-_EXPECTED_TARGET = 0.4
+# IDF and scoring use the same bidirectional match. ``loc`` is the strongest
+# directory term and matches the target plus ``f/loc.py`` (df=2 of N=12).
+_EXPECTED_TARGET = 0.4 * math.log2(12 / 2) / math.log2(12)
 
 
 def _run_path_scores(hash_seed: int) -> dict:
@@ -153,10 +154,11 @@ def test_path_component_stable_across_many_hash_seeds() -> None:
 def test_path_component_value_is_max_over_matching_dir_words() -> None:
     """Pin the SEMANTICS the fix chose: the directory pass takes the MAX-idf match.
 
-    'netloc' is the highest-idf directory match (df==1 -> idf==1.0), so the target's
-    score is 0.4*1.0. This proves the fix is not merely deterministic-by-truncation:
-    it selects the strongest matching term (same policy as the basename pass), which
-    also guarantees order-freeness (max is exact + commutative for floats).
+    ``loc`` is the highest-IDF directory match under the scorer's bidirectional
+    relation (df=2 of N=12), so the score is
+    ``0.4 * log2(12/2) / log2(12)``. This proves the reducer selects the
+    strongest matching term and uses one eligibility relation for both IDF and
+    scoring.
     """
     scores = _run_path_scores(hash_seed=0)
     assert _TARGET in scores

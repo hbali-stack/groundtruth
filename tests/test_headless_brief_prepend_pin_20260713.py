@@ -10,8 +10,6 @@ import sys
 import types
 from pathlib import Path
 
-import pytest
-
 _ROOT = Path(__file__).resolve().parents[1]
 _ARTIFACT_DIR = _ROOT / "artifact_deepswe"
 _RUNNER = _ARTIFACT_DIR / "gt_headless_runner.py"
@@ -141,12 +139,23 @@ def _install_fake_minisweagent(monkeypatch, captured):
     # gt_mini_patch is imported in-process on the GT arm; stub it so run() has no real side effects.
     gmp = types.ModuleType("gt_mini_patch")
     gmp._PATCHED_CLASSES = []
-    gmp.install_canonical_runtime = lambda **kwargs: types.SimpleNamespace(
-        attached=True,
-        attempt_runtime=object(),
-        provider_boundary=object(),
-        commitment_boundary=object(),
-    )
+    def _install_runtime(**kwargs):
+        runtime_env = kwargs.get("env") or {}
+        ledger = Path(runtime_env["GT_RUNTIME_LEDGER"])
+        ledger.write_text(
+            '{"layer":"task_start","event_type":"candidate","file_path":"",'
+            '"outcome":"suppressed","reason":"test_fixture",'
+            '"chars_delivered":0,"iteration":0}\n',
+            encoding="utf-8",
+        )
+        return types.SimpleNamespace(
+            attached=True,
+            attempt_runtime=object(),
+            provider_boundary=object(),
+            commitment_boundary=object(),
+        )
+
+    gmp.install_canonical_runtime = _install_runtime
     gmp.ledger_write_failures = lambda: 0
     monkeypatch.setitem(sys.modules, "gt_mini_patch", gmp)
 
@@ -160,6 +169,7 @@ def test_agent_run_receives_native_task_and_canonical_attachment(tmp_path, monke
         "GT_RUN_MODEL": "deepseek/deepseek-v4-flash",
         "GT_RUN_TASK": _ISSUE,
         "GT_BRIEF_FILE": str(brief),
+        "GT_RUNTIME_LEDGER": str(tmp_path / "gt_runtime_ledger.jsonl"),
         "GT_RUN_CONFIG": str(tmp_path / "cfg.yaml"),
         "GT_RUN_OUTPUT": str(tmp_path / "out.json"),
     }

@@ -132,16 +132,138 @@ def test_lifecycle_opportunity_is_a_measured_abstention_for_direct_feature(
             "outcome": "suppressed_internal_only",
             "chars_delivered": 0,
             "feature_fire_ids": [fire_id],
+            "feature_dispositions": [
+                {
+                    "feature_fire_id": fire_id,
+                    "feature_id": "syntax_result",
+                    "fact_class": "syntax_result",
+                    "lifecycle_boundary": "edit_proposed",
+                    "disposition": "abstained",
+                    "produced_candidate_ids": [],
+                    "available_candidate_ids": [],
+                }
+            ],
             "disposition": "abstained",
         },
     )
     feature = _features(result)["syntax_result"]
-    assert feature.verdict == verdicts._VERDICT_UNINSTRUMENTED
-    assert feature.verdict_detail == "abstained_after_1_opportunities"
-    assert "lifecycle census" in feature.evidence
+    assert feature.verdict == verdicts._VERDICT_ABSENT
+    assert feature.verdict_detail == "correct_quiet"
+    assert "correct-quiet" in feature.evidence
     assert result["lifecycle_opportunities"]["syntax_result"] == 1
     assert feature.terminal_dispositions == 1
     assert result["lifecycle_integrity"]["unterminated_ids"] == []
+
+
+def test_legacy_row_level_disposition_never_claims_per_feature_outcome(
+    tmp_path,
+) -> None:
+    """A generic old-row status terminates integrity but cannot credit one feature."""
+    from groundtruth.runtime.trigger_opportunity import lifecycle_opportunity_id
+
+    observation_id = "attempt-legacy:observation:2"
+    fire_id = lifecycle_opportunity_id(
+        observation_id,
+        "file_view",
+        "caller_contract",
+    )
+    result = _evaluate(
+        tmp_path,
+        {
+            "schema": "gt.lifecycle_opportunity.v1",
+            "layer": "feature.lifecycle_opportunity",
+            "outcome": "evaluated",
+            "chars_delivered": 0,
+            "feature_id": "caller_contract",
+            "fact_class": "caller_contract",
+            "lifecycle_boundary": "file_view",
+            "observation_id": observation_id,
+            "feature_fire_id": fire_id,
+        },
+        {
+            "schema": "gt.feature_fire_disposition.v1",
+            "layer": "canonical_runtime.produce_funnel",
+            "outcome": "suppressed_internal_only",
+            "chars_delivered": 0,
+            "feature_fire_ids": [fire_id],
+            "disposition": "produced",
+        },
+    )
+    feature = _features(result)["caller_contract"]
+    assert feature.terminal_dispositions == 1
+    assert feature.verdict == verdicts._VERDICT_UNINSTRUMENTED
+    assert feature.verdict_detail == "abstained_after_1_opportunities"
+    assert result["lifecycle_integrity"]["unterminated_ids"] == []
+    assert result["lifecycle_integrity"]["legacy_generic_terminal_ids"] == [
+        fire_id
+    ]
+    assert result["lifecycle_integrity"]["invalid_rows"] == {}
+
+
+def test_canonical_delivery_timing_joins_by_observation_identity(tmp_path) -> None:
+    """Provider delivery has its own event vocabulary; observation identity is authority."""
+    from groundtruth.runtime.trigger_opportunity import lifecycle_opportunity_id
+
+    observation_id = "attempt-1:observation:2"
+    fire_id = lifecycle_opportunity_id(
+        observation_id,
+        "file_view",
+        "caller_contract",
+    )
+    result = _evaluate(
+        tmp_path,
+        {
+            "schema": "gt.lifecycle_opportunity.v1",
+            "layer": "feature.lifecycle_opportunity",
+            "outcome": "evaluated",
+            "chars_delivered": 0,
+            "feature_id": "caller_contract",
+            "fact_class": "caller_contract",
+            "lifecycle_boundary": "file_view",
+            "observation_id": observation_id,
+            "feature_fire_id": fire_id,
+        },
+        {
+            "schema": "gt.feature_fire_disposition.v1",
+            "layer": "canonical_runtime.produce_funnel",
+            "outcome": "suppressed_internal_only",
+            "chars_delivered": 0,
+            "feature_fire_ids": [fire_id],
+            "feature_dispositions": [
+                {
+                    "feature_fire_id": fire_id,
+                    "feature_id": "caller_contract",
+                    "fact_class": "caller_contract",
+                    "lifecycle_boundary": "file_view",
+                    "disposition": "produced",
+                    "produced_candidate_ids": ["candidate-caller"],
+                    "available_candidate_ids": ["candidate-caller"],
+                }
+            ],
+            "disposition": "produced",
+        },
+        {
+            "schema": "gt.canonical_delivery.v1",
+            "layer": "canonical.provider_delivery",
+            "outcome": "delivered",
+            "event_type": "canonical_provider_delivery",
+            "chars_delivered": 73,
+            "content_sha256_16": "0123456789abcdef",
+            "observation_id": observation_id,
+            "evidence_lineage": [
+                {
+                    "candidate_id": "candidate-caller",
+                    "fact_class": "caller_contract",
+                    "cap_owners": [],
+                }
+            ],
+        },
+    )
+    feature = _features(result)["caller_contract"]
+    assert feature.verdict == verdicts._VERDICT_FIRED
+    assert feature.on_time == "ON-TIME 1/1"
+    assert feature.terminal_dispositions == 1
+    assert result["boundary_stamped"] == 1
 
 
 def test_forged_lifecycle_identity_is_not_counted(tmp_path) -> None:

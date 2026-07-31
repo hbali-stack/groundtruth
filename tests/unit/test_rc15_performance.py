@@ -48,10 +48,12 @@ def _load_module(mod_name: str, file_path: Path):
 
 @pytest.fixture(scope="module")
 def gt_edit_state():
-    return _load_module(
-        "rc15_gt_edit_state",
-        REPO_ROOT / "tools" / "sweagent" / "gt_edit" / "lib" / "gt_edit_state.py",
+    module_path = (
+        REPO_ROOT / "tools" / "sweagent" / "gt_edit" / "lib" / "gt_edit_state.py"
     )
+    if not module_path.is_file():
+        pytest.skip("external SWE-agent gt_edit_state bundle is not present")
+    return _load_module("rc15_gt_edit_state", module_path)
 
 
 def test_resolve_graph_db_no_build_does_not_invoke_gt_index(
@@ -412,10 +414,17 @@ def test_files_with_symbol_is_deterministic(tmp_path, monkeypatch):
     _build_synth_graph(db_path)
 
     monkeypatch.setenv("GT_GRAPH_DB", str(db_path))
-    nav = _load_module(
-        "rc15_gt_navigate",
-        REPO_ROOT / "tools" / "sweagent" / "gt_navigate" / "lib" / "gt_navigate.py",
+    module_path = (
+        REPO_ROOT
+        / "tools"
+        / "sweagent"
+        / "gt_navigate"
+        / "lib"
+        / "gt_navigate.py"
     )
+    if not module_path.is_file():
+        pytest.skip("external SWE-agent gt_navigate bundle is not present")
+    nav = _load_module("rc15_gt_navigate", module_path)
 
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row

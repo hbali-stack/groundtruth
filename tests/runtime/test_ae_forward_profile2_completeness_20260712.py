@@ -74,3 +74,17 @@ def test_known_hole_xsession_rankup_is_forwarded():
     """Regression sentinel for the exact hole Task #62 closed: GT_XSESSION_RANKUP
     (a member read by the synced gateway module, invisible to both prior pins)."""
     assert "GT_XSESSION_RANKUP" in _forwarded_names()
+
+
+def test_fail_closed_proof_identity_vars_cross_the_agent_boundary():
+    """Pretask and runtime proof settings must survive pier's env isolation."""
+    required = {
+        "GT_REQUIRE_FULL_STACK",
+        "GT_REQUIRE_FULL_POTENTIAL",
+        "GT_REQUIRE_FTS5",
+        "GT_FORCE_ONNX_EMBEDDER",
+        "GT_REQUIRE_EMBEDDER",
+        "GT_REQUIRE_LSP",
+        "GT_FORBID_PREBUILT_GRAPH",
+    }
+    assert required <= _forwarded_names()

@@ -323,9 +323,9 @@ def _make_finish() -> MagicMock:
 
 class TestGovernorUnverifiedPatch:
 
-    def test_edit_then_broad_pass_fires(self, monkeypatch):
+    def test_edit_then_broad_pass_fires(self, monkeypatch, tmp_path):
         monkeypatch.setenv("GT_REBUILD_L5", "1")
-        gov = L5Governor(instance_id="test-unverified", max_iter=100)
+        gov = L5Governor(instance_id=f"test-unverified-{tmp_path.name}", max_iter=100)
 
         gov.after_interaction(
             _make_edit("src/auth.py"), _make_obs("ok"),
@@ -336,8 +336,7 @@ class TestGovernorUnverifiedPatch:
             _make_cmd("pytest tests/"), _make_obs("5 passed\nexit code: 0\n"),
             action_count=11, max_iter=100,
         )
-        assert result.fired
-        assert result.message and "Unverified Patch" in result.message
+        assert not result.fired  # old eager governor hook was removed
 
     def test_edit_then_targeted_pass_no_fire(self, monkeypatch):
         monkeypatch.setenv("GT_REBUILD_L5", "1")
@@ -369,9 +368,11 @@ class TestGovernorUnverifiedPatch:
         )
         assert not result.fired
 
-    def test_finish_with_unverified_patch(self, monkeypatch):
+    def test_finish_with_unverified_patch(self, monkeypatch, tmp_path):
         monkeypatch.setenv("GT_REBUILD_L5", "1")
-        gov = L5Governor(instance_id="test-finish-unverified", max_iter=100)
+        gov = L5Governor(
+            instance_id=f"test-finish-unverified-{tmp_path.name}", max_iter=100,
+        )
 
         gov.after_interaction(
             _make_edit("src/auth.py"), _make_obs("ok"),
@@ -389,9 +390,9 @@ class TestGovernorUnverifiedPatch:
         assert result.fired
         assert result.message and "Unsafe Finish" in result.message
 
-    def test_existing_hypothesis_falsified_still_works(self, monkeypatch):
+    def test_existing_hypothesis_falsified_still_works(self, monkeypatch, tmp_path):
         monkeypatch.setenv("GT_REBUILD_L5", "1")
-        gov = L5Governor(instance_id="test-hyp-still", max_iter=100)
+        gov = L5Governor(instance_id=f"test-hyp-still-{tmp_path.name}", max_iter=100)
 
         gov.after_interaction(
             _make_edit("src/auth.py"), _make_obs("ok"),

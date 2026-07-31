@@ -24,6 +24,7 @@ if str(_SS_DIR) not in sys.path:
     sys.path.insert(0, str(_SS_DIR))
 
 import ss_gate as G  # noqa: E402
+import ss_replay_oracle as O  # noqa: E402
 
 
 def test_str_replace_materializer_changes_exactly_one_match_and_preserves_mode(tmp_path):
@@ -825,11 +826,11 @@ def test_oracle_lock_holder_distinguishes_live_from_stale(tmp_path, monkeypatch)
     lock.write_text("4242", encoding="utf-8")
     monkeypatch.setattr(G, "_ORACLE_RUN_LOCK", lock)
 
-    monkeypatch.setattr(G, "_pid_alive", lambda pid: pid == 4242)
+    monkeypatch.setattr(O, "_pid_holds_oracle", lambda pid: pid == 4242)
     assert G._oracle_lock_holder() == 4242
     assert lock.read_text(encoding="utf-8") == "4242"  # reader never mutates ownership
 
-    monkeypatch.setattr(G, "_pid_alive", lambda _pid: False)
+    monkeypatch.setattr(O, "_pid_holds_oracle", lambda _pid: False)
     assert G._oracle_lock_holder() is None
     assert lock.is_file(), "the gate must never delete the oracle-owned lock"
 
@@ -891,7 +892,7 @@ def test_main_aborts_before_driver_when_live_oracle_holds_lock(tmp_path, monkeyp
     lock = tmp_path / "ssr_replay_oracle.lock"
     lock.write_text("5151", encoding="utf-8")
     monkeypatch.setattr(G, "_ORACLE_RUN_LOCK", lock)
-    monkeypatch.setattr(G, "_pid_alive", lambda pid: pid == 5151)
+    monkeypatch.setattr(O, "_pid_holds_oracle", lambda pid: pid == 5151)
 
     def _must_not_construct():
         raise AssertionError("gate constructed RealSeamDriver while oracle lock was live")

@@ -41,6 +41,11 @@ _MANIFEST_PATH = _ROOT / "scripts" / "vm" / "build_verified_manifest.py"
 _WORKFLOW = _ROOT / ".github" / "workflows" / "verified_run.yml"
 _DEEP_METRICS_PATH = _ROOT / "artifact_verified" / "verified_deep_metrics.py"
 
+pytestmark = pytest.mark.skipif(
+    not _ADAPTER_PATH.is_file(),
+    reason="external artifact_verified bundle is not published in this checkout",
+)
+
 
 def _load(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -332,7 +337,7 @@ def _evidence_for_view(gmp, file_token: str) -> str:
     text appended to the observation."""
     class FakeEnv:
         def execute(self, action, *a, **k):
-            return {"output": f"1\tdef funcA(x):", "returncode": 0, "exception_info": ""}
+            return {"output": "1\tdef funcA(x):", "returncode": 0, "exception_info": ""}
 
     FakeEnv.execute = gmp._wrap_execute(FakeEnv.execute)
     out = FakeEnv().execute({"command": f"cat {file_token}"})

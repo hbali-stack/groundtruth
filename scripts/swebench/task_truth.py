@@ -724,19 +724,28 @@ def _augment_artifacts_root(jobs_dir: str, artifacts: dict[str, str | None]) -> 
     full-run trajectory (+ patch + reward) is right there. When the resolver missed the mini
     trajectory, look for it at the task root and fill it in so trajectory_integrity /
     trajectory_state / patch_hygiene read the REAL run instead of an all-null stub."""
-    if artifacts.get("mini_trajectory"):
-        return artifacts
     roots: list[str] = []
     for r in (jobs_dir, os.path.dirname(os.path.abspath(jobs_dir)), os.getcwd()):
         if r and r not in roots:
             roots.append(r)
     for root in roots:
-        cand = os.path.join(root, "mini-swe-agent.trajectory.json")
-        if os.path.isfile(cand):
-            artifacts["mini_trajectory"] = cand
-            if not artifacts.get("trial_dir"):
-                artifacts["trial_dir"] = root
-            break
+        if not artifacts.get("mini_trajectory"):
+            cand = os.path.join(root, "mini-swe-agent.trajectory.json")
+            if os.path.isfile(cand):
+                artifacts["mini_trajectory"] = cand
+                if not artifacts.get("trial_dir"):
+                    artifacts["trial_dir"] = root
+        if not artifacts.get("deep_metrics"):
+            iid = str(os.environ.get("GT_INSTANCE_ID") or "").strip()
+            candidates = (
+                [os.path.join(root, f"gt_deep_metrics_{iid}.json")]
+                if iid else []
+            )
+            candidates.append(os.path.join(root, "gt_deep_metrics.json"))
+            for candidate in candidates:
+                if os.path.isfile(candidate):
+                    artifacts["deep_metrics"] = candidate
+                    break
     return artifacts
 
 
@@ -954,7 +963,9 @@ def build_task_truth(
     obligation_summary = _obligation_lifecycle_summary(obligation_status)
     consumption_summary = _consumption_summary(deep)
     horizon_summary = _verification_horizon_summary(deep, verifier_semantics)
-    runtime_ledger_summary = _runtime_ledger_summary(arts.runtime_ledger)
+    runtime_ledger_summary = _runtime_ledger_summary(
+        artifacts.get("runtime_ledger") or arts.runtime_ledger
+    )
     structured_adapter_witness = _load_json(arts.adapter_witness or "") or {}
 
     if grade_outcome:

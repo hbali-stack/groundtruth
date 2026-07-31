@@ -434,8 +434,8 @@ def test_host_legacy_schema_without_language_is_permissive(tmp_path):
     # No language column -> cannot judge -> every deterministic edge still a fact.
     line = _caller_contract_for_file(str(db), _RS_SOURCE, str(repo), ["execute"])
     assert "run_loop() in " + _RS_CALLER in line, f"legacy fact lost: {line}"
-    assert "deltablue" in line, (
-        "legacy schema must stay permissive (cannot judge language): " + line)
+    assert "deltablue" not in line, (
+        "benchmark/demo path policy must remain active on legacy schemas: " + line)
     wits = _resolved_witnesses_for_file(str(db), _RS_SOURCE, str(repo), max_each=4)
     assert any(w["file_path"] == _RS_CALLER for w in wits), f"legacy witness lost: {wits}"
     out = edit_target_callee_contracts(str(db), _RS_SOURCE, ["load_module"])

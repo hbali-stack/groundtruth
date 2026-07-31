@@ -121,6 +121,52 @@ def _frames_from_text(text: str) -> list[StackFrame]:
     return out
 
 
+def _normalized_trace_frames(issue_text: str) -> list[StackFrame]:
+    """Normalize install-prefix noise without asserting repository membership."""
+    normalized: list[StackFrame] = []
+    for fr in _frames_from_text(issue_text):
+        file_ = fr.file or ""
+        norm = file_.replace("\\", "/")
+        for marker in ("site-packages/", "dist-packages/"):
+            idx = norm.find(marker)
+            if idx >= 0:
+                file_ = norm[idx + len(marker):]
+                break
+        normalized.append(
+            StackFrame(file=file_, line=fr.line, func=fr.func, lang=fr.lang)
+        )
+    return normalized
+
+
+def parse_stack_trace_hints(issue_text: str) -> list[StackFrame]:
+    """Return syntactic trace hints when the target repository is not yet known.
+
+    Query preprocessing runs before repository binding, so it may extract syntax
+    but must not pretend the current process CWD is the target checkout. Obvious
+    runtime/dependency frames remain excluded; repository membership is deferred
+    to :func:`parse_stack_traces`.
+    """
+    if not issue_text:
+        return []
+    bad_markers = (
+        "node_modules/",
+        "vendor/",
+        "target/",
+        ".cargo/",
+        ".gem/",
+        ".pub-cache/",
+    )
+    hints: list[StackFrame] = []
+    for frame in _normalized_trace_frames(issue_text):
+        path = frame.file.replace("\\", "/")
+        if not path or path.startswith(("node:", "internal/", "/usr/", "/lib/")):
+            continue
+        if any(marker in path for marker in bad_markers):
+            continue
+        hints.append(frame)
+    return hints
+
+
 def _is_in_repo(path: str, repo_root: str) -> bool:
     """True if ``path`` resolves under ``repo_root``.
 
@@ -208,7 +254,6 @@ def parse_stack_traces(
     """
     if not issue_text:
         return []
-    raw = _frames_from_text(issue_text)
     # Normalize installed-package frames to repo-relative paths. In SWE-bench
     # issues, stack traces come from the reporter's INSTALLED version of the
     # package being fixed — paths like ``site-packages/loguru/_datetime.py``.
@@ -218,16 +263,7 @@ def parse_stack_traces(
     # This is the flip lever: without this, W_FRAME=0.60 never fires on the most
     # common SWE-bench issue pattern (installed-package tracebacks). arxiv
     # 2412.03905: deepest in-repo frame = 98.3% bug-location correlation.
-    normalized: list[StackFrame] = []
-    for fr in raw:
-        f = fr.file or ""
-        norm = f.replace("\\", "/")
-        for marker in ("site-packages/", "dist-packages/"):
-            idx = norm.find(marker)
-            if idx >= 0:
-                f = norm[idx + len(marker):]
-                break
-        normalized.append(StackFrame(file=f, line=fr.line, func=fr.func, lang=fr.lang))
+    normalized = _normalized_trace_frames(issue_text)
     in_repo = [fr for fr in normalized if _is_in_repo(fr.file, repo_root)]
 
     # Language-aware ordering. In Python tracebacks the failing frame is
