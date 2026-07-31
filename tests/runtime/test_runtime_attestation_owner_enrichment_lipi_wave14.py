@@ -90,12 +90,16 @@ def _connection(*records: rr.EvidenceRecord) -> sqlite3.Connection:
     return connection
 
 
-def _load(connection: sqlite3.Connection):
+def _load(
+    connection: sqlite3.Connection,
+    *,
+    require_delivered: bool = False,
+):
     return attestation._load_evidence_ownership(
         connection,
         attempt_id="attempt-owner-enrichment",
         evidence_ids=("GT-E-owner-enrichment",),
-        require_delivered=False,
+        require_delivered=require_delivered,
     )
 
 
@@ -168,5 +172,81 @@ def test_attestation_rejects_impossible_lifecycle_history() -> None:
             match="EVIDENCE_TRANSITION_HISTORY_INVALID",
         ):
             _load(connection)
+    finally:
+        connection.close()
+
+
+def test_attestation_preserves_delivery_proof_after_later_invalidation() -> None:
+    pending = _evidence()
+    ready = rr.transition_evidence(
+        pending,
+        rr.EvidenceLifecycle.READY,
+        reason_code=rr.EvidenceTransitionReason.READINESS_RULES_SATISFIED,
+    )
+    released = rr.transition_evidence(
+        ready,
+        rr.EvidenceLifecycle.RELEASED,
+        reason_code=rr.EvidenceTransitionReason.DECISION_WINDOW_OPEN,
+    )
+    delivered = rr.transition_evidence(
+        released,
+        rr.EvidenceLifecycle.DELIVERED,
+        reason_code=(
+            rr.EvidenceTransitionReason.PROVIDER_TERMINAL_DELIVERY_PROVEN
+        ),
+        delivery_attempt=rr.DeliveryAttempt(
+            evidence_ids=(pending.evidence_id,),
+            capsule_hash="a" * 64,
+            model_call_id="model-owner-enrichment",
+            state=rr.DeliveryState.DELIVERED,
+            observation_id="observation-owner-enrichment",
+            joined_capsule_hash="a" * 64,
+            provider_payload_hash="b" * 64,
+            provider_response_id="provider-owner-enrichment",
+            terminal_kind=rr.ProviderTerminalKind.COMPLETED,
+        ),
+    )
+    active = rr.transition_evidence(
+        delivered,
+        rr.EvidenceLifecycle.ACTIVE,
+        reason_code=(
+            rr.EvidenceTransitionReason.ACTIVATED_AFTER_PROVIDER_DELIVERY
+        ),
+    )
+    invalidated = rr.transition_evidence(
+        active,
+        rr.EvidenceLifecycle.INVALIDATED,
+        reason_code=rr.EvidenceTransitionReason.REVISION_DEPENDENCY_CHANGED,
+    )
+    connection = _connection(
+        pending,
+        ready,
+        released,
+        delivered,
+        active,
+        invalidated,
+    )
+    try:
+        records, _ = _load(connection, require_delivered=True)
+    finally:
+        connection.close()
+
+    assert records[0].lifecycle == "INVALIDATED"
+
+
+def test_attestation_rejects_invalidation_without_prior_delivery() -> None:
+    pending = _evidence()
+    invalidated = rr.transition_evidence(
+        pending,
+        rr.EvidenceLifecycle.INVALIDATED,
+        reason_code=rr.EvidenceTransitionReason.REVISION_DEPENDENCY_CHANGED,
+    )
+    connection = _connection(pending, invalidated)
+    try:
+        with pytest.raises(
+            attestation._Reject,
+            match="DELIVERY_EVIDENCE_TRANSITION_UNPROVEN",
+        ):
+            _load(connection, require_delivered=True)
     finally:
         connection.close()

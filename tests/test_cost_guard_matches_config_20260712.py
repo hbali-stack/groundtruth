@@ -28,12 +28,16 @@ _CL = re.compile(r"^\s*cost_limit:\s*([0-9.]+)\s*(?:#.*)?$", re.M)
 
 
 def _cost_guard_run() -> str:
-    doc = yaml.safe_load(_WF.read_text(encoding="utf-8"))
+    doc = _workflow()
     for job in doc.get("jobs", {}).values():
         for step in job.get("steps", []) or []:
             if isinstance(step, dict) and "Cost guard" in (step.get("name") or ""):
                 return step["run"]
     raise AssertionError("Cost guard step not found in swebench_live_lite_full.yml")
+
+
+def _workflow() -> dict:
+    return yaml.safe_load(_WF.read_text(encoding="utf-8"))
 
 
 def test_guard_regex_tolerates_inline_comment() -> None:
@@ -58,3 +62,23 @@ def test_config_step_limit_is_under_agent() -> None:
     agent = cfg.get("agent", {})
     assert int(agent.get("step_limit", 0)) > 0, "step_limit must live under agent: with a positive value"
     assert float(agent.get("cost_limit", 0)) > 0, "cost_limit must live under agent: with a positive value"
+
+
+def test_runtime_step_limit_matches_the_agent_budget() -> None:
+    """GT phase timing and the real mini-SWE stop budget must share one denominator."""
+    workflow_limit = int(_workflow().get("env", {}).get("GT_STEP_LIMIT", 0))
+    config_limit = int(
+        yaml.safe_load(_CFG.read_text(encoding="utf-8"))
+        .get("agent", {})
+        .get("step_limit", 0)
+    )
+    assert workflow_limit == config_limit, (
+        "GT_STEP_LIMIT controls lifecycle timing but differs from the actual "
+        f"mini-SWE agent limit: runtime={workflow_limit}, agent={config_limit}"
+    )
+
+
+def test_cost_guard_rejects_runtime_agent_budget_drift() -> None:
+    run = _cost_guard_run()
+    assert 'os.environ.get("GT_STEP_LIMIT"' in run
+    assert "does not match agent.step_limit" in run

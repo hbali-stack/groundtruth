@@ -65,11 +65,6 @@ _ALLOWED_NEXT = {
 _TERMINAL_KINDS = frozenset(
     {"COMPLETED", "INCOMPLETE", "TOOL_USE", "REFUSAL"}
 )
-_DELIVERED_EVIDENCE_STATES = frozenset(
-    {"DELIVERED", "ACTIVE", "SATISFIED", "SUPERSEDED"}
-)
-
-
 class AttestationIntegrityError(ValueError):
     """The exported bytes or their self-seal are not authoritative."""
 
@@ -755,8 +750,13 @@ def _load_evidence_ownership(
             source_hashes.append(latest_hash)
         assert latest is not None
         lifecycle = str(latest.get("lifecycle", ""))
-        if require_delivered and lifecycle not in _DELIVERED_EVIDENCE_STATES:
-            raise _Reject("DELIVERY_EVIDENCE_LIFECYCLE_UNPROVEN")
+        # Delivery is a proven historical event, not a requirement that the
+        # evidence remain usable at the end of the task. A later repository
+        # revision can correctly move ACTIVE evidence to INVALIDATED or EXPIRED
+        # without erasing the provider-terminal delivery that preceded it.
+        # Run 30599727385 exposed this on cfn-lint-3749 and cfn-lint-3764:
+        # both records contained the exact RELEASED -> DELIVERED transition
+        # below, followed by ACTIVE -> INVALIDATED after a later edit.
         if require_delivered and not any(
             isinstance(transition, dict)
             and transition.get("from_state") == "RELEASED"
