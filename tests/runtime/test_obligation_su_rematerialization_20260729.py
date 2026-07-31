@@ -1,19 +1,9 @@
-"""SOURCE_UNDERSTANDING can rematerialize the standing obligations carrier — P2-1.
+"""SOURCE_UNDERSTANDING reuses a provider-proven stable task contract.
 
-THE DEFECT (ARCH-D observability audit, 2026-07-29, verified at
-reasoning_runtime.py:7360-7368): `_refresh_standing_obligation_generations`
-rematerializes a provider-proven (ACTIVE) standing obligations record ONLY when
-the open decision is PATCH_CONSTRUCTION. But SOURCE_UNDERSTANDING's REQUIRED
-role is BEHAVIORAL_CONTRACT (gt_mini_patch.py role_requirements), and its only
-standing carrier is this very record — so once the task-start obligations dose
-was delivered, every later SOURCE_UNDERSTANDING window starved:
-1,529 of the 1,533 unresolved-BEHAVIORAL_CONTRACT compilation failures on run
-30478454517 sat at SOURCE_UNDERSTANDING. This is the head of the causal chain
-behind the commitment-boundary withhold loop (#54).
-
-Fixture shapes mirror tests/runtime/test_obligation_window_rematerialization_20260728.py
-(the PATCH_CONSTRUCTION pins there must stay green UNMODIFIED — this file adds
-the SU membership, never changes the existing behavior).
+The original P2-1 repair rematerialized the full task obligation in every SU
+window to avoid starving its required BEHAVIORAL_CONTRACT role. The stable
+anchor model keeps the completeness guarantee while sending no repeated bytes:
+only a later semantic delta can create another capsule.
 """
 
 from __future__ import annotations
@@ -135,6 +125,9 @@ def _su_decision(runtime: rr.AttemptReasoningRuntime) -> rr.ActiveDecision:
         causal_neighborhood=patch.causal_neighborhood,
         token_budget=200,
         current_revision=runtime.work_state.revision,
+        established_roles=patch.established_roles,
+        established_evidence_ids=patch.established_evidence_ids,
+        established_grade=patch.established_grade,
     )
 
 
@@ -196,13 +189,10 @@ def _deliver_and_commit(
     )
 
 
-def test_source_understanding_rematerializes_the_standing_obligation(
+def test_source_understanding_reuses_the_provider_proven_task_contract(
     tmp_path,
 ) -> None:
-    """RED today: after the task-start dose is delivered (source ACTIVE), a later
-    SOURCE_UNDERSTANDING window mints NO clone and the decision starves on its
-    required BEHAVIORAL_CONTRACT. GREEN: the clone is minted exactly as it is for
-    a reopened PATCH_CONSTRUCTION window, and the coalition completes."""
+    """A provider-proven immutable contract completes SU without repeat bytes."""
     journal = rr.RuntimeJournal(tmp_path / "su-obligation.sqlite3")
     journal.open()
     runtime = rr.AttemptReasoningRuntime(
@@ -241,13 +231,9 @@ def test_source_understanding_rematerializes_the_standing_obligation(
             for item in runtime._evidence.values()
             if item.standing_source_evidence_id == source.evidence_id
         )
-        assert len(clones) == 1, (
-            "SOURCE_UNDERSTANDING starved: no standing-obligation clone was "
-            "minted for the new window (the PATCH_CONSTRUCTION-only guard)"
-        )
-        assert plan.delivery_attempt_id, (
-            "the SU coalition must complete on the rematerialized carrier"
-        )
+        assert clones == ()
+        assert not plan.delivery_attempt_id
+        assert plan.oracle_decision.decision_complete
         assert (
             runtime.evidence_record(source.evidence_id).lifecycle
             is rr.EvidenceLifecycle.ACTIVE

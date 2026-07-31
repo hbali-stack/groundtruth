@@ -64,7 +64,10 @@ CANONICAL_HASH_SCHEMA = "gt.canonical_event.v2"
 # recorded cannot be recovered, and holding such a record is correct-or-quiet. The gate stays
 # strict -- weakening it re-opens cross-record substrate lending. This makes the condition
 # DIAGNOSABLE and makes an unknown future schema fail LOUDLY instead of being silently misread.
-EVIDENCE_RECORD_SCHEMA = "gt.evidence_record.v1"
+EVIDENCE_RECORD_SCHEMA = "gt.evidence_record.v2"
+_SUPPORTED_EVIDENCE_RECORD_SCHEMAS = frozenset(
+    {"gt.evidence_record.v1", EVIDENCE_RECORD_SCHEMA}
+)
 
 # THE SINGLE SOURCE OF TRUTH for the capsule-hash preimage label. Exported 2026-07-28 because
 # this literal was hand-duplicated in FOUR places -- `reasoning_runtime` (the writer),
@@ -2330,7 +2333,10 @@ class RuntimeJournal(EventStore):
             # working. What empty does NOT mean is "observed nothing" -- that distinction
             # is the entire point of the column.
             row_schema = str(row[4] or "")
-            if row_schema and row_schema != EVIDENCE_RECORD_SCHEMA:
+            if (
+                row_schema
+                and row_schema not in _SUPPORTED_EVIDENCE_RECORD_SCHEMAS
+            ):
                 raise StateIntegrityError(
                     f"evidence journal row was written under record schema "
                     f"{row_schema!r}; this build reads "
@@ -3749,17 +3755,41 @@ class ActiveDecision:
     token_budget: int
     current_revision: RevisionVector
     useful_roles: tuple[EvidenceRole, ...] = ()
+    # Required roles whose evidence was already delivered and acknowledged at
+    # the provider boundary.  They participate in decision completeness but
+    # never re-enter the model-facing coalition merely to repeat stable bytes.
+    established_roles: tuple[EvidenceRole, ...] = ()
+    established_evidence_ids: tuple[str, ...] = ()
+    established_grade: EvidenceGrade = EvidenceGrade.VERIFIED
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "required_roles", tuple(self.required_roles))
         object.__setattr__(self, "causal_neighborhood", tuple(self.causal_neighborhood))
         object.__setattr__(self, "useful_roles", tuple(self.useful_roles))
+        object.__setattr__(self, "established_roles", tuple(self.established_roles))
+        object.__setattr__(
+            self,
+            "established_evidence_ids",
+            tuple(self.established_evidence_ids),
+        )
         if not self.decision_id or not self.primary_claim:
             raise ValueError("decision_id and primary_claim are required")
         if not self.required_roles or len(set(self.required_roles)) != len(self.required_roles):
             raise ValueError("required_roles must be non-empty and unique")
         if len(set(self.useful_roles)) != len(self.useful_roles):
             raise ValueError("useful_roles must be unique")
+        if len(set(self.established_roles)) != len(self.established_roles):
+            raise ValueError("established_roles must be unique")
+        if not set(self.established_roles).issubset(self.required_roles):
+            raise ValueError("established_roles must be required by this decision")
+        if len(set(self.established_evidence_ids)) != len(
+            self.established_evidence_ids
+        ):
+            raise ValueError("established_evidence_ids must be unique")
+        if bool(self.established_roles) != bool(self.established_evidence_ids):
+            raise ValueError(
+                "established roles and evidence ids must be present together"
+            )
         if not self.causal_neighborhood:
             raise ValueError("causal_neighborhood is required")
         if type(self.token_budget) is not int or self.token_budget < 1:
@@ -3805,8 +3835,13 @@ class EvidenceRecord:
     # names that immutable root. This never changes model-facing evidence.
     standing_source_evidence_id: str = ""
     decision_window_generation: str = ""
+    # Exact producer identity from EvidenceEnvelope. Empty is reserved for v1
+    # journal compatibility and hand-built fixtures; current semantic delivery
+    # proof fails closed when it is unavailable.
+    producer_id: str = ""
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "producer_id", str(self.producer_id))
         for field_name in (
             "roles",
             "provenance",
@@ -5346,6 +5381,7 @@ def canonical_evidence_from_envelope(
             authority=semantics.authority,
             owner_feature_ids=_authorized_cap_byte_owners(envelope, lineage),
             observed_substrates=semantics.observed_substrates,
+            producer_id=envelope.producer,
         )
     except (TypeError, ValueError):
         return None
@@ -5824,6 +5860,7 @@ def _evidence_record_from_json(payload: str) -> EvidenceRecord:
         decision_window_generation=str(
             raw.get("decision_window_generation", "")
         ),
+        producer_id=str(raw.get("producer_id", "")),
     )
 
 
@@ -6753,6 +6790,9 @@ def _role_order(role: EvidenceRole) -> int:
 def _grade_for_required_links(
     selected: Sequence[EvidenceRecord],
     required_roles: Sequence[EvidenceRole],
+    *,
+    established_roles: Sequence[EvidenceRole] = (),
+    established_grade: EvidenceGrade = EvidenceGrade.VERIFIED,
 ) -> EvidenceGrade:
     links = [
         item.grade
@@ -6762,6 +6802,8 @@ def _grade_for_required_links(
             or any(role in required_roles for role in item.roles)
         )
     ]
+    if established_roles:
+        links.append(established_grade)
     return min(links) if links else EvidenceGrade.INFO
 
 
@@ -6938,7 +6980,10 @@ def select_evidence_coalition(
         ),
     )
     selected: list[EvidenceRecord] = []
-    selected_roles: set[EvidenceRole] = set()
+    # Provider-acknowledged stable prerequisites complete their required links
+    # without being selected again.  The coalition therefore contains only the
+    # semantic delta for this decision window.
+    selected_roles: set[EvidenceRole] = set(decision.established_roles)
     selected_subject_roles: set[tuple[str, EvidenceRole]] = set()
     selected_consequences: set[str] = set()
     total_tokens = 0
@@ -7093,7 +7138,12 @@ def select_evidence_coalition(
         coverage=coverage,
         unresolved_roles=unresolved,
         overall_grade=(
-            _grade_for_required_links(selected, decision.required_roles)
+            _grade_for_required_links(
+                selected,
+                decision.required_roles,
+                established_roles=decision.established_roles,
+                established_grade=decision.established_grade,
+            )
             if decision_complete
             else EvidenceGrade.INFO
         ),
@@ -7358,16 +7408,19 @@ class AttemptReasoningRuntime:
                     )
                 )
                 continue
+            # Provider-proven immutable obligations are stable prerequisites,
+            # not per-window payloads. The active decision names them through
+            # ``established_roles``; only an explicit stateful obligation
+            # producer may create a later semantic delta.
+            if source.lifecycle in {
+                EvidenceLifecycle.ACTIVE,
+                EvidenceLifecycle.SATISFIED,
+            }:
+                continue
             if (
-                # P2-1 (2026-07-29, ARCH-D lever 1): SOURCE_UNDERSTANDING joins
-                # PATCH_CONSTRUCTION. Its REQUIRED role is BEHAVIORAL_CONTRACT and
-                # its only STANDING carrier is this record — with the guard
-                # PATCH_CONSTRUCTION-only, every SOURCE_UNDERSTANDING window after
-                # the task-start dose starved (1,529 of 1,533 unresolved-
-                # BEHAVIORAL_CONTRACT compilation failures on run 30478454517),
-                # which is the head of the commitment-boundary withhold loop.
-                # PATCH_PROPAGATION and the other contexts stay excluded (pinned
-                # by test_non_patch_decision_does_not_rematerialize_delivered_obligation).
+                # RELEASED/DELIVERED without response commitment is not yet a
+                # durable stable anchor. Preserve the bounded recovery generation
+                # for an abandoned provider path; ACTIVE/SATISFIED never reach here.
                 active.context
                 in {
                     DecisionContext.PATCH_CONSTRUCTION,
@@ -7377,8 +7430,6 @@ class AttemptReasoningRuntime:
                 in {
                     EvidenceLifecycle.RELEASED,
                     EvidenceLifecycle.DELIVERED,
-                    EvidenceLifecycle.ACTIVE,
-                    EvidenceLifecycle.SATISFIED,
                 }
             ):
                 rematerialized = rematerialize_task_obligation(

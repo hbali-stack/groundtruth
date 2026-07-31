@@ -23374,7 +23374,10 @@ class CanonicalRuntimeAttachment:
         from groundtruth.runtime.reasoning_runtime import (
             ActiveDecision,
             DecisionContext,
+            EvidenceGrade,
+            EvidenceLifecycle,
             EvidenceRole,
+            MandatoryReason,
             Phase,
             capsule_budget_for,
         )
@@ -23411,6 +23414,56 @@ class CanonicalRuntimeAttachment:
             context = DecisionContext.PATCH_CONSTRUCTION
         else:
             context = phase_context[work_state.phase]
+        # The issue-derived task contract is immutable during an attempt.  Once
+        # its original evidence generation has reached ACTIVE/SATISFIED through
+        # the provider response lifecycle, later understanding/patch decisions
+        # may treat that required role as established.  This is deliberately
+        # narrower than "we emitted it": RELEASED/DELIVERED are not enough, a
+        # rematerialized clone is not authority, and mutable dependencies can
+        # never become stable anchors.
+        stable_contract_records = tuple(
+            sorted(
+                (
+                    item
+                    for item in records
+                    if (
+                        item.feature_id == "obligations"
+                        and item.mandatory_reason
+                        is MandatoryReason.TASK_OBLIGATION
+                        and not item.standing_source_evidence_id
+                        and item.lifecycle
+                        in {
+                            EvidenceLifecycle.ACTIVE,
+                            EvidenceLifecycle.SATISFIED,
+                        }
+                        and item.fresh
+                        and not item.superseded
+                        and tuple(item.revision_dependencies) == ("issue",)
+                        and EvidenceRole.BEHAVIORAL_CONTRACT in item.roles
+                    )
+                ),
+                key=lambda item: item.evidence_id,
+            )
+        )
+        contract_anchor_applies = bool(stable_contract_records) and context in {
+            DecisionContext.SOURCE_UNDERSTANDING,
+            DecisionContext.PATCH_CONSTRUCTION,
+        }
+        established_roles = (
+            (EvidenceRole.BEHAVIORAL_CONTRACT,)
+            if contract_anchor_applies
+            else ()
+        )
+        established_evidence_ids = (
+            tuple(item.evidence_id for item in stable_contract_records)
+            if contract_anchor_applies
+            else ()
+        )
+        established_grade = (
+            min(item.grade for item in stable_contract_records)
+            if contract_anchor_applies
+            else EvidenceGrade.VERIFIED
+        )
         role_requirements = {
             DecisionContext.SOURCE_TARGET_SELECTION: (
                 EvidenceRole.TARGET_IDENTITY,
@@ -23584,6 +23637,9 @@ class CanonicalRuntimeAttachment:
             token_budget=capsule_budget_for(context).hard_max_tokens,
             current_revision=revision,
             useful_roles=useful_role_requirements[context],
+            established_roles=established_roles,
+            established_evidence_ids=established_evidence_ids,
+            established_grade=established_grade,
         )
 
     @staticmethod
@@ -27310,6 +27366,7 @@ def install_canonical_runtime(*, model, agent, env, task):
             model=model,
             agent=agent,
             attempt_runtime=attempt_runtime,
+            task_anchor_text=task_text,
         )
         gateway_state = GatewayState(
             graph_db=graph_path,

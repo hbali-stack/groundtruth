@@ -227,4 +227,7 @@ def test_sealed_brief_is_compiled_and_staged_for_first_provider_call(
     assert candidate_id and active.evidence_ids[0] == (
         f"GT-E-{candidate_id}-g" + active.evidence_ids[0].rsplit("-g", 1)[1]
     )
+    assert attachment.attempt_runtime.evidence_record(
+        active.evidence_ids[0]
+    ).producer_id
     attachment.attempt_runtime.journal.close()

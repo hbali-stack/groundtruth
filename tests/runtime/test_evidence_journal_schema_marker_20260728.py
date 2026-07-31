@@ -259,3 +259,39 @@ def test_legacy_row_is_distinguishable_from_a_genuinely_empty_one(
         assert empty_record.observed_substrates == ()
     finally:
         journal.close()
+
+
+def test_v1_evidence_row_remains_readable_with_unknown_producer(
+    tmp_path,
+) -> None:
+    journal = _journal(tmp_path)
+    try:
+        legacy = json.loads(_record().canonical_json())
+        legacy.pop("producer_id", None)
+        payload = json.dumps(legacy, sort_keys=True, separators=(",", ":"))
+        journal.connection.execute(
+            """
+            INSERT INTO evidence_attempt_journal(
+                attempt_id, evidence_id, journal_sequence, lifecycle,
+                state_hash, canonical_json, record_schema
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "attempt-v1",
+                legacy["evidence_id"],
+                1,
+                legacy["lifecycle"],
+                rr._sha256(payload),
+                payload,
+                "gt.evidence_record.v1",
+            ),
+        )
+        journal.connection.commit()
+
+        restored = journal.evidence_history(
+            legacy["evidence_id"],
+            attempt_id="attempt-v1",
+        )[-1]
+        assert restored.producer_id == ""
+    finally:
+        journal.close()

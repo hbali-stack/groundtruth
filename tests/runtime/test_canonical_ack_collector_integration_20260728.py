@@ -11,6 +11,7 @@ pass vacuously.
 from __future__ import annotations
 
 import copy
+import hashlib
 import inspect
 import sys
 from dataclasses import replace
@@ -216,6 +217,108 @@ def test_real_writer_grades_one_canonical_provider_ack(
     rows, messages, plan, journal = _write_attempt(tmp_path, monkeypatch)
     try:
         _assert_valid(rows, messages, plan)
+    finally:
+        journal.close()
+
+
+def test_canonical_delivery_contains_task_anchor_and_semantic_receipts(
+    tmp_path: Path,
+) -> None:
+    """Proof must join semantic records to exact provider bytes, not grep a GT tag."""
+    ledger = tmp_path / "semantic-receipts-ledger.jsonl"
+    runtime, journal = _runtime(tmp_path)
+    runtime.ingest_evidence(
+        replace(
+            _evidence(claim=CLAIM),
+            producer_id="caller_contract",
+        )
+    )
+    plan = _prepare(runtime)
+    task_text = (
+        "Fix Session identity handling and preserve the caller-visible contract."
+    )
+    response = _Response(
+        response_id="resp-semantic-receipts",
+        content=f"I will {CLAIM.lower()}",
+        actions=[LINKED_ACTION],
+    )
+    model = _Model(response)
+    agent = _Agent()
+    agent.messages.append(
+        {
+            "role": "user",
+            "content": f"<pr_description>{task_text}</pr_description>",
+        }
+    )
+    boundary = MiniSweProviderBoundary(
+        model=model,
+        agent=agent,
+        attempt_runtime=runtime,
+        task_anchor_text=task_text,
+        receipt_sink_path=str(ledger),
+    )
+    boundary.stage(
+        plan.compilation,
+        delivery_attempt_id=plan.delivery_attempt_id,
+        observation_binding=_binding(plan),
+    )
+    try:
+        committed = model.query(agent.messages)
+        agent.add_messages(committed)
+        delivery = next(
+            row
+            for row in _ledger_rows(ledger)
+            if row.get("schema") == DELIVERY_SCHEMA
+        )
+
+        assert delivery["task_anchor"] == {
+            "configured": True,
+            "task_sha256": hashlib.sha256(
+                task_text.encode("utf-8")
+            ).hexdigest(),
+            "task_chars": len(task_text),
+            "verbatim_text_present": True,
+            "json_paths": ["$.messages[1].content"],
+        }
+        assert delivery["semantic_receipts_complete"] is True, (
+            delivery["semantic_receipts"],
+            plan.compilation.evidence_lineage,
+            plan.compilation.evidence_ids,
+        )
+        assert len(delivery["semantic_receipts"]) == 1
+        receipt = delivery["semantic_receipts"][0]
+        record = runtime.evidence_record(plan.compilation.evidence_ids[0])
+        assert receipt["evidence_id"] == record.evidence_id
+        assert receipt["feature_id"] == record.feature_id
+        assert receipt["producer_id"] == "caller_contract"
+        assert receipt["fact_class"] == "caller_contract"
+        assert receipt["subject"] == record.subject
+        assert receipt["claim"] == record.claim
+        assert receipt["actionable_consequence"] == (
+            record.actionable_consequence
+        )
+        assert receipt["provenance"] == list(record.provenance)
+        assert receipt["authority"] == record.authority.name
+        assert receipt["grade"] == record.grade.name
+        assert receipt["revision_dependencies"] == list(
+            record.revision_dependencies
+        )
+        assert receipt["observed_substrates"] == list(
+            record.observed_substrates
+        )
+        assert receipt["state_vector_hash"]
+        assert "semantic_receipts" not in delivery[
+            "bound_provider_payload_json"
+        ]
+        assert model.provider_payloads[0][-1] == {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": plan.compilation.capsule_text,
+                }
+            ],
+        }
     finally:
         journal.close()
 

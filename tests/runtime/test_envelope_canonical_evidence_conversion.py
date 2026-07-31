@@ -230,6 +230,7 @@ def test_conversion_preserves_tier_authority_provenance_revision_and_contract() 
     record = rr.canonical_evidence_from_envelope(envelope)
 
     assert record is not None
+    assert record.producer_id == envelope.producer
     assert record.grade is rr.EvidenceGrade.WARNING
     assert record.authority is rr.Authority.RESULT_DERIVED
     assert record.provenance == ("src/product/caller_contract.py:17",)

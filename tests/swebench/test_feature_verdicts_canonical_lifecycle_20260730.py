@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -24,6 +25,156 @@ def _evaluate(tmp_path: Path, *rows: dict):
 
 def _features(result) -> dict[str, verdicts.FeatureRow]:
     return {feature.feature_id: feature for feature in result["features"]}
+
+
+def _strict_canonical_row() -> dict:
+    claim = "Rank src/auth/session.py as the active implementation target."
+    action = "View src/auth/session.py before editing."
+    provenance = ["graph:def:refreshSession"]
+    revision = {
+        "repository_content": "repo-1",
+        "graph": "graph-1",
+        "lsp": "lsp-1",
+        "runtime_evidence": "runtime-1",
+    }
+    state_vector = {
+        "claim": claim,
+        "actionable_consequence": action,
+        "revision": revision,
+        "fresh": True,
+        "superseded": False,
+        "lifecycle": "DELIVERED",
+    }
+    candidate_id = "candidate-localization"
+    return {
+        "schema": "gt.canonical_delivery.v1",
+        "layer": "canonical.provider_delivery",
+        "outcome": "delivered",
+        "chars_delivered": 81,
+        "content_sha256_16": "0123456789abcdef",
+        "event_type": "canonical_provider_delivery",
+        "evidence_ids": ["GT-E-localization"],
+        "evidence_lineage": [
+            {
+                "candidate_id": candidate_id,
+                "fact_class": "localization",
+                "cap_owners": ["GT_LOC_RESLOT"],
+            }
+        ],
+        "task_anchor": {
+            "configured": True,
+            "task_sha256": hashlib.sha256(b"task").hexdigest(),
+            "task_chars": 4,
+            "verbatim_text_present": True,
+            "json_paths": ["$.messages[1].content"],
+        },
+        "semantic_receipts_complete": True,
+        "semantic_receipts": [
+            {
+                "evidence_id": "GT-E-localization",
+                "feature_id": "localization",
+                "producer_id": "localization",
+                "candidate_id": candidate_id,
+                "fact_class": "localization",
+                "cap_owners": ["GT_LOC_RESLOT"],
+                "authorized_cap_owners": ["GT_LOC_RESLOT"],
+                "subject": "src/auth/session.py",
+                "claim": claim,
+                "claim_sha256": hashlib.sha256(
+                    claim.encode("utf-8")
+                ).hexdigest(),
+                "actionable_consequence": action,
+                "intended_action": action,
+                "actionable_consequence_sha256": hashlib.sha256(
+                    action.encode("utf-8")
+                ).hexdigest(),
+                "provenance": provenance,
+                "provenance_hash": verdicts._canonical_json_hash(provenance),
+                "authority": "RESULT_DERIVED",
+                "grade": "VERIFIED",
+                "revision": revision,
+                "repository_revision": "repo-1",
+                "graph_revision": "graph-1",
+                "revision_dependencies": ["nodes", "edges", "props_rev"],
+                "observed_substrates": ["graph"],
+                "fresh": True,
+                "superseded": False,
+                "lifecycle": "DELIVERED",
+                "lifecycle_stage": "SOURCE_TARGET_SELECTION",
+                "state_vector_hash": verdicts._canonical_json_hash(
+                    state_vector
+                ),
+            }
+        ],
+    }
+
+
+def test_current_canonical_delivery_requires_valid_semantic_receipts(
+    tmp_path,
+) -> None:
+    valid = _evaluate(tmp_path, _strict_canonical_row())
+    valid_features = _features(valid)
+    assert valid_features["localization"].verdict == verdicts._VERDICT_FIRED
+    assert valid_features["GT_LOC_RESLOT"].verdict == verdicts._VERDICT_FIRED
+    assert valid["semantic_receipt_integrity"] == {"valid": 1}
+
+    forged = _strict_canonical_row()
+    forged["semantic_receipts"][0]["claim"] = "forged semantic claim"
+    forged["fact_class"] = "localization"
+    invalid = _evaluate(tmp_path, forged)
+    invalid_features = _features(invalid)
+    assert invalid_features["localization"].delivered == 0
+    assert invalid_features["GT_LOC_RESLOT"].delivered == 0
+    assert invalid["semantic_receipt_integrity"] == {"invalid": 1}
+
+
+def test_normalized_delivery_requires_exact_fire_candidate_join(
+    tmp_path,
+) -> None:
+    from groundtruth.runtime.trigger_opportunity import lifecycle_opportunity_id
+
+    observation_id = "attempt-1:observation:localize"
+    fire_id = lifecycle_opportunity_id(
+        observation_id,
+        "task_start",
+        "localization",
+    )
+    delivery = _strict_canonical_row()
+    delivery["observation_id"] = observation_id
+    result = _evaluate(
+        tmp_path,
+        {
+            "schema": "gt.lifecycle_opportunity.v1",
+            "layer": "feature.lifecycle_opportunity",
+            "outcome": "evaluated",
+            "feature_id": "localization",
+            "fact_class": "localization",
+            "lifecycle_boundary": "task_start",
+            "observation_id": observation_id,
+            "feature_fire_id": fire_id,
+        },
+        {
+            "schema": "gt.feature_fire_disposition.v1",
+            "layer": "canonical_runtime.produce_funnel",
+            "outcome": "suppressed_internal_only",
+            "feature_fire_ids": [fire_id],
+            "feature_dispositions": [
+                {
+                    "feature_fire_id": fire_id,
+                    "feature_id": "localization",
+                    "fact_class": "localization",
+                    "lifecycle_boundary": "task_start",
+                    "disposition": "produced",
+                    "produced_candidate_ids": ["different-candidate"],
+                    "available_candidate_ids": ["different-candidate"],
+                }
+            ],
+        },
+        delivery,
+    )
+    feature = _features(result)["localization"]
+    assert feature.verdict == verdicts._VERDICT_FIRED
+    assert feature.normalized_terminal_states == {"DELIVERY_FAILURE": 1}
 
 
 def test_canonical_nested_lineage_credits_fact_and_authorized_cap(tmp_path) -> None:
@@ -152,6 +303,7 @@ def test_lifecycle_opportunity_is_a_measured_abstention_for_direct_feature(
     assert "correct-quiet" in feature.evidence
     assert result["lifecycle_opportunities"]["syntax_result"] == 1
     assert feature.terminal_dispositions == 1
+    assert feature.normalized_terminal_states == {"INELIGIBLE": 1}
     assert result["lifecycle_integrity"]["unterminated_ids"] == []
 
 
@@ -193,6 +345,7 @@ def test_legacy_row_level_disposition_never_claims_per_feature_outcome(
     assert feature.terminal_dispositions == 1
     assert feature.verdict == verdicts._VERDICT_UNINSTRUMENTED
     assert feature.verdict_detail == "abstained_after_1_opportunities"
+    assert feature.normalized_terminal_states == {"FAULT": 1}
     assert result["lifecycle_integrity"]["unterminated_ids"] == []
     assert result["lifecycle_integrity"]["legacy_generic_terminal_ids"] == [
         fire_id
@@ -263,6 +416,7 @@ def test_canonical_delivery_timing_joins_by_observation_identity(tmp_path) -> No
     assert feature.verdict == verdicts._VERDICT_FIRED
     assert feature.on_time == "ON-TIME 1/1"
     assert feature.terminal_dispositions == 1
+    assert feature.normalized_terminal_states == {"DELIVERED": 1}
     assert result["boundary_stamped"] == 1
 
 

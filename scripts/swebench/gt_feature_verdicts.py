@@ -64,6 +64,7 @@ depth work.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from collections import Counter, defaultdict
@@ -217,6 +218,7 @@ class FeatureRow:
     delivered: int = 0
     opportunities: int = 0
     terminal_dispositions: int = 0
+    normalized_terminal_states: Counter = field(default_factory=Counter)
     delivered_chars: int = 0
     tasks_fired: set[str] = field(default_factory=set)
     attribution: str = "none"
@@ -410,6 +412,125 @@ def canonical_fact_classes_in_row(
     }))
 
 
+def _canonical_json_hash(value: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def semantic_receipt_status(
+    row: dict[str, Any],
+    delivery_facts: frozenset[str],
+) -> tuple[str, tuple[str, ...]]:
+    """Validate v1 semantic proof when a canonical row claims to carry it.
+
+    Older saved rows remain readable as ``legacy-unmeasured``. A current row
+    that advertises receipts but fails any join is invalid and cannot earn
+    semantic FIRED credit.
+    """
+    if (
+        "semantic_receipts" not in row
+        and "semantic_receipts_complete" not in row
+        and "task_anchor" not in row
+    ):
+        return "legacy-unmeasured", ()
+    anchor = row.get("task_anchor")
+    if (
+        not isinstance(anchor, dict)
+        or anchor.get("configured") is not True
+        or anchor.get("verbatim_text_present") is not True
+        or not isinstance(anchor.get("task_sha256"), str)
+        or len(anchor["task_sha256"]) != 64
+    ):
+        return "invalid", ("task_anchor",)
+    receipts = row.get("semantic_receipts")
+    evidence_ids = row.get("evidence_ids")
+    lineage = row.get("evidence_lineage")
+    if (
+        row.get("semantic_receipts_complete") is not True
+        or not isinstance(receipts, list)
+        or not isinstance(evidence_ids, list)
+        or not isinstance(lineage, list)
+        or len(receipts) != len(evidence_ids)
+        or len(lineage) != len(evidence_ids)
+    ):
+        return "invalid", ("receipt_cardinality",)
+    reasons: list[str] = []
+    fact_classes: list[str] = []
+    for index, receipt in enumerate(receipts):
+        lineage_item = lineage[index]
+        if not isinstance(receipt, dict) or not isinstance(lineage_item, dict):
+            reasons.append("receipt_shape")
+            continue
+        fact_class = str(receipt.get("fact_class") or "")
+        if (
+            receipt.get("evidence_id") != evidence_ids[index]
+            or fact_class not in delivery_facts
+            or receipt.get("feature_id") != fact_class
+            or not isinstance(receipt.get("producer_id"), str)
+            or not receipt.get("producer_id")
+            or lineage_item.get("fact_class") != fact_class
+            or receipt.get("candidate_id")
+            != str(lineage_item.get("candidate_id") or "")
+            or receipt.get("authorized_cap_owners")
+            != lineage_item.get("cap_owners")
+        ):
+            reasons.append("identity_join")
+            continue
+        claim = receipt.get("claim")
+        action = receipt.get("actionable_consequence")
+        provenance = receipt.get("provenance")
+        revision = receipt.get("revision")
+        if (
+            not isinstance(claim, str)
+            or not isinstance(action, str)
+            or not isinstance(provenance, list)
+            or not isinstance(revision, dict)
+            or receipt.get("claim_sha256")
+            != hashlib.sha256(claim.encode("utf-8")).hexdigest()
+            or receipt.get("actionable_consequence_sha256")
+            != hashlib.sha256(action.encode("utf-8")).hexdigest()
+            or receipt.get("provenance_hash")
+            != _canonical_json_hash(provenance)
+            or receipt.get("repository_revision")
+            != revision.get("repository_content")
+            or receipt.get("graph_revision") != revision.get("graph")
+            or receipt.get("intended_action") != action
+        ):
+            reasons.append("semantic_hash")
+            continue
+        state_vector = {
+            "claim": claim,
+            "actionable_consequence": action,
+            "revision": revision,
+            "fresh": receipt.get("fresh"),
+            "superseded": receipt.get("superseded"),
+            "lifecycle": receipt.get("lifecycle"),
+        }
+        if (
+            receipt.get("state_vector_hash")
+            != _canonical_json_hash(state_vector)
+            or receipt.get("fresh") is not True
+            or receipt.get("superseded") is not False
+            or not isinstance(receipt.get("authority"), str)
+            or not isinstance(receipt.get("grade"), str)
+            or not isinstance(receipt.get("observed_substrates"), list)
+            or not isinstance(receipt.get("revision_dependencies"), list)
+            or not isinstance(receipt.get("lifecycle_stage"), str)
+        ):
+            reasons.append("state_vector")
+            continue
+        fact_classes.append(fact_class)
+    if reasons or len(fact_classes) != len(receipts):
+        return "invalid", tuple(sorted(set(reasons)))
+    return "valid", tuple(sorted(set(fact_classes)))
+
+
 def classify_reason(row: dict[str, Any]) -> tuple[str, str]:
     """Return ``(class, detail)`` for a NON-delivered row."""
     outcome = str(row.get("outcome") or "")
@@ -488,11 +609,16 @@ def evaluate(root: Path) -> dict[str, Any]:
     trigger_opportunities: Counter = Counter()
     lifecycle_opportunities: Counter = Counter()
     lifecycle_fire_features: dict[str, str] = {}
+    lifecycle_fire_observations: dict[str, str] = {}
+    lifecycle_fire_candidates: dict[str, set[str]] = defaultdict(set)
     lifecycle_boundaries: dict[tuple[str, str], set[str]] = defaultdict(set)
     lifecycle_disposition_ids: set[str] = set()
     lifecycle_dispositions: dict[str, str] = {}
+    delivered_fire_ids: set[str] = set()
+    delivered_candidates: dict[tuple[str, str], set[str]] = defaultdict(set)
     legacy_generic_disposition_ids: set[str] = set()
     invalid_lifecycle_rows: Counter = Counter()
+    semantic_receipt_integrity: Counter = Counter()
     unresolved_gate: Counter = Counter()
     cap_direct: dict[str, dict[str, Any]] = {
         cap.feature_id: {"delivered": 0, "tasks": set(), "how": set(),
@@ -512,9 +638,30 @@ def evaluate(root: Path) -> dict[str, Any]:
             chars = 0
         is_delivery = outcome == "delivered" and chars > 0
         event_type = str(row.get("event_type") or "") or "(none)"
+        semantic_status = "not-applicable"
+        semantic_facts: tuple[str, ...] = ()
+        if _canonical_row_has_seal(row):
+            semantic_status, semantic_facts = semantic_receipt_status(
+                row,
+                delivery_facts,
+            )
+            semantic_receipt_integrity[semantic_status] += 1
+        attribution_row = row
+        if semantic_status == "invalid":
+            attribution_row = dict(row)
+            attribution_row["evidence_lineage"] = []
 
         # CAP byte owners are credited ONLY when the row names them.
-        for owner in cap_owners_in_row(row, _LANE_PROFILE_MEMBER_OWNERS, cap_ids):
+        row_cap_owners = (
+            set()
+            if semantic_status == "invalid"
+            else cap_owners_in_row(
+                attribution_row,
+                _LANE_PROFILE_MEMBER_OWNERS,
+                cap_ids,
+            )
+        )
+        for owner in row_cap_owners:
             if owner not in cap_direct:
                 continue
             how = []
@@ -581,6 +728,7 @@ def evaluate(root: Path) -> dict[str, Any]:
                 continue
             lifecycle_opportunities[feature_id] += 1
             lifecycle_fire_features[fire_id] = feature_id
+            lifecycle_fire_observations[fire_id] = observation_id
             lifecycle_boundaries[(observation_id, feature_id)].add(boundary)
             continue
         if row.get("schema") == "gt.feature_fire_disposition.v1":
@@ -632,6 +780,17 @@ def evaluate(root: Path) -> dict[str, Any]:
                         ] += 1
                         continue
                     lifecycle_dispositions[fire_id] = disposition
+                    for candidate_key in (
+                        "produced_candidate_ids",
+                        "available_candidate_ids",
+                    ):
+                        candidates = item.get(candidate_key)
+                        if isinstance(candidates, list):
+                            lifecycle_fire_candidates[fire_id].update(
+                                str(candidate)
+                                for candidate in candidates
+                                if isinstance(candidate, str) and candidate
+                            )
                 missing = normalized_ids - seen_here
                 if missing:
                     invalid_lifecycle_rows[
@@ -653,6 +812,16 @@ def evaluate(root: Path) -> dict[str, Any]:
         # credit the validated nested lineage rather than dropping the entire capsule as
         # "lineage-attributed but uncounted".
         canonical_facts = canonical_fact_classes_in_row(row, delivery_facts)
+        if semantic_status == "invalid":
+            canonical_facts = ()
+        elif semantic_status == "valid" and set(canonical_facts) != set(
+            semantic_facts
+        ):
+            semantic_receipt_integrity["valid"] -= 1
+            semantic_receipt_integrity["invalid"] += 1
+            semantic_receipt_integrity["identity_set_mismatch"] += 1
+            semantic_status = "invalid"
+            canonical_facts = ()
         if is_delivery and canonical_facts:
             delivery_observation_id = str(
                 row.get("observation_id") or ""
@@ -663,6 +832,31 @@ def evaluate(root: Path) -> dict[str, Any]:
                 target.delivered_chars += chars
                 target.tasks_fired.add(task_id)
                 target.seen_event_types[event_type] += 1
+                delivered_candidates[
+                    (canonical_fact, delivery_observation_id)
+                ].update(
+                    str(entry.get("candidate_id") or "")
+                    for entry in row.get("evidence_lineage") or ()
+                    if (
+                        isinstance(entry, dict)
+                        and entry.get("fact_class") == canonical_fact
+                        and entry.get("candidate_id")
+                    )
+                )
+                for entry in row.get("evidence_lineage") or ():
+                    if (
+                        not isinstance(entry, dict)
+                        or entry.get("fact_class") != canonical_fact
+                    ):
+                        continue
+                    candidate_id = str(entry.get("candidate_id") or "")
+                    if not candidate_id:
+                        continue
+                    for owner in entry.get("cap_owners") or ():
+                        if owner in row_cap_owners:
+                            delivered_candidates[
+                                (str(owner), delivery_observation_id)
+                            ].add(candidate_id)
                 # A canonical capsule's event_type is intentionally the constant
                 # provider-delivery vocabulary. Its timing authority is the shared
                 # canonical observation id: a matching lifecycle row proves this
@@ -691,6 +885,9 @@ def evaluate(root: Path) -> dict[str, Any]:
             lineage_attributed_delivered[
                 f"{row.get('layer')}|{event_type}"
             ] += 1
+            continue
+        if is_delivery and semantic_status == "invalid":
+            unattributed_delivered["canonical.semantic_receipt_invalid"] += 1
             continue
 
         fact_class, how = attribute_row(row, _LAYER_TO_FACT_CLASS,
@@ -755,6 +952,43 @@ def evaluate(root: Path) -> dict[str, Any]:
             if klass == "downgraded":
                 target.downgraded += 1
 
+    delivered_fire_ids.update(
+        fire_id
+        for fire_id, feature_id in lifecycle_fire_features.items()
+        if (
+            lifecycle_fire_candidates.get(fire_id)
+            and lifecycle_fire_candidates[fire_id].intersection(
+                delivered_candidates.get(
+                    (
+                        feature_id,
+                        lifecycle_fire_observations.get(fire_id, ""),
+                    ),
+                    set(),
+                )
+            )
+        )
+    )
+    normalized_by_fire: dict[str, str] = {}
+    terminal_map = {
+        "abstained": "INELIGIBLE",
+        "permitted": "APPLIED_QUIET",
+        "deferred": "SUPPRESSED",
+        "withheld": "SUPPRESSED",
+        "produced": "DELIVERY_FAILURE",
+        "available": "DELIVERY_FAILURE",
+        "staged": "DELIVERY_FAILURE",
+        "blocked": "DELIVERY_FAILURE",
+        "delivered": "DELIVERY_FAILURE",
+    }
+    for fire_id in lifecycle_fire_features:
+        if fire_id in delivered_fire_ids:
+            normalized_by_fire[fire_id] = "DELIVERED"
+        else:
+            normalized_by_fire[fire_id] = terminal_map.get(
+                lifecycle_dispositions.get(fire_id, ""),
+                "FAULT",
+            )
+
     # ---- FACT verdicts -------------------------------------------------------
     for fact in facts.values():
         fact.opportunities = (
@@ -766,6 +1000,11 @@ def evaluate(root: Path) -> dict[str, Any]:
             for fire_id, feature_id in lifecycle_fire_features.items()
             if feature_id == fact.feature_id
             and fire_id in lifecycle_disposition_ids
+        )
+        fact.normalized_terminal_states = Counter(
+            normalized_by_fire[fire_id]
+            for fire_id, feature_id in lifecycle_fire_features.items()
+            if feature_id == fact.feature_id
         )
         _decide(
             fact,
@@ -789,6 +1028,11 @@ def evaluate(root: Path) -> dict[str, Any]:
             for fire_id, feature_id in lifecycle_fire_features.items()
             if feature_id == cap.feature_id
             and fire_id in lifecycle_disposition_ids
+        )
+        cap.normalized_terminal_states = Counter(
+            normalized_by_fire[fire_id]
+            for fire_id, feature_id in lifecycle_fire_features.items()
+            if feature_id == cap.feature_id
         )
         direct = cap_direct[cap.feature_id]
         bound = facts[cap.bound_fact]
@@ -893,7 +1137,14 @@ def evaluate(root: Path) -> dict[str, Any]:
                 legacy_generic_disposition_ids
             ),
             "invalid_rows": dict(invalid_lifecycle_rows),
+            "normalized_terminal_counts": dict(
+                Counter(normalized_by_fire.values())
+            ),
+            "missing_normalized_ids": sorted(
+                set(lifecycle_fire_features) - set(normalized_by_fire)
+            ),
         },
+        "semantic_receipt_integrity": dict(semantic_receipt_integrity),
     }
 
 
@@ -1099,6 +1350,31 @@ def render_text(result: dict[str, Any]) -> str:
         "legacy-generic terminals; "
         f"{sum(lifecycle_integrity['invalid_rows'].values())} invalid rows"
     )
+    normalized = lifecycle_integrity["normalized_terminal_counts"]
+    out.append(
+        "normalized terminals: "
+        + (
+            ", ".join(
+                f"{state}={count}"
+                for state, count in sorted(normalized.items())
+            )
+            if normalized
+            else "none"
+        )
+    )
+    semantic_integrity = result["semantic_receipt_integrity"]
+    out.append(
+        "canonical semantic receipts: "
+        + (
+            ", ".join(
+                f"{state}={count}"
+                for state, count in sorted(semantic_integrity.items())
+                if count
+            )
+            if any(semantic_integrity.values())
+            else "none"
+        )
+    )
     out.append("")
 
     header = (
@@ -1251,6 +1527,11 @@ def render_json(result: dict[str, Any]) -> str:
                 "mistake_gate": f.gate_note,
                 "verdict": f.verdict,
                 "verdict_detail": f.verdict_detail,
+                "opportunities": f.opportunities,
+                "terminal_dispositions": f.terminal_dispositions,
+                "normalized_terminal_states": dict(
+                    f.normalized_terminal_states
+                ),
                 "delivered_rows": f.delivered,
                 "delivered_chars": f.delivered_chars,
                 "tasks_fired": sorted(f.tasks_fired),
@@ -1271,6 +1552,10 @@ def render_json(result: dict[str, Any]) -> str:
         },
         "unattributed_delivered_rows": dict(result["unattributed_delivered"]),
         "unresolved_gate_decisions": dict(result["unresolved_gate"]),
+        "lifecycle_integrity": result["lifecycle_integrity"],
+        "semantic_receipt_integrity": result[
+            "semantic_receipt_integrity"
+        ],
     }
     return json.dumps(payload, indent=2, sort_keys=False)
 

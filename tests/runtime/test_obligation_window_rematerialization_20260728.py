@@ -1,14 +1,13 @@
-"""Standing task obligations rematerialize once per reopened patch window.
+"""Stable task-contract anchoring and abandoned-delivery recovery.
 
-The canonical lifecycle is monotone: provider-delivered evidence must never be
-transitioned backward merely because a later edit reopens patch construction.
-The standing carrier therefore needs a new evidence generation, derived from
-the immutable task-start record and bound to the new decision window.
+Provider-committed immutable obligations satisfy later decision completeness
+without repeated bytes. A merely RELEASED/DELIVERED generation can still
+rematerialize after an abandoned provider path because it is not yet a durable
+task anchor.
 """
 
 from __future__ import annotations
 
-from dataclasses import replace
 import json
 
 from artifact_deepswe import gt_mini_patch as seam
@@ -68,6 +67,44 @@ def _obligation() -> rr.EvidenceRecord:
         revision_dependencies=contract.revision_dependencies,
         authority=rr.Authority.RESULT_DERIVED,
         observed_substrates=("issue_text", "obligation_parser"),
+    )
+
+
+def _caller_contract(runtime: rr.AttemptReasoningRuntime) -> rr.EvidenceRecord:
+    """A later, useful patch fact that must not be starved by a stable contract."""
+    contract = rr.feature_contract_for("caller_contract")
+    assert contract is not None
+    return rr.EvidenceRecord(
+        evidence_id="GT-E-caller-contract-delta",
+        feature_id="caller_contract",
+        decision_context=contract.decision_context,
+        roles=contract.roles,
+        subject="src/auth/session.py",
+        claim="Caller expects the returned Session identity to remain stable.",
+        actionable_consequence=(
+            "Preserve the existing Session object while applying the patch."
+        ),
+        provenance=("callsite:tests/test_session.py:17",),
+        grade=rr.EvidenceGrade.VERIFIED,
+        revision=runtime.work_state.revision,
+        causal_neighborhood=(
+            f"decision:{rr.DecisionContext.PATCH_CONSTRUCTION.value}",
+            "obligation:task",
+            "subject:src/auth/session.py",
+        ),
+        lifecycle=rr.EvidenceLifecycle.PENDING,
+        fresh=True,
+        already_visible=False,
+        superseded=False,
+        mandatory_reason=None,
+        token_cost=24,
+        failure_prevention=4,
+        causal_value=4,
+        contradiction_resolution=0,
+        anchoring_risk=0,
+        revision_dependencies=contract.revision_dependencies,
+        authority=rr.Authority.RESULT_DERIVED,
+        observed_substrates=("graph", "lsp"),
     )
 
 
@@ -175,26 +212,7 @@ def _deliver_and_commit(
     )
 
 
-def _semantic_projection(record: rr.EvidenceRecord) -> rr.EvidenceRecord:
-    """Remove lifecycle/generation fields while retaining producer-owned truth."""
-    generation_fields = {
-        "lifecycle": rr.EvidenceLifecycle.PENDING,
-        "fresh": True,
-        "already_visible": False,
-        "superseded": False,
-        "transition_history": (),
-        "visible_to_decision_ids": (),
-    }
-    for field_name in (
-        "standing_source_evidence_id",
-        "decision_window_generation",
-    ):
-        if hasattr(record, field_name):
-            generation_fields[field_name] = ""
-    return replace(record, **generation_fields)
-
-
-def test_reopened_patch_window_mints_one_new_generation_without_rewinding(
+def test_reopened_patch_window_reuses_provider_proven_contract_without_bytes(
     tmp_path,
 ) -> None:
     journal = rr.RuntimeJournal(tmp_path / "standing-obligation.sqlite3")
@@ -240,59 +258,22 @@ def test_reopened_patch_window_mints_one_new_generation_without_rewinding(
             substrates=(),
         )
         assert not blocked.delivery_attempt_id
-        assert len(runtime._evidence) == 2
+        assert tuple(runtime._evidence) == (source.evidence_id,)
         assert (
             runtime.evidence_record(source.evidence_id).lifecycle
             is rr.EvidenceLifecycle.ACTIVE
         )
-
-        rematerialized = next(
-            item
-            for item in runtime._evidence.values()
-            if item.evidence_id != source.evidence_id
-        )
-        assert rematerialized.evidence_id != source.evidence_id
-        assert replace(
-            _semantic_projection(rematerialized),
-            evidence_id=source.evidence_id,
-        ) == _semantic_projection(source)
-        assert rematerialized.lifecycle is rr.EvidenceLifecycle.HELD
-
-        # Rematerialization does not bypass the ordinary referees. Once the
-        # producer-owned substrates are available, the same HELD generation
-        # becomes eligible and the original ACTIVE generation remains excluded.
+        # With no semantic delta, satisfying the stable prerequisite alone is
+        # intentionally quiet even when its original substrates are present.
         reopened = _prepare(
             runtime,
             observation_id="obs-window-2",
             model_call_id="model-window-2",
         )
-        assert reopened.delivery_attempt_id
-        assert reopened.compilation.state is rr.CapsuleCompilationState.COMPILED
-        assert tuple(
-            item.evidence_id for item in reopened.oracle_decision.coalition
-        ) == (rematerialized.evidence_id,)
-        assert (
-            runtime.evidence_record(source.evidence_id).lifecycle
-            is rr.EvidenceLifecycle.ACTIVE
-        )
-        assert (
-            runtime.evidence_record(rematerialized.evidence_id).lifecycle
-            is rr.EvidenceLifecycle.RELEASED
-        )
-
-        # Same observation/model boundary still admits at most one capsule, and
-        # no additional evidence generation is minted for the same window.
-        duplicate_observation = _prepare(
-            runtime,
-            observation_id="obs-window-2",
-            model_call_id="model-window-2-duplicate",
-        )
-        assert not duplicate_observation.delivery_attempt_id
-        assert (
-            duplicate_observation.compilation.failure_code
-            == "OBSERVATION_ALREADY_HAS_CAPSULE"
-        )
-        assert len(runtime._evidence) == 2
+        assert not reopened.delivery_attempt_id
+        assert reopened.oracle_decision.decision_complete
+        assert reopened.oracle_decision.coalition == ()
+        assert tuple(runtime._evidence) == (source.evidence_id,)
 
         restarted = rr.AttemptReasoningRuntime(
             attempt_id=runtime.attempt_id,
@@ -304,9 +285,76 @@ def test_reopened_patch_window_mints_one_new_generation_without_rewinding(
             restarted.evidence_record(source.evidence_id)
             == runtime.evidence_record(source.evidence_id)
         )
+    finally:
+        journal.close()
+
+
+def test_provider_proven_task_contract_is_a_stable_anchor_for_sparse_deltas(
+    tmp_path,
+) -> None:
+    """A provider-proven immutable contract satisfies later decision completeness
+    without repeating its bytes or starving a genuinely new caller fact."""
+    journal = rr.RuntimeJournal(tmp_path / "stable-task-anchor.sqlite3")
+    journal.open()
+    runtime = rr.AttemptReasoningRuntime(
+        attempt_id="attempt-stable-task-anchor",
+        journal=journal,
+        initial_revision=REVISION,
+        role_driven_coalition=True,
+    )
+    source = _obligation()
+    runtime.ingest_evidence(source)
+
+    try:
+        _open_patch_window(runtime, "stable-anchor-window-1")
+        first = _prepare(
+            runtime,
+            observation_id="obs-stable-anchor-1",
+            model_call_id="model-stable-anchor-1",
+        )
+        _deliver_and_commit(
+            runtime,
+            first,
+            response_id="response-stable-anchor-1",
+        )
         assert (
-            restarted.evidence_record(rematerialized.evidence_id)
-            == runtime.evidence_record(rematerialized.evidence_id)
+            runtime.evidence_record(source.evidence_id).lifecycle
+            is rr.EvidenceLifecycle.ACTIVE
+        )
+
+        runtime.ingest_evidence(_caller_contract(runtime))
+        _open_patch_window(runtime, "stable-anchor-window-2")
+        decision = _decision(runtime)
+        assert decision.established_roles == (
+            rr.EvidenceRole.BEHAVIORAL_CONTRACT,
+        )
+        assert decision.established_evidence_ids == (source.evidence_id,)
+
+        delta = _prepare(
+            runtime,
+            observation_id="obs-stable-anchor-2",
+            model_call_id="model-stable-anchor-2",
+            substrates=(
+                "issue_text",
+                "obligation_parser",
+                "graph",
+                "lsp",
+            ),
+        )
+        assert delta.delivery_attempt_id, (
+            delta.oracle_decision,
+            delta.compilation.failure_code,
+            runtime.evidence_record("GT-E-caller-contract-delta"),
+        )
+        assert delta.oracle_decision.decision_complete
+        assert tuple(
+            item.evidence_id for item in delta.oracle_decision.coalition
+        ) == ("GT-E-caller-contract-delta",)
+        assert source.claim not in delta.compilation.capsule_text
+        assert not tuple(
+            item
+            for item in runtime._evidence.values()
+            if item.standing_source_evidence_id == source.evidence_id
         )
     finally:
         journal.close()
@@ -427,7 +475,7 @@ def test_released_generation_can_rematerialize_after_provider_path_abandons_it(
         journal.close()
 
 
-def test_fallback_patch_candidate_can_rematerialize_standing_obligation(
+def test_fallback_patch_candidate_does_not_repeat_stable_obligation(
     tmp_path,
 ) -> None:
     journal = rr.RuntimeJournal(tmp_path / "fallback-patch-obligation.sqlite3")
@@ -477,17 +525,16 @@ def test_fallback_patch_candidate_can_rematerialize_standing_obligation(
             model_call_id="model-fallback-patch-2",
         )
 
-        assert plan.active_decision.decision_id == patch.decision_id
-        assert plan.delivery_attempt_id
+        assert not plan.delivery_attempt_id
         clones = tuple(
             item
             for item in runtime._evidence.values()
             if item.standing_source_evidence_id == source.evidence_id
         )
-        assert len(clones) == 1
-        assert tuple(
-            item.evidence_id for item in plan.oracle_decision.coalition
-        ) == (clones[0].evidence_id,)
+        assert clones == ()
+        assert runtime.evidence_record(source.evidence_id).lifecycle is (
+            rr.EvidenceLifecycle.ACTIVE
+        )
     finally:
         journal.close()
 

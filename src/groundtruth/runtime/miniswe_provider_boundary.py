@@ -509,6 +509,8 @@ class MiniSweProviderBoundary:
         attempt_runtime: AttemptReasoningRuntime | None = None,
         fault_handler: Callable[[str, BaseException], Any] | None = None,
         delivery_handler: Callable[[CapsuleCompilation], Any] | None = None,
+        task_anchor_text: str = "",
+        receipt_sink_path: str | None = None,
     ):
         self.model = model
         self.agent = agent
@@ -521,6 +523,7 @@ class MiniSweProviderBoundary:
         # module re-deriving the attestation output root and becoming a second authority
         # for where audit artifacts land.
         self.delivery_handler = delivery_handler
+        self._task_anchor_text = str(task_anchor_text or "")
         self._records: list[DeliveryAttempt] = []
         self._fallback_records: list[DeliveryAttempt] = []
         self._delivery_attempt_ids: list[str] = []
@@ -532,7 +535,11 @@ class MiniSweProviderBoundary:
         self._ack_receipt_keys: set[str] = set()
         self._ack_receipts: list[dict[str, Any]] = []
         self._provider_phase_ordinal = 0
-        self._receipt_sink_path = resolve_sink_path()
+        self._receipt_sink_path = (
+            str(receipt_sink_path)
+            if receipt_sink_path is not None
+            else resolve_sink_path()
+        )
         self._original_prepare = model._prepare_messages_for_api
         self._original_query = model._query
         self._original_model_query = getattr(model, "query", None)
@@ -927,6 +934,134 @@ class MiniSweProviderBoundary:
             return None
         return manifest
 
+    def _task_anchor_receipt(
+        self,
+        bound_provider_payload_json: str,
+    ) -> dict[str, Any]:
+        task_text = self._task_anchor_text
+        receipt: dict[str, Any] = {
+            "configured": bool(task_text),
+            "task_sha256": (
+                hashlib.sha256(task_text.encode("utf-8")).hexdigest()
+                if task_text
+                else ""
+            ),
+            "task_chars": len(task_text),
+            "verbatim_text_present": False,
+            "json_paths": [],
+        }
+        if not task_text:
+            return receipt
+        try:
+            payload = json.loads(bound_provider_payload_json)
+        except (TypeError, ValueError):
+            return receipt
+
+        paths: list[str] = []
+
+        def visit(value: Any, path: str) -> None:
+            if isinstance(value, str):
+                if task_text in value:
+                    paths.append(path)
+                return
+            if isinstance(value, Mapping):
+                for key in sorted(value, key=str):
+                    visit(value[key], f"{path}.{key}")
+                return
+            if isinstance(value, list):
+                for index, item in enumerate(value):
+                    visit(item, f"{path}[{index}]")
+
+        visit(payload, "$")
+        receipt["verbatim_text_present"] = bool(paths)
+        receipt["json_paths"] = paths
+        return receipt
+
+    def _semantic_receipts(
+        self,
+        compilation: CapsuleCompilation,
+    ) -> tuple[list[dict[str, Any]], bool]:
+        """Join selected FACTs to producer truth without changing capsule bytes."""
+        runtime = self.attempt_runtime
+        if runtime is None:
+            return [], False
+        lineage = tuple(compilation.evidence_lineage)
+        if lineage and len(lineage) != len(compilation.evidence_ids):
+            return [], False
+        receipts: list[dict[str, Any]] = []
+        for index, evidence_id in enumerate(compilation.evidence_ids):
+            try:
+                record = runtime.evidence_record(evidence_id)
+            except (KeyError, TypeError, ValueError):
+                return receipts, False
+            if not record.producer_id:
+                return receipts, False
+            if lineage:
+                candidate_id, fact_class, cap_owners = lineage[index]
+            else:
+                candidate_id = ""
+                fact_class = record.feature_id
+                cap_owners = tuple(record.owner_feature_ids)
+            state_vector = {
+                "claim": record.claim,
+                "actionable_consequence": record.actionable_consequence,
+                "revision": {
+                    "repository_content": record.revision.repository_content,
+                    "graph": record.revision.graph,
+                    "lsp": record.revision.lsp,
+                    "runtime_evidence": record.revision.runtime_evidence,
+                },
+                "fresh": record.fresh,
+                "superseded": record.superseded,
+                "lifecycle": record.lifecycle.value,
+            }
+            receipts.append(
+                {
+                    "evidence_id": record.evidence_id,
+                    "feature_id": record.feature_id,
+                    "producer_id": record.producer_id,
+                    "candidate_id": candidate_id,
+                    "fact_class": fact_class,
+                    "cap_owners": list(cap_owners),
+                    "authorized_cap_owners": list(cap_owners),
+                    "subject": record.subject,
+                    "claim": record.claim,
+                    "claim_sha256": hashlib.sha256(
+                        record.claim.encode("utf-8")
+                    ).hexdigest(),
+                    "actionable_consequence": record.actionable_consequence,
+                    "intended_action": record.actionable_consequence,
+                    "actionable_consequence_sha256": hashlib.sha256(
+                        record.actionable_consequence.encode("utf-8")
+                    ).hexdigest(),
+                    "provenance": list(record.provenance),
+                    "provenance_hash": _canonical_hash(
+                        list(record.provenance)
+                    ),
+                    "authority": record.authority.name,
+                    "grade": record.grade.name,
+                    "revision": state_vector["revision"],
+                    "repository_revision": (
+                        record.revision.repository_content
+                    ),
+                    "graph_revision": record.revision.graph,
+                    "revision_dependencies": list(
+                        record.revision_dependencies
+                    ),
+                    "observed_substrates": list(
+                        record.observed_substrates
+                    ),
+                    "fresh": record.fresh,
+                    "superseded": record.superseded,
+                    "lifecycle": record.lifecycle.value,
+                    "lifecycle_stage": (
+                        compilation.decision_context.value
+                    ),
+                    "state_vector_hash": _canonical_hash(state_vector),
+                }
+            )
+        return receipts, len(receipts) == len(compilation.evidence_ids)
+
     def _emit_canonical_delivery(
         self,
         *,
@@ -948,6 +1083,9 @@ class MiniSweProviderBoundary:
         ):
             return False
         capsule_binding = compilation.binding
+        semantic_receipts, semantic_receipts_complete = (
+            self._semantic_receipts(compilation)
+        )
         row = {
             "schema": "gt.canonical_delivery.v1",
             "layer": "canonical.provider_delivery",
@@ -998,6 +1136,11 @@ class MiniSweProviderBoundary:
             "bound_provider_payload_json": (
                 compilation.bound_provider_payload_json
             ),
+            "task_anchor": self._task_anchor_receipt(
+                compilation.bound_provider_payload_json
+            ),
+            "semantic_receipts": semantic_receipts,
+            "semantic_receipts_complete": semantic_receipts_complete,
             "provider_response_id": delivery.provider_response_id,
             "provider_terminal_kind": (
                 delivery.terminal_kind.value
