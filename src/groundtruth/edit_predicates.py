@@ -101,6 +101,13 @@ _BASH_TEE_RE: re.Pattern[str] = re.compile(
     r"\btee\s+(?:-a\s+)?([^\s|;&<>()]+\."
     r"(?:py|js|ts|go|java|rs|rb|php))"
 )
+_BASH_COPY_RE: re.Pattern[str] = re.compile(
+    r"\bcp\s+(?:-\S+\s+)*"
+    r"(?:'[^']+'|\"[^\"]+\"|[^\s|;&]+)\s+"
+    r"('(?:[^']+\.(?:py|js|ts|go|java|rs|rb|php))'|"
+    r"\"(?:[^\"]+\.(?:py|js|ts|go|java|rs|rb|php))\"|"
+    r"[^\s|;&]+\.(?:py|js|ts|go|java|rs|rb|php))"
+)
 
 
 def _is_test_path(path: str) -> bool:
@@ -169,6 +176,13 @@ def _extract_path_from_bash_command(command: str) -> tuple[str, bool]:
 
     # 2. Shell redirection: `echo foo > bar.py`, `cat x >> bar.py`,
     #    `tee bar.py`. Must hit a source-extension file.
+    # A staged write often creates a temporary file and then copies it into
+    # the repository. The cp destination is the actual mutation and must take
+    # precedence over an earlier `/tmp` redirect in the same shell command.
+    m_copy = _BASH_COPY_RE.search(command)
+    if m_copy:
+        return m_copy.group(1).strip("'\""), True
+
     m_redir = _BASH_REDIRECT_RE.search(command)
     if m_redir:
         return m_redir.group(1), True

@@ -94,6 +94,9 @@ def _reproduces_block(verdict: GateVerdict) -> bool:
                 "verdict": record.get("covering_verdict"),
                 "reason": record.get("covering_reason"),
                 "failing_test_names": record.get("covering_failing_names") or [],
+                "attribution_satisfied": record.get(
+                    "covering_attribution_satisfied", True
+                ),
             },
             hygiene={
                 "blocking": bool(record.get("hygiene_blocking")),

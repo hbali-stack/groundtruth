@@ -209,6 +209,51 @@ with open('pkg/mod.py', 'w') as f:
     assert _metric_state_for(result, "first_edit_correctness") == "measured"
 
 
+def test_staged_tmp_copy_into_gold_is_a_measured_gold_edit(tmp_path: Path) -> None:
+    """The live mini-SWE shell pattern stages content under /tmp, then copies it
+    into the repository.
+
+    The destination of ``cp`` is the mutation boundary.  Treating only the
+    earlier ``cat > /tmp/...`` redirect as the edit leaves the submitted gold
+    patch and the command timeline contradictory: localization says the gold
+    file was edited, while edit quality has no attributable gold edit.
+    """
+    command = """cd $(cat /tmp/gt_root.txt) && cat > /tmp/edit_context.py << 'EOF'
+class FSMContext:
+    pass
+EOF
+cp /tmp/edit_context.py aiogram/fsm/context.py && echo done
+"""
+    messages = [
+        {"role": "user", "content": "issue"},
+        _assistant(command, 2.0),
+        {"role": "tool", "content": "done"},
+    ]
+    tp = _write_trajectory(
+        tmp_path,
+        messages,
+        "diff --git a/aiogram/fsm/context.py b/aiogram/fsm/context.py\n+    pass\n",
+    )
+    result = performance.compute_performance_metrics(
+        tp,
+        str(tmp_path),
+        gold_files=["aiogram/fsm/context.py"],
+        consumption_ledger={
+            "schema": "gt.consumption_ledger.v2",
+            "runtime_ledger_path": "",
+            "entries": [],
+        },
+    )
+
+    assert result["localization"]["_gold_edited_count"] == 1
+    assert result["edit_quality"]["edit_attempts_per_gold"] == 1.0
+    assert result["edit_quality"]["first_edit_correctness"] == {
+        "aiogram/fsm/context.py": True
+    }
+    assert _metric_state_for(result, "edit_attempts_per_gold") == "measured"
+    assert _metric_state_for(result, "first_edit_correctness") == "measured"
+
+
 def test_clean_command_edit_gold_unchanged_regression(tmp_path: Path) -> None:
     """Regression: an edits-present trajectory whose gold path is spelled cleanly
     ('pkg/mod.py', no './' prefix) is unaffected — exact and _path_match agree, so

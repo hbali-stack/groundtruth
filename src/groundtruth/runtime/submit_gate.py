@@ -50,13 +50,15 @@ def gate_verdict(
     ``max_bounces``: refusals allowed before failing open (default 1).
     """
     cov_verdict = (covering or {}).get("verdict")
-    cov_fail = cov_verdict == "fail"
+    cov_attributed = (covering or {}).get("attribution_satisfied") is not False
+    cov_fail = cov_verdict == "fail" and cov_attributed
     hyg_block = bool((hygiene or {}).get("blocking"))
     submit_blocking = bool((submit_block or {}).get("blocking"))
 
     record: dict[str, Any] = {
         "covering_verdict": cov_verdict,
         "covering_reason": (covering or {}).get("reason"),
+        "covering_attribution_satisfied": cov_attributed,
         "hygiene_blocking": hyg_block,
         "hygiene_reason": (hygiene or {}).get("reason"),
         "bounce_count": bounce_count,

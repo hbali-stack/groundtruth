@@ -114,6 +114,7 @@ def summarize_presubmit_results(
             covering = dict(result.detail)
             covering.setdefault("verdict", result.verdict)
             covering["patch_revision"] = result.patch_revision
+            covering["attribution_satisfied"] = result.attribution_satisfied
             if (
                 blocking is None
                 and result.executed

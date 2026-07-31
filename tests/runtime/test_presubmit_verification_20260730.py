@@ -4,6 +4,7 @@ from groundtruth.runtime.presubmit_verification import (
     restrict_presubmit_plan,
     summarize_presubmit_results,
 )
+from groundtruth.runtime.submit_gate import gate_verdict
 from groundtruth.runtime.verification_plan import (
     Check,
     CheckResult,
@@ -69,7 +70,9 @@ def test_only_positive_attributed_presubmit_failure_blocks() -> None:
     assert unknown.blocking_failure is None
     assert unknown.unknowns == ("integration:fact_covering:unavailable",)
     assert unattributed.blocking_failure is None
+    assert gate_verdict(covering=unattributed.covering).allow is True
     assert attributed.blocking_failure["reason"] == "covering_test_failed"
+    assert gate_verdict(covering=attributed.covering).allow is False
     assert syntax.blocking_failure["reason"] == "syntax_invalid"
 
 

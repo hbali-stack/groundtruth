@@ -86,6 +86,19 @@ def test_bash_embedded_str_replace_editor_invocation() -> None:
 # False cases — should NOT fire L3+L6
 # ---------------------------------------------------------------------------
 
+def test_bash_staged_tmp_copy_attributes_repository_destination() -> None:
+    args = {
+        "command": (
+            "cat > /tmp/edit_context.py << 'EOF'\n"
+            "class FSMContext: pass\n"
+            "EOF\n"
+            "cp /tmp/edit_context.py aiogram/fsm/context.py"
+        )
+    }
+    assert is_source_edit("bash", args) is True
+    assert extract_edited_path("bash", args) == "aiogram/fsm/context.py"
+
+
 def test_str_replace_editor_view_python_file_is_not_edit() -> None:
     """View is read-only."""
     args = {"command": "view", "path": "/workspace/repo/src/foo.py"}

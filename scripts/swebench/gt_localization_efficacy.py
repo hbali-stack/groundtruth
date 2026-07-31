@@ -29,6 +29,11 @@ SRC_EXT = r"(?:py|go|ts|tsx|js|jsx|mjs|cjs|rs|java|kt|rb|c|cc|cpp|h|hpp|html|vue
 _FILE_TOKEN = re.compile(r"[\w./+-]+\.%s\b" % SRC_EXT)
 _OPEN_IN_PY = re.compile(r"""open\(\s*['"]([^'"]+)['"]""")
 _PY_WRITE = re.compile(r"""open\([^)]*,\s*['"][wa]|\.write(?:lines)?\(|write_text\(|\.writelines\(|Path\([^)]*\)\.write""")
+_CP_TO_SOURCE = re.compile(
+    r"\bcp\s+(?:-\S+\s+)*(?:'[^']+'|\"[^\"]+\"|[^\s|;&]+)\s+"
+    r"(?:'[^']+\.%s'|\"[^\"]+\.%s\"|[^\s|;&]+\.%s)"
+    % (SRC_EXT, SRC_EXT, SRC_EXT)
+)
 
 
 def _strip_cd(cmd: str) -> str:
@@ -92,6 +97,8 @@ def classify(cmd: str):
     elif _redirect_to_source(low):
         is_edit = True
     elif re.search(r"\becho\b.*>>?\s*[\w./+-]+\.%s" % SRC_EXT, low):
+        is_edit = True
+    elif _CP_TO_SOURCE.search(low):
         is_edit = True
     elif verb.startswith("python") and _PY_WRITE.search(low):
         is_edit = True

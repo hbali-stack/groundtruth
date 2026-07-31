@@ -465,6 +465,19 @@ def _extract_edited_file(tool_calls_json: str, full_cmd: str) -> str | None:
     for text in (bash_cmd, full_cmd):
         if not text:
             continue
+        # A staged write may redirect into /tmp and then copy the completed
+        # file into the repository. Attribute the destination mutation before
+        # considering the temporary redirect.
+        m = re.search(
+            r"\bcp\s+(?:-\S+\s+)*(?:'[^']+'|\"[^\"]+\"|[^\s|;&]+)\s+"
+            r"('(?:[^']+\.(?:py|go|ts|tsx|js|jsx|rs|java|kt|rb|c|cc|cpp|h|hpp))'|"
+            r"\"(?:[^\"]+\.(?:py|go|ts|tsx|js|jsx|rs|java|kt|rb|c|cc|cpp|h|hpp))\"|"
+            r"[^\s|;&]+\.(?:py|go|ts|tsx|js|jsx|rs|java|kt|rb|c|cc|cpp|h|hpp))",
+            text,
+            re.I,
+        )
+        if m:
+            return _norm_path(m.group(1).strip("'\""))
         m = re.search(r"sed\s+-i\S*\s+(?:-e\s+)*(['\"]).*?\1\s+(" + _F + r")", text, re.I | re.S)
         if m:
             return _norm_path(m.group(2))
